@@ -57,7 +57,8 @@ namespace file {
 		, blsi::unbounded_ordering_queue<
 			bl::attribute_value_ordering<std::uint32_t, std::less<std::uint32_t>>
 		>
-	> sink;
+	> asink;
+	typedef blsi::synchronous_sink<backend> sink;
 
 	source mklogger(const std::string & channel) {
 		source src(blk::channel = channel);
@@ -66,23 +67,30 @@ namespace file {
 		src.add_attribute("PrcID", bla::current_process_id());
 		src.add_attribute("ChID", bla::make_constant(channel));
 		src.add_attribute("ThrID", bla::current_thread_id());
-		return std::move(src);
+		return src;
 	}
 
-	void add(const std::string & name) {
+	void add(const std::string & name, bool autoflush) {
 
 		using boost::shared_ptr;
 		using boost::make_shared;
 
-		auto b = make_shared<backend>(blk::file_name = name);
-
-		auto s = make_shared<sink>(b
-			, blk::order = bl::make_attr_ordering("RecID"
-				, std::less<std::uint32_t>())
-		);
-
-		s->set_formatter(format::simple);
-		bl::core::get()->add_sink(s);
+		if (!autoflush) {
+			auto b = make_shared<backend>(blk::file_name = name);
+			auto s = make_shared<asink>(b
+				, blk::order = bl::make_attr_ordering("RecID"
+					, std::less<std::uint32_t>())
+				, blk::auto_flush = autoflush
+			);
+			s->set_formatter(format::simple);
+			bl::core::get()->add_sink(s);
+		} else {
+			auto b = make_shared<backend>(blk::file_name = name);
+			b->auto_flush(true);
+			auto s = make_shared<sink>(b);
+			s->set_formatter(format::simple);
+			bl::core::get()->add_sink(s);
+		}
 	}
 
     template<typename FunT>
@@ -99,7 +107,7 @@ namespace file {
 			, blk::auto_flush = autoflush
 		);
 
-		auto s = make_shared<sink>(b
+		auto s = make_shared<asink>(b
 			, blk::order = bl::make_attr_ordering("RecID"
 				, std::less<std::uint32_t>())
 		);

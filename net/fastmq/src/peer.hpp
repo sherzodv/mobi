@@ -9,7 +9,7 @@
 
 #include "proto.hpp"
 #include "logger.hpp"
-#include "subscriber.hpp"
+#include "terminal.hpp"
 
 namespace fastmq {
 
@@ -17,66 +17,64 @@ using boost::bind;
 namespace ba = boost::asio;
 namespace bs = boost::system;
 
+/* ServiceT requirements:
+ * class ServiceT {
+ * public:
+ * };
+ * */
+
 template <class ServiceT>
-class peer: subscriber_base {
+class peer: terminal_base {
 
 	friend ServiceT;
 
+	typedef typename ServiceT::proto_t proto_t;
+	typedef ba::basic_stream_socket<proto_t> sock_t;
+
 	public:
-
-		typedef typename ServiceT::log_t log_t;
-		typedef typename ServiceT::proto_t proto_t;
-		typedef ba::basic_stream_socket<proto_t> sock_t;
-
 		peer(std::uint16_t index, sock_t & sock, ServiceT & service)
 			: S(service)
 			, m_idx(index)
 			, m_sock(std::move(sock))
 		{
+			in.ready = true;
 			in.total_bytes = 0;
-			out.total_bytes = 0;
+
 			out.ready = true;
+			out.total_bytes = 0;
 		}
 
-		void start() {
-			recv_identity();
-		}
-
-	private:
-		typedef void (peer::* cb_t)(const bs::error_code &, std::size_t);
-
-		ServiceT & S;
-		std::size_t m_idx;
-		sock_t m_sock;
-
-		struct inbuf {
-			msgu *msg;
-			msgu msghdr[1];
-			std::size_t total_bytes;
-		} in;
-
-		struct outbuf {
-			msgu *msg;
-			bool ready;
-			std::queue<const msgu *> que;
-			std::size_t total_bytes;
-		} out;
-
-		void on_in_bytes(cb_t cb, const bs::error_code & ec,
-				std::size_t bytes)
+		peer(std::size_t index, u16_t id, u16_t type, sock_t & sock
+				, ServiceT & service)
+			: terminal_base(id, type)
+			, S(service)
+			, m_idx(index)
+			, m_sock(std::move(sock))
 		{
-			(this->*cb)(ec, bytes);
-			in.total_bytes += bytes;
+			in.ready = true;
+			in.total_bytes = 0;
+
+			out.ready = true;
+			out.total_bytes = 0;
 		}
 
-		void on_out_bytes(cb_t cb, const bs::error_code & ec,
-				std::size_t bytes)
+		std::size_t index() { return m_idx; }
+
+		void recv()
 		{
-			(this->*cb)(ec, bytes);
-			out.total_bytes += bytes;
+			recv_header();
 		}
 
-		virtual void process_message(const msgu * msg)
+		void flush()
+		{
+			if (!out.ready || out.que.empty())
+				return;
+			msgu * msg = out.que.front();
+			out.que.pop();
+			send_message(msg);
+		}
+
+		void send(msgu * msg)
 		{
 			if (out.ready) {
 				send_message(msg);
@@ -85,129 +83,204 @@ class peer: subscriber_base {
 			}
 		}
 
-		void send_message(const msgu * msg)
-		{
-			std::size_t len = msg->len;
-
-			if (len <= sizeof(msgu))
-				len = sizeof(msgu);
-
-			out.ready = false;
-
-			ba::async_write(m_sock, ba::buffer(as_cu8p(msg), len)
-				, bind(&peer::on_out_bytes, this, &peer::on_send_message
-					, ba::placeholders::error
-					, ba::placeholders::bytes_transferred));
-		}
-
-		void on_send_message(const bs::error_code & ec, std::size_t )
-		{
-			if (!ec) {
-				ltrace(S.L) << "greeting sent";
-				if (out.que.empty()) {
-					out.ready = true;
-					return;
-				}
-				const msgu * msg = out.que.front();
-				out.que.pop();
-				send_message(msg);
-			} else {
-				S.R.route_clear(this);
-				S.destroy(this);
-				lerror(S.L) << "peer::on_send_greeting:" << ec.message();
-			}
-		}
-
-		void recv_identity()
-		{
-			m_sock.async_receive(ba::buffer(as_u8p(in.msghdr), sizeof(msgu))
-				, bind(&peer::on_in_bytes, this, &peer::on_recv_identity
-					, ba::placeholders::error
-					, ba::placeholders::bytes_transferred));
-		}
-
-		void on_recv_identity(const bs::error_code & ec, std::size_t bytes)
-		{
-			ltrace(S.L) << "identity received";
-			m_id = in.msghdr->id;
-			m_type = in.msghdr->type;
-			if (!ec) {
-				if (in.msghdr->len != 0) {
-					lerror(S.L) << "Invalid identity message: " << bytes;
-					/* TODO: handle error */
-					return;
-				}
-				if (S.R.route_add(this) == m_id) {
-					/* Client id:type accepted. Greet it. */
-					send_greeting();
-				} else {
-					/* TODO: handle wrong identity */
-					lcritical(S.L) << "client id rejected";
-				}
-			} else {
-				lerror(S.L) << "peer::on_recv_identity:" << ec.message();
-				S.destroy(this);
-			}
-		}
-
 		void send_greeting()
 		{
+			if (!out.ready) {
+				lerror(S.L) << "peer::recv_identity: out buffer is busy";
+				return;
+			}
 			out.ready = false;
-			out.msg = S.R.create_message();
+			out.msg = S.P.create_message();
 			out.msg->len = 0;
 			out.msg->id = m_id;
 			out.msg->type = m_type;
 			out.msg->data[0] = 0;
+			ltrace(S.L) << "peer::send_greeting: bytes: " << sizeof(msgu);
 			ba::async_write(m_sock, ba::buffer(as_u8p(out.msg), sizeof(msgu))
 				, bind(&peer::on_out_bytes, this, &peer::on_send_greeting
 					, ba::placeholders::error
 					, ba::placeholders::bytes_transferred));
 		}
 
-		void on_send_greeting(const bs::error_code & ec, std::size_t )
+		void send_identity()
+		{
+			if (!out.ready) {
+				lerror(S.L) << "peer::send_identity: out buffer is busy";
+				return;
+			}
+			out.ready = false;
+			out.msg = S.P.create_message();
+			out.msg->len = 0;
+			out.msg->id = m_id;
+			out.msg->type = m_type;
+			out.msg->data[0] = 0;
+			ltrace(S.L) << "peer::send_identity: bytes: " << sizeof(msgu);
+			ba::async_write(m_sock, ba::buffer(as_u8p(out.msg), sizeof(msgu))
+				, bind(&peer::on_out_bytes, this, &peer::on_send_identity
+					, ba::placeholders::error
+					, ba::placeholders::bytes_transferred));
+		}
+
+		void recv_identity()
+		{
+			if (!in.ready) {
+				lerror(S.L) << "peer::recv_identity: in buffer is busy";
+				return;
+			}
+			in.ready = false;
+			in.msg = S.P.create_message();
+			ltrace(S.L) << "peer::recv_identity: bytes: " << sizeof(msgu);
+			m_sock.async_receive(ba::buffer(as_u8p(in.msg), sizeof(msgu))
+				, bind(&peer::on_in_bytes, this, &peer::on_recv_identity
+					, ba::placeholders::error
+					, ba::placeholders::bytes_transferred));
+		}
+
+		void recv_greeting()
+		{
+			if (!in.ready) {
+				lerror(S.L) << "peer::recv_greeting: in buffer is busy";
+				return;
+			}
+			in.ready = false;
+			in.msg = S.P.create_message();
+			ltrace(S.L) << "peer::recv_greeting: bytes: " << sizeof(msgu);
+			m_sock.async_receive(ba::buffer(as_u8p(in.msg), sizeof(msgu))
+				, bind(&peer::on_in_bytes, this, &peer::on_recv_greeting
+					, ba::placeholders::error
+					, ba::placeholders::bytes_transferred));
+		}
+
+		virtual void process_message(msgu * msg) {
+			send(msg);
+		}
+
+	private:
+		typedef void (peer::* cb_t)(const bs::error_code &);
+
+		ServiceT & S;
+		std::size_t m_idx;
+		sock_t m_sock;
+
+		struct inbuf {
+			msgu *msg;
+			bool ready;
+			std::size_t total_bytes;
+		} in;
+
+		struct outbuf {
+			msgu *msg;
+			bool ready;
+			std::queue<msgu *> que;
+			std::size_t total_bytes;
+		} out;
+
+		void on_in_bytes(cb_t cb, const bs::error_code & ec,
+				std::size_t bytes)
+		{
+			in.total_bytes += bytes;
+			ltrace(S.L) << "peer: bytes in: " << bytes;
+			/* !!! It's crucial to call callback at the very end of this
+			 * member function, since callback may delete this */
+			(this->*cb)(ec);
+		}
+
+		void on_out_bytes(cb_t cb, const bs::error_code & ec,
+				std::size_t bytes)
+		{
+			out.total_bytes += bytes;
+			ltrace(S.L) << "peer: bytes out: " << bytes;
+			/* !!! It's crucial to call callback at the very end of this
+			 * member function, since callback may delete this */
+			(this->*cb)(ec);
+		}
+
+		void send_message(msgu * msg)
+		{
+			/* Caller is responsible for destroying message. */
+			std::size_t len = out.msg->len;
+			out.msg = msg;
+			if (len <= sizeof(msgu))
+				len = sizeof(msgu);
+			out.ready = false;
+			ltrace(S.L) << "peer::send_message: bytes: " << len;
+			ba::async_write(m_sock, ba::buffer(as_cu8p(out.msg), len)
+				, bind(&peer::on_out_bytes, this, &peer::on_send_message
+					, ba::placeholders::error
+					, ba::placeholders::bytes_transferred));
+		}
+
+		void on_send_message(const bs::error_code & ec)
 		{
 			out.ready = true;
-			S.R.destroy_message(out.msg);
 			if (!ec) {
-				ltrace(S.L) << "greeting sent";
+				ltrace(S.L) << "peer::on_send_message: ok";
+				S.on_send(this, out.msg);
+				if (out.que.empty()) {
+					return;
+				}
+				msgu * msg = out.que.front();
+				out.que.pop();
+				send_message(msg);
 			} else {
-				S.R.route_clear(this);
-				S.destroy(this);
-				lerror(S.L) << "peer::on_send_greeting:" << ec.message();
+				/* Send cycle stop here. Call to flush is needed
+				 * in order to let messages in queue to be sent */
+				lerror(S.L) << "peer::on_send_message: " << ec.message();
+				/* !!! It's crucial to call callback at the very end of this
+				 * member function, since callback may delete this */
+				S.on_send_error(this, in.msg);
 			}
 		}
 
 		void recv_header()
 		{
-			m_sock.async_receive(ba::buffer(as_u8p(in.msghdr), sizeof(msgu))
+			if (!in.ready) {
+				lerror(S.L) << "peer::recv_header: in buffer is busy";
+				return;
+			}
+			in.ready = false;
+			in.msg = S.P.create_message();
+			ltrace(S.L) << "peer::recv_header: bytes: " << sizeof(msgu);
+			m_sock.async_receive(ba::buffer(as_u8p(in.msg), sizeof(msgu))
 				, bind(&peer::on_in_bytes, this, &peer::on_recv_header
 					, ba::placeholders::error
 					, ba::placeholders::bytes_transferred));
 		}
 
-		void on_recv_header(const bs::error_code & ec, std::size_t bytes)
+		void on_recv_header(const bs::error_code & ec)
 		{
-			ltrace(S.L) << "header received: " << bytes;
 			if (!ec) {
-				if (in.msghdr->len <= sizeof(msgu)) {
+				ltrace(S.L) << "peer::on_recv_header: ok";
+				if (in.msg->len <= sizeof(msgu)) {
 					/* Service message */
-					msgu * msg = S.R.create_message();
-					std::memcpy(msg, &in.msghdr, sizeof(msgu));
-					S.R.transfer_message(msg);
+					in.ready = true;
+					S.on_recv(this, in.msg);
 				} else {
-					in.msg = S.R.create_message();
-					std::memcpy(in.msg, &in.msghdr, sizeof(msgu));
 					/* Data message */
+					/* Previously we have created msg of len = sizeof(msgu)
+					 * only to recv header in it. Now we've found out that
+					 * message has body. Copy header, destroy message
+					 * and create new one with sufficient len */
+					msgu * msg = S.P.create_message(in.msg->len);
+					std::memcpy(msg, in.msg, sizeof(msgu));
+					S.P.destroy_message(in.msg);
+					in.msg = msg;
 					recv_body();
 				}
 			} else {
-				lerror(S.L) << "peer::on_recv_header:" << ec.message();
-				S.destroy(this);
+				lerror(S.L) << "peer::on_recv_header: " << ec.message();
+				in.ready = true;
+				S.P.destroy_message(in.msg);
+				/* !!! It's crucial to call callback at the very end of this
+				 * member function, since callback may delete this */
+				S.on_recv_error(this);
 			}
 		}
 
 		void recv_body()
 		{
+			ltrace(S.L) << "peer::recv_body: bytes: "
+				<< in.msg->len - sizeof(msgu);
 			/* Read the remaining body of a messsage, beyond msg->data[0] */
 			m_sock.async_receive(
 				ba::buffer(as_u8p(in.msg) + sizeof(msgu)
@@ -217,20 +290,94 @@ class peer: subscriber_base {
 					, ba::placeholders::bytes_transferred));
 		}
 
-		void on_recv_body(const bs::error_code & ec, std::size_t bytes)
+		void on_recv_body(const bs::error_code & ec)
 		{
-			ltrace(S.L) << "body received: " << bytes;
+			in.ready = true;
 			if (!ec) {
-				/* Route message */
-				S.R.transfer_message(in.msg);
-				/* Receive next */
-				recv_header();
+				ltrace(S.L) << "peer::on_recv_body: ok";
+				/* Let the service process received message */
+				S.on_recv(this, in.msg);
 			} else {
-				lerror(S.L) << "peer::on_recv_body:" << ec.message();
-				S.destroy(this);
+				lerror(S.L) << "peer::on_recv_body: " << ec.message();
+				S.P.destroy_message(in.msg);
+				/* !!! It's crucial to call callback at the very end of this
+				 * member function, since callback may delete this */
+				S.on_recv_error(this);
 			}
 		}
 
+		void on_recv_identity(const bs::error_code & ec)
+		{
+			in.ready = true;
+			if (!ec) {
+				ltrace(S.L) << "peer::on_recv_identity: ok";
+				if (in.msg->len <= sizeof(msgu)) {
+					m_id = in.msg->id;
+					m_type = in.msg->type;
+					S.P.destroy_message(in.msg);
+					S.on_recv_identity(this);
+					return;
+				}
+				lerror(S.L) << "peer::on_recv_identity: malformed message";
+			} else {
+				lerror(S.L) << "peer::on_recv_identity: " << ec.message();
+			}
+			S.P.destroy_message(in.msg);
+			/* !!! It's crucial to call callback at the very end of this
+			 * member function, since callback may delete this */
+			S.on_recv_error(this);
+		}
+
+		void on_recv_greeting(const bs::error_code & ec)
+		{
+			in.ready = true;
+			if (!ec) {
+				ltrace(S.L) << "peer::on_recv_greeting: ok";
+				if (in.msg->len <= sizeof(msgu) && in.msg->id == m_id
+						&& in.msg->type == m_type) {
+					S.P.destroy_message(in.msg);
+					S.on_recv_greeting(this);
+					return;
+				}
+				lerror(S.L) << "peer::on_recv_greeting: malformed message";
+			} else {
+				lerror(S.L) << "peer::on_recv_greeting: " << ec.message();
+			}
+			S.P.destroy_message(in.msg);
+			/* !!! It's crucial to call callback at the very end of this
+			 * member function, since callback may delete this */
+			S.on_recv_error(this);
+		}
+
+		void on_send_identity(const bs::error_code & ec)
+		{
+			out.ready = true;
+			S.P.destroy_message(out.msg);
+			if (!ec) {
+				ltrace(S.L) << "peer::on_send_identity: ok";
+				S.on_send_identity(this);
+			} else {
+				lerror(S.L) << "peer::on_send_identity: " << ec.message();
+				/* !!! It's crucial to call callback at the very end of this
+				 * member function, since callback may delete this */
+				S.on_send_identity_error(this);
+			}
+		}
+
+		void on_send_greeting(const bs::error_code & ec)
+		{
+			out.ready = true;
+			S.P.destroy_message(out.msg);
+			if (!ec) {
+				ltrace(S.L) << "peer::on_send_greeting: ok";
+				S.on_send_greeting(this);
+			} else {
+				lerror(S.L) << "peer::on_send_greeting: " << ec.message();
+				/* !!! It's crucial to call callback at the very end of this
+				 * member function, since callback may delete this */
+				S.on_send_greeting_error(this);
+			}
+		}
 };
 
 }

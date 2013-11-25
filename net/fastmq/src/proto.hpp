@@ -48,9 +48,6 @@ const u32_t min_data_msgu_length = sizeof(msgu);
 typedef msgu * msgup;
 typedef const msgu * cmsgup;
 
-const msgu hello_r = { 0, 1, 0, {} };
-const msgu hello_c = { 0, 2, 0, {} };
-
 vp_t as_vp(msgu * msg) {
 	return static_cast<vp_t>(msg);
 }

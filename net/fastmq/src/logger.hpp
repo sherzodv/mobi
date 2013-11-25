@@ -43,7 +43,7 @@ namespace file {
 
 	source mklogger(const std::string & channel);
 
-	void add(const std::string & name);
+	void add(const std::string & name, bool autoflush = false);
 
     template<typename FunT>
 	void add(const std::string & nametmpl, std::size_t rotsz

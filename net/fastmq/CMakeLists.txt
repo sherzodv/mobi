@@ -12,12 +12,13 @@ find_package(Boost 1.54.0 COMPONENTS
 	filesystem
 	system
 	thread
-	log
-	log_setup)
+	log-mt
+	log_setup-mt)
 
 if (Boost_FOUND)
 
-	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -pedantic -std=c++11")
+	#set(CMAKE_CXX_COMPILER g++)
+	set(CMAKE_CXX_FLAGS "-ggdb -Wall -Wextra -Werror -pedantic -std=c++11")
 
 	find_library(lrt rt)
 	find_library(lpthread pthread)

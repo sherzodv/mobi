@@ -1,12 +1,13 @@
-#ifndef fastmq_server_service_hpp
-#define fastmq_server_service_hpp
+#ifndef fastmq_router_hpp
+#define fastmq_router_hpp
 
 #include <stack>
 #include <vector>
 #include <cstddef>
 #include <unordered_map>
 
-#include "subscriber.hpp"
+#include "pool.hpp"
+#include "terminal.hpp"
 
 namespace fastmq {
 
@@ -19,11 +20,9 @@ namespace fastmq {
 			router_base() {}
 			virtual ~router_base() {}
 
-			virtual bool subscribe(route::type r, subscriber_base * s) = 0;
-			virtual bool unsubscribe(route::type r, subscriber_base * s) = 0;
-			virtual void route_message(msgu * const msg) = 0;
+			virtual void route_message(msgu * msg) = 0;
 
-			bool route_add(route::type r, subscriber_base * s) {
+			bool route_add(route::type r, terminal_base * s) {
 				if (subscribe(r, s)) {
 					s->m_router = this;
 					return true;
@@ -32,32 +31,38 @@ namespace fastmq {
 				}
 			}
 
-			bool route_del(route::type r, subscriber_base * s) {
+			bool route_del(route::type r, terminal_base * s) {
 				s->m_router = nullptr;
 				return unsubscribe(r, s);
 			}
 
-			bool route_add(subscriber_base * s) {
+			bool route_add(terminal_base * s) {
 				return route_add(route::on_idtype, s);
 			}
 
-			bool route_del(subscriber_base * s) {
+			bool route_del(terminal_base * s) {
 				return route_del(route::on_idtype, s);
 			}
 
-			void route_clear(subscriber_base * s) {
+			void route_clear(terminal_base * s) {
 				route_del(route::on_id, s);
 				route_del(route::on_type, s);
 				route_del(route::on_idtype, s);
 			}
+
+		protected:
+			virtual bool subscribe(route::type r, terminal_base * s) = 0;
+			virtual bool unsubscribe(route::type r, terminal_base * s) = 0;
 	};
 
 	class router: public router_base {
 
+		message_pool_base & P;
+
 		typedef std::unordered_multimap<fastmq::u16_t
-			, subscriber_base *> map16_t;
+			, terminal_base *> map16_t;
 		typedef std::unordered_multimap<fastmq::u32_t
-			, subscriber_base *> map32_t;
+			, terminal_base *> map32_t;
 
 		typedef map16_t::iterator iter16;
 		typedef map32_t::iterator iter32;
@@ -73,7 +78,7 @@ namespace fastmq {
 			return ( id << 16 ) | type;
 		}
 
-		subscriber_base * find_destination(subscriber_base * s) {
+		terminal_base * find_destination(terminal_base * s) {
 			map16_t::iterator item16;
 			map32_t::iterator item32;
 
@@ -92,7 +97,7 @@ namespace fastmq {
 			return nullptr;
 		}
 
-		bool subscribe_by_id(subscriber_base * s) {
+		bool subscribe_by_id(terminal_base * s) {
 			range16 r = m_byid.equal_range(s->id());
 			iter16 i = std::find_if(r.first, r.second
 				, [s](const iter16::value_type & i){ return i.second == s; });
@@ -104,7 +109,7 @@ namespace fastmq {
 			return true;
 		}
 
-		bool subscribe_by_type(subscriber_base * s) {
+		bool subscribe_by_type(terminal_base * s) {
 			range16 r = m_bytype.equal_range(s->id());
 			iter16 i = std::find_if(r.first, r.second
 				, [s](const iter16::value_type & i){ return i.second == s; });
@@ -116,7 +121,7 @@ namespace fastmq {
 			return true;
 		}
 
-		bool subscribe_by_idtype(subscriber_base * s) {
+		bool subscribe_by_idtype(terminal_base * s) {
 			range32 r = m_byidtype.equal_range(make_key(s->id(), s->type()));
 			iter32 i = std::find_if(r.first, r.second
 				, [s](const iter32::value_type & i){ return i.second == s; });
@@ -128,7 +133,7 @@ namespace fastmq {
 			return true;
 		}
 
-		bool unsubscribe_by_id(subscriber_base * s) {
+		bool unsubscribe_by_id(terminal_base * s) {
 			range16 r = m_byid.equal_range(s->id());
 			iter16 i = std::find_if(r.first, r.second
 				, [s](const iter16::value_type & i){ return i.second == s; });
@@ -140,7 +145,7 @@ namespace fastmq {
 			return true;
 		}
 
-		bool unsubscribe_by_type(subscriber_base * s) {
+		bool unsubscribe_by_type(terminal_base * s) {
 			range16 r = m_bytype.equal_range(s->id());
 			iter16 i = std::find_if(r.first, r.second
 				, [s](const iter16::value_type & i){ return i.second == s; });
@@ -152,7 +157,7 @@ namespace fastmq {
 			return true;
 		}
 
-		bool unsubscribe_by_idtype(subscriber_base * s) {
+		bool unsubscribe_by_idtype(terminal_base * s) {
 			range32 r = m_byidtype.equal_range(make_key(s->id(), s->type()));
 			iter32 i = std::find_if(r.first, r.second
 				, [s](const iter32::value_type & i){ return i.second == s; });
@@ -164,59 +169,63 @@ namespace fastmq {
 			return true;
 		}
 
+		virtual bool subscribe(route::type r, terminal_base * s) {
+			switch (r) {
+				case route::on_id:		return subscribe_by_id(s);
+				case route::on_type:	return subscribe_by_type(s);
+				case route::on_idtype:	return subscribe_by_idtype(s);
+				default:		return false; /* Unknown route type */
+			}
+		}
+
+		virtual bool unsubscribe(route::type r, terminal_base * s) {
+			switch (r) {
+				case route::on_id:		return unsubscribe_by_id(s);
+				case route::on_type:	return unsubscribe_by_type(s);
+				case route::on_idtype:	return unsubscribe_by_idtype(s);
+				default:		return false; /* Unknown route type */
+			}
+		}
+
 		public:
-			router() {}
+			router(message_pool_base & p): P(p) {}
 			virtual ~router() {}
 
-			virtual msgu * create_message(std::size_t len = 0) {
-				len = (len <= sizeof(msgu)) ? sizeof(msgu) : len;
-				msgu * msg = static_cast<msgu *>(malloc(len));
-				return msg;
-			}
-
-			virtual void destroy_message(msgu * const msg) {
-				free(static_cast<void *>(msg));
-			}
-
-			virtual bool subscribe(route::type r, subscriber_base * s) {
-				switch (r) {
-					case route::on_id:		return subscribe_by_id(s);
-					case route::on_type:	return subscribe_by_type(s);
-					case route::on_idtype:	return subscribe_by_idtype(s);
-					default:		return false; /* Unknown route type */
-				}
-			}
-
-			virtual bool unsubscribe(route::type r, subscriber_base * s) {
-				switch (r) {
-					case route::on_id:		return unsubscribe_by_id(s);
-					case route::on_type:	return unsubscribe_by_type(s);
-					case route::on_idtype:	return unsubscribe_by_idtype(s);
-					default:		return false; /* Unknown route type */
-				}
-			}
-
-			virtual void route_message(msgu * const msg) {
+			virtual void route_message(msgu * msg) {
 				range16 r16;
 				range32 r32;
 
+				/* O: the preexisting copy of message could be used
+				 * instead of destroying it deliver it to first subscriber */
+
 				r32 = m_byidtype.equal_range(make_key(msg->id, msg->type));
 				std::for_each(r32.first, r32.second
-					, [msg](const iter32::value_type & i) {
-						i.second->process_message(msg);
+					, [msg, this](iter32::value_type & i) {
+						msgu * nmsg = P.copy_message(msg);
+						/* TODO: handle copy error */
+						if (nmsg)
+							i.second->process_message(msg);
 					});
 
 				r16 = m_byid.equal_range(msg->id);
 				std::for_each(r16.first, r16.second
-					, [msg](const iter16::value_type & i) {
-						i.second->process_message(msg);
+					, [msg, this](iter16::value_type & i) {
+						msgu * nmsg = P.copy_message(msg);
+						/* TODO: handle copy error */
+						if (nmsg)
+							i.second->process_message(msg);
 					});
 
 				r16 = m_bytype.equal_range(msg->id);
 				std::for_each(r16.first, r16.second
-					, [msg](const iter16::value_type & i) {
-						i.second->process_message(msg);
+					, [msg, this](iter16::value_type & i) {
+						msgu * nmsg = P.copy_message(msg);
+						/* TODO: handle copy error */
+						if (nmsg)
+							i.second->process_message(msg);
 					});
+
+				P.destroy_message(msg);
 			}
 	};
 
