@@ -25,7 +25,9 @@ namespace fastmq {
 				: m_id(id), m_type(type), m_router(nullptr) {}
 
 			virtual ~terminal_base() {}
-			virtual void process_message(msgu * msg) = 0;
+
+			virtual void consume_message(msgu * msg) = 0;
+			virtual void produce_message() = 0;
 
 			u16_t id() const { return m_id; }
 			u16_t type() const { return m_type; }

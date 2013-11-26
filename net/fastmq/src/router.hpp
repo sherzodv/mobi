@@ -204,7 +204,7 @@ namespace fastmq {
 						msgu * nmsg = P.copy_message(msg);
 						/* TODO: handle copy error */
 						if (nmsg)
-							i.second->process_message(msg);
+							i.second->consume_message(msg);
 					});
 
 				r16 = m_byid.equal_range(msg->id);
@@ -213,7 +213,7 @@ namespace fastmq {
 						msgu * nmsg = P.copy_message(msg);
 						/* TODO: handle copy error */
 						if (nmsg)
-							i.second->process_message(msg);
+							i.second->consume_message(msg);
 					});
 
 				r16 = m_bytype.equal_range(msg->id);
@@ -222,7 +222,7 @@ namespace fastmq {
 						msgu * nmsg = P.copy_message(msg);
 						/* TODO: handle copy error */
 						if (nmsg)
-							i.second->process_message(msg);
+							i.second->consume_message(msg);
 					});
 
 				P.destroy_message(msg);

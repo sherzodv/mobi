@@ -10,7 +10,7 @@
 
 namespace fastmq {
 
-	typedef log::file::source flog_t;
+	typedef log::source flog_t;
 
 	class unx_router_server: public unix_domain_server_base<flog_t> {
 			public:
@@ -18,8 +18,9 @@ namespace fastmq {
 						, message_pool_base & p
 						, router & r
 						, const endpoint_t & endpoint
-						, flog_t & l)
-					: unix_domain_server_base<flog_t>(io, p, endpoint, l), R(r)
+						, flog_t l)
+					: unix_domain_server_base<flog_t>(io, p
+						, endpoint, std::move(l)), R(r)
 				{
 				}
 
@@ -50,8 +51,8 @@ namespace fastmq {
 				}
 
 				void on_recv(terminal_base * t, msgu * msg) {
-					(void)(t);
 					R.route_message(msg);
+					t->produce_message();
 				}
 
 				void on_send(terminal_base * t, msgu * msg) {

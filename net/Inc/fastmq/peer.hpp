@@ -60,11 +60,6 @@ class peer: terminal_base {
 
 		std::size_t index() { return m_idx; }
 
-		void recv()
-		{
-			recv_header();
-		}
-
 		void flush()
 		{
 			if (!out.ready || out.que.empty())
@@ -151,8 +146,12 @@ class peer: terminal_base {
 					, ba::placeholders::bytes_transferred));
 		}
 
-		virtual void process_message(msgu * msg) {
+		virtual void consume_message(msgu * msg) {
 			send(msg);
+		}
+
+		virtual void produce_message() {
+			recv_header();
 		}
 
 	private:
@@ -197,9 +196,10 @@ class peer: terminal_base {
 
 		void send_message(msgu * msg)
 		{
+			std::size_t len;
 			/* Caller is responsible for destroying message. */
-			std::size_t len = out.msg->len;
 			out.msg = msg;
+			len = out.msg->len;
 			if (len <= sizeof(msgu))
 				len = sizeof(msgu);
 			out.ready = false;
@@ -250,7 +250,8 @@ class peer: terminal_base {
 		void on_recv_header(const bs::error_code & ec)
 		{
 			if (!ec) {
-				ltrace(S.L) << "peer::on_recv_header: ok";
+				ltrace(S.L) << "peer::on_recv_header: msg->len: "
+					<< in.msg->len;
 				if (in.msg->len <= sizeof(msgu)) {
 					/* Service message */
 					in.ready = true;

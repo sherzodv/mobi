@@ -26,9 +26,9 @@ class client_base: node_base {
 
 	public:
 		client_base(ba::io_service & io
-				, message_pool_base & pool, log_t & l)
+				, message_pool_base & pool, log_t l)
 			: m_tmp_id(0), m_tmp_type(0), m_sock(io), ready(true)
-			, L(l), P(pool)
+			, L(std::move(l)), P(pool)
 		{
 		}
 
@@ -52,7 +52,7 @@ class client_base: node_base {
 				lerror(L) << "client::base::connect: buffer is busy";
 				return;
 			}
-			lerror(L) << "client::base::connect: connecting";
+			ltrace(L) << "client::base::connect: connecting";
 			m_tmp_id = id;
 			m_tmp_type = type;
 			ready = false;
@@ -67,7 +67,7 @@ class client_base: node_base {
 		u16_t m_tmp_type;
 		sock_t m_sock;
 		bool ready;
-		log_t & L;
+		log_t L;
 		message_pool_base & P;
 
 		void on_connect(const bs::error_code & ec) {
@@ -99,8 +99,14 @@ class client_base: node_base {
 
 		void on_recv_greeting(peer_t * p) {
 			if(register_terminal(p)) {
-				p->recv();
+				ltrace(L)
+					<< "client_base::on_recv_identity: terminal registered: "
+					<< "(" << p->id() << ":" << p->type() << ")";
+				p->produce_message();
 			} else {
+				lerror(L)
+					<< "client_base::on_recv_identity: terminal rejected: "
+					<< "(" << p->id() << ":" << p->type() << ")";
 				destroy(p);
 			}
 		}

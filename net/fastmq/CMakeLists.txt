@@ -45,7 +45,7 @@ if (Boost_FOUND)
 		list(APPEND HEADERS ${HOUT_DIR}/${header})
 	endforeach(header)
 
-	add_custom_target(copy_headers ALL DEPENDS ${HEADERS})
+	add_custom_target(copy_${pname}_headers ALL DEPENDS ${HEADERS})
 
 	set(LIBRARY_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 	set(LIBRARY_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)

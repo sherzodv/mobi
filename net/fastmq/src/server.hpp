@@ -33,9 +33,9 @@ class server_base: node_base {
 		server_base(ba::io_service & io
 				, message_pool_base & pool
 				, const endpoint_t & ep
-				, log_t & l)
+				, log_t l)
 			: m_sock(io), m_acpt(io, ep)
-			, L(l), P(pool)
+			, L(std::move(l)), P(pool)
 		{
 				m_book.reserve(30);
 		}
@@ -55,6 +55,7 @@ class server_base: node_base {
 		}
 
 		void listen() {
+			ltrace(L) << "server_base::listen: Listening...";
 			m_acpt.async_accept(m_sock, boost::bind(&server_base::on_accept
 				, this, ba::placeholders::error));
 		}
@@ -63,14 +64,15 @@ class server_base: node_base {
 
 		sock_t m_sock;
 		acpt_t m_acpt;
-		LogT & L;
+		log_t L;
 		message_pool_base & P;
 
 		void on_accept(const bs::error_code & ec) {
 			if (!ec) {
-				linfo(L) << "Incoming connection";
+				linfo(L) << "server_base::on_accept: New incoming connection";
 				peer_t * p = create(m_sock, *this);
 				p->recv_identity();
+				listen();
 			} else {
 				lerror(L) << ec.message();
 			}
@@ -93,14 +95,20 @@ class server_base: node_base {
 
 		void on_recv_identity(peer_t * p) {
 			if(register_terminal(p)) {
+				ltrace(L)
+					<< "server_base::on_recv_identity: terminal registered: "
+					<< "(" << p->id() << ":" << p->type() << ")";
 				p->send_greeting();
 			} else {
+				lerror(L)
+					<< "server_base::on_recv_identity: terminal rejected: "
+					<< "(" << p->id() << ":" << p->type() << ")";
 				destroy(p);
 			}
 		}
 
 		void on_send_greeting(peer_t * p) {
-			p->recv();
+			p->produce_message();
 		}
 
 		void on_recv_identity_error(peer_t * p) {
