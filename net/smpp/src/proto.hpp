@@ -232,7 +232,51 @@ namespace smpp {
 		return buf;
 	}
 
+	typedef tlv<proto::u8_t> tlv_dest_addr_subunit;
+	typedef tlv<proto::u8_t> tlv_source_addr_subunit;
+	typedef tlv<proto::u8_t> tlv_dest_network_type;
+	typedef tlv<proto::u8_t> tlv_source_network_type;
+	typedef tlv<proto::u8_t> tlv_dest_bearer_type;
+	typedef tlv<proto::u8_t> tlv_source_bearer_type;
+	typedef tlv<proto::u16_t> tlv_dest_telematics_id;
+	typedef tlv<proto::u8_t> tlv_source_telematics_id;
+	typedef tlv<proto::u32_t> tlv_qos_time_to_live;
+	typedef tlv<proto::u8_t> tlv_payload_type;
+	typedef tlv<proto::u8_t[256]> tlv_additional_status_info_text;
+	typedef tlv<proto::u8_t[65]> tlv_receipted_message_id;
+	typedef tlv<proto::u8_t> tlv_ms_msg_wait_facilities;
+	typedef tlv<proto::u8_t> tlv_privacy_indicator;
+	typedef tlv<proto::u8_t[23]> tlv_source_subaddress;
+	typedef tlv<proto::u8_t[23]> tlv_dest_subaddress;
+	typedef tlv<proto::u16_t> tlv_user_message_reference;
+	typedef tlv<proto::u8_t> tlv_user_response_code;
+	typedef tlv<proto::u8_t> tlv_language_indicator;
+	typedef tlv<proto::u16_t> tlv_source_port;
+	typedef tlv<proto::u16_t> tlv_destination_port;
+	typedef tlv<proto::u16_t> tlv_sar_msg_ref_num;
+	typedef tlv<proto::u8_t> tlv_sar_total_segments;
+	typedef tlv<proto::u8_t> tlv_sar_segment_seqnum;
 	typedef tlv<proto::u8_t> tlv_sc_interface_version;
+	typedef tlv<proto::u8_t> tlv_display_time;
+	typedef tlv<proto::u8_t> tlv_ms_validity;
+	typedef tlv<proto::u8_t> tlv_dpf_result;
+	typedef tlv<proto::u8_t> tlv_set_dpf;
+	typedef tlv<proto::u8_t> tlv_ms_availability_status;
+	typedef tlv<proto::u8_t[3]> tlv_network_error_code;
+	typedef tlv<proto::u8p_t> tlv_message_payload; /* length of field 'value' 
+													  is variable */
+	typedef tlv<proto::u8_t> tlv_delivery_failure_reason;
+	typedef tlv<proto::u8_t> tlv_more_messages_to_send;
+	typedef tlv<proto::u8_t> tlv_message_state;
+	typedef tlv<proto::u8_t[19]> tlv_callback_num;
+	typedef tlv<proto::u8_t> tlv_callback_num_pres_ind;
+	typedef tlv<proto::u8_t[65]> tlv_callback_num_atag;
+	typedef tlv<proto::u8_t> tlv_number_of_messages;
+	typedef tlv<proto::u16_t> tlv_sms_signal;
+	typedef tlv<proto::u8_t> tlv_alert_on_message_delivery;
+	typedef tlv<proto::u8_t> tlv_its_reply_type;
+	typedef tlv<proto::u8_t[2]> tlv_its_session_info;
+	typedef tlv<proto::u8_t[1]> tlv_ussd_service_op;
 
 	struct bind_transmitter {
 		pdu command;
