@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 
 #include <smpp/pool.hpp>
+#include <smpp/proto.hpp>
 #include <smpp/channel.hpp>
 
 namespace smpp {
@@ -62,12 +63,13 @@ class server_base {
 				, this, ba::placeholders::error));
 		}
 
-		bool authenticate(session * s);
+		virtual bool open(session * s, const char * password);
+		virtual bool close(session * s);
+		virtual bool on_recv_error(session * s);
+		virtual bool on_send_error(session * s, pdu * msg);
 
 	protected:
 
-		sock_t m_sock;
-		acpt_t m_acpt;
 		log_t L;
 		message_pool_base & P;
 
@@ -95,7 +97,6 @@ class server_base {
 		void on_recv_error(channel_t * ch) {
 			/* Default implementation:
 			 * unregister and destroy */
-			unregister_channel(ch);
 			destroy(ch);
 		}
 
@@ -103,21 +104,29 @@ class server_base {
 			(void)(msg);
 			/* Default implementation:
 			 * unregister and destroy */
-			unregister_channel(ch);
 			destroy(ch);
 		}
 
 		void on_recv_bind(channel_t * ch, pdu * msg) {
-			(void)(ch);
-			(void)(msg);
+			using namespace utl;
+			switch (msg->id) {
+				case command::bind_receiver: {
+					bind_receiver r;
+					parse_bind_receiver(r, w::asbuf(msg), L);
+					ch->
+				}
+			}
+			P.destroy_message(msg);
 		}
 
 		void on_recv_bind_error(channel_t * ch) {
 			(void)(ch);
 		}
 
-
 	private:
+		sock_t m_sock;
+		acpt_t m_acpt;
+
 		std::stack<std::size_t> m_hole;
 		std::vector<channel_t *> m_book;
 

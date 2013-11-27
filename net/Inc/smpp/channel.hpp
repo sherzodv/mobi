@@ -44,7 +44,7 @@ class channel: public session {
 		}
 
 		virtual bool ready_to_read() const {
-			return in.read;
+			return in.ready;
 		}
 
 		virtual void flush() {
