@@ -37,8 +37,8 @@ class server_base {
 				, message_pool_base & pool
 				, const endpoint_t & ep
 				, log_t l)
-			: m_sock(io), m_acpt(io, ep)
-			, L(std::move(l)), P(pool)
+			: L(std::move(l)), P(pool)
+			, m_sock(io), m_acpt(io, ep)
 		{
 				m_book.reserve(30);
 		}
@@ -113,19 +113,19 @@ class server_base {
 				case command::bind_receiver: {
 					bind_receiver r;
 					parse_bind_receiver(r, w::asbuf(msg), L);
-					ch->bind(r);
+					ch->bind_pdu(r);
 					break;
 				}
 				case command::bind_transmitter: {
 					bind_transmitter r;
 					parse_bind_transmitter(r, w::asbuf(msg), L);
-					ch->bind(r);
+					ch->bind_pdu(r);
 					break;
 				}
 				case command::bind_transceiver: {
 					bind_transceiver r;
 					parse_bind_transceiver(r, w::asbuf(msg), L);
-					ch->bind(r);
+					ch->bind_pdu(r);
 					break;
 				}
 				default: {

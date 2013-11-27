@@ -36,7 +36,7 @@ struct session {
 		virtual bool ready_to_recv() const;
 
 		template <class BindT>
-		void bind(const BindT & bind) {
+		void bind_pdu(const BindT & bind) {
 			interface_version = bind.interface_version;
 			addr_ton = bind.addr_ton;
 			addr_npi = bind.addr_npi;
