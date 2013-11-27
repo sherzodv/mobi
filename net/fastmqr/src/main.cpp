@@ -1,5 +1,5 @@
 
-#include <fastmq/log.hpp>
+#include <vision/log.hpp>
 #include <fastmq/server.hpp>
 #include <fastmq/client.hpp>
 #include <fastmq/routers.hpp>
@@ -112,9 +112,9 @@ int main()
 	namespace ba = boost::asio;
 	namespace bs = boost::system;
 
-	fastmq::log::file::add("fastmqr%5N.log", true);
+	vision::log::file::add("fastmqr%5N.log", true);
 
-	static auto L = std::move(fastmq::log::channel("main"));
+	static auto L = std::move(vision::log::channel("main"));
 	static const char opt_sock_path[] = "/tmp/fastmqr.sock";
 
 	linfo(L) << "Log initialized";
@@ -133,10 +133,10 @@ int main()
 		fastmq::malloc_message_pool pool;
 		fastmq::router router(pool);
 		fastmq::unx_router_server server(io, pool, router, endpoint
-				, fastmq::log::channel("S"));
+				, vision::log::channel("S"));
 
-		local::unx_client clientA(io, pool, 2, 2, fastmq::log::channel("A"));
-		local::unx_client clientB(io, pool, 1, 1, fastmq::log::channel("B"));
+		local::unx_client clientA(io, pool, 2, 2, vision::log::channel("A"));
+		local::unx_client clientB(io, pool, 1, 1, vision::log::channel("B"));
 
 		server.listen();
 

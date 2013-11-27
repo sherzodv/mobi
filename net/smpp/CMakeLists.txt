@@ -52,7 +52,7 @@ if (Boost_FOUND)
 	set(LIBRARY_NAME lib${pname}.so)
 
 	add_custom_command(TARGET ${pname} POST_BUILD
-		COMMAND cp ${LIBRARY_SRC_DIR}/${LIBRARY_NAME} ${LIBRARY_OUTPUT_DIR}/)
+		COMMAND cp ${LIBRARY_NAME} ${LIBRARY_OUTPUT_DIR}/)
 
 endif()
 

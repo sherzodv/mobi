@@ -1,7 +1,7 @@
 #ifndef fastmq_routers_hpp
 #define fastmq_routers_hpp
 
-#include <fastmq/log.hpp>
+#include <vision/log.hpp>
 #include <fastmq/server.hpp>
 #include <fastmq/client.hpp>
 #include <fastmq/router.hpp>
@@ -10,7 +10,7 @@
 
 namespace fastmq {
 
-	typedef log::source flog_t;
+	typedef vision::log::source flog_t;
 
 	class unx_router_server: public unix_domain_server_base<flog_t> {
 			public:

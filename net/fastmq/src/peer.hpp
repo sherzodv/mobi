@@ -7,7 +7,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 
-#include <fastmq/log.hpp>
+#include <vision/log.hpp>
 #include <fastmq/proto.hpp>
 #include <fastmq/terminal.hpp>
 

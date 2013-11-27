@@ -1,5 +1,5 @@
-#ifndef fastmq_logger_hpp
-#define fastmq_logger_hpp
+#ifndef vision_logger_hpp
+#define vision_logger_hpp
 
 #include <iostream>
 #include <boost/log/common.hpp>
@@ -33,7 +33,9 @@
 #include <boost/log/utility/record_ordering.hpp>
 #include <boost/log/support/date_time.hpp>
 
-namespace fastmq { namespace log {
+namespace vision { std::size_t version(); }
+
+namespace vision { namespace log {
 
 	namespace bl = boost::log;
 	namespace blk = boost::log::keywords;
@@ -132,12 +134,12 @@ namespace fastmq { namespace log {
 
 } }
 
-#define ltrace(lg)		BOOST_LOG_SEV(lg, fastmq::log::trace)
-#define ldebug(lg)		BOOST_LOG_SEV(lg, fastmq::log::debug)
-#define linfo(lg)		BOOST_LOG_SEV(lg, fastmq::log::info)
-#define lwarning(lg)	BOOST_LOG_SEV(lg, fastmq::log::warning)
-#define lerror(lg)		BOOST_LOG_SEV(lg, fastmq::log::error)
-#define lcritical(lg)	BOOST_LOG_SEV(lg, fastmq::log::critical)
+#define ltrace(lg)		BOOST_LOG_SEV(lg, vision::log::trace)
+#define ldebug(lg)		BOOST_LOG_SEV(lg, vision::log::debug)
+#define linfo(lg)		BOOST_LOG_SEV(lg, vision::log::info)
+#define lwarning(lg)	BOOST_LOG_SEV(lg, vision::log::warning)
+#define lerror(lg)		BOOST_LOG_SEV(lg, vision::log::error)
+#define lcritical(lg)	BOOST_LOG_SEV(lg, vision::log::critical)
 #define lflush(lg)		do { boost::log::core::get()->flush(); } while(0)
 
 #endif
