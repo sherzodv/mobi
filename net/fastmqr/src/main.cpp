@@ -1,29 +1,14 @@
 
 #include <fastmq/log.hpp>
-#include <fastmq/peer.hpp>
-#include <fastmq/proto.hpp>
 #include <fastmq/server.hpp>
 #include <fastmq/client.hpp>
 #include <fastmq/routers.hpp>
-#include <fastmq/terminal.hpp>
+#include <fastmq/toolbox.hpp>
 
 namespace local {
 
 	namespace ba = boost::asio;
 	namespace bs = boost::system;
-
-	class stop {
-		ba::io_service & m_io;
-		public:
-			stop(ba::io_service &io): m_io(io) {}
-			void operator()() {
-				m_io.stop();
-			}
-			void operator()(const bs::error_code & ec) {
-				(void)(ec);
-				m_io.stop();
-			}
-	};
 
 	class on_signal {
 		struct sigaction m_exitAction;
@@ -33,7 +18,7 @@ namespace local {
 				class exit_delegate {
 					public:
 						static void call(int /* sid */) {
-							m_io->post(stop(*m_io));
+							m_io->post(fastmq::stop(m_io));
 						}
 				};
 				m_exitAction.sa_handler = &exit_delegate::call;
@@ -142,7 +127,7 @@ int main()
 
 	ba::deadline_timer stop_timer(io);
 	stop_timer.expires_from_now(boost::posix_time::seconds(10));
-	stop_timer.async_wait(local::stop(io));
+	stop_timer.async_wait(fastmq::stop(io));
 
 	try {
 		fastmq::malloc_message_pool pool;
