@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(pname fastmqr)
+set(pname toolbox)
 project(${pname})
 
 set(Boost_USE_STATIC_LIBS		off)
@@ -22,21 +22,15 @@ if (Boost_FOUND)
 
 	find_library(lrt rt)
 	find_library(lpthread pthread)
-	find_library(lfastmq fastmq ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
-	find_library(lvision vision ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
-	find_library(ltoolbox toolbox ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
 
 	add_definitions(-D_GLIBCXX_USE_NANOSLEEP=1 -DBOOST_LOG_DYN_LINK)
 	include_directories("../Inc")
 	aux_source_directory(src SOURCES)
-	add_executable(${pname} ${SOURCES})
+	add_library(${pname} SHARED ${SOURCES})
 	target_link_libraries(${pname}
 		${lrt}
 		${lpthread}
 		${Boost_LIBRARIES}
-		${lfastmq}
-		${lvision}
-		${ltoolbox}
 	)
 
 	file(GLOB headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -56,6 +50,9 @@ if (Boost_FOUND)
 	set(LIBRARY_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 	set(LIBRARY_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
 	set(LIBRARY_NAME lib${pname}.so)
+
+	add_custom_command(TARGET ${pname} POST_BUILD
+		COMMAND cp ${LIBRARY_NAME} ${LIBRARY_OUTPUT_DIR}/)
 
 endif()
 

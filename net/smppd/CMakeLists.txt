@@ -24,6 +24,7 @@ if (Boost_FOUND)
 	find_library(lpthread pthread)
 	find_library(lsmpp smpp ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
 	find_library(lfastmq fastmq ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
+	find_library(ltoolbox toolbox ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
 
 	add_definitions(-D_GLIBCXX_USE_NANOSLEEP=1 -DBOOST_LOG_DYN_LINK)
 	include_directories("../Inc")
@@ -35,6 +36,7 @@ if (Boost_FOUND)
 		${Boost_LIBRARIES}
 		${lsmpp}
 		${lfastmq}
+		${ltoolbox}
 	)
 
 	file(GLOB headers RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src

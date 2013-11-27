@@ -1,4 +1,5 @@
 
+#include <toolbox/toolbox.hpp>
 #include <vision/log.hpp>
 #include <fastmq/server.hpp>
 #include <fastmq/client.hpp>
@@ -9,24 +10,6 @@ namespace local {
 
 	namespace ba = boost::asio;
 	namespace bs = boost::system;
-
-	class on_signal {
-		struct sigaction m_exitAction;
-		public:
-			on_signal(ba::io_service & io) {
-				static ba::io_service * m_io = &io;
-				class exit_delegate {
-					public:
-						static void call(int /* sid */) {
-							m_io->post(fastmq::stop(m_io));
-						}
-				};
-				m_exitAction.sa_handler = &exit_delegate::call;
-				sigemptyset(&m_exitAction.sa_mask);
-				m_exitAction.sa_flags = 0;
-				sigaction(SIGINT, &m_exitAction, nullptr);
-			}
-	};
 
 	typedef fastmq::flog_t flog_t;
 	typedef fastmq::unix_domain_client_base<fastmq::flog_t> client_base;
@@ -123,11 +106,9 @@ int main()
 
 	ba::io_service io;
 	ba::local::stream_protocol::endpoint endpoint(opt_sock_path);
-	local::on_signal quit(io);
 
-	ba::deadline_timer stop_timer(io);
-	stop_timer.expires_from_now(boost::posix_time::seconds(10));
-	stop_timer.async_wait(fastmq::stop(io));
+	toolbox::io::stop_on_signal(io);
+	toolbox::io::stop_after(io, boost::posix_time::seconds(10));
 
 	try {
 		fastmq::malloc_message_pool pool;
