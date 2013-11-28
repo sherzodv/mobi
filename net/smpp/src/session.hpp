@@ -17,32 +17,35 @@ struct session {
 		std::string sys_type;
 		std::string addr_range;
 
+		std::string password;
+
 		session() {}
 		session(const session &) = delete;
 		session & operator=(const session &) = delete;
 
 		virtual ~session() {}
 
-		virtual void send(pdu * msg);
-		virtual void recv();
+		virtual void send(pdu * msg) = 0;
+		virtual void recv() = 0;
 
 		/* flush does not neccesseraly sends all messages in
 		 * out queue. It may stop sending in case of error. Call
 		 * it repeatedly and handle errors until ready_to_send() is true */
 
-		virtual void flush();
+		virtual void flush() = 0;
 
-		virtual bool ready_to_send() const;
-		virtual bool ready_to_recv() const;
+		virtual bool ready_to_send() const = 0;
+		virtual bool ready_to_recv() const = 0;
 
 		template <class BindT>
 		void bind_pdu(const BindT & bind) {
 			interface_version = bind.interface_version;
 			addr_ton = bind.addr_ton;
 			addr_npi = bind.addr_npi;
-			addr_range = bind.addr_range;
-			sys_id = bind.sys_id;
-			sys_type = bind.sys_type;
+			addr_range.assign(reinterpret_cast<const char *>(bind.addr_range));
+			sys_id.assign(reinterpret_cast<const char *>(bind.sys_id));
+			sys_type.assign(reinterpret_cast<const char *>(bind.sys_type));
+			password.assign(reinterpret_cast<const char *>(bind.password));
 		}
 };
 

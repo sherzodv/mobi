@@ -10,7 +10,16 @@
 #include <smpp/proto.hpp>
 #include <smpp/session.hpp>
 
+#include <arpa/inet.h>
+
 namespace smpp {
+
+void fix_pdu_bo(pdu * p) {
+	p->len = ::ntohl(p->len);
+	p->id = ::ntohl(p->id);
+	p->status = ::ntohl(p->status);
+	p->seqno = ::ntohl(p->seqno);
+}
 
 using boost::bind;
 namespace ba = boost::asio;
@@ -43,7 +52,7 @@ class channel: public session {
 			return out.ready;
 		}
 
-		virtual bool ready_to_read() const {
+		virtual bool ready_to_recv() const {
 			return in.ready;
 		}
 
@@ -65,6 +74,10 @@ class channel: public session {
 
 		virtual void recv() {
 			recv_header();
+		}
+
+		void recv_bind() {
+			recv_bind_header();
 		}
 
 	private:
@@ -160,6 +173,7 @@ class channel: public session {
 
 		void on_recv_header(const bs::error_code & ec)
 		{
+			fix_pdu_bo(in.msg);
 			if (!ec) {
 				ltrace(S.L) << "channel::on_recv_header: msg->len: "
 					<< in.msg->len;
@@ -248,6 +262,7 @@ class channel: public session {
 
 		void on_recv_bind_header(const bs::error_code & ec)
 		{
+			fix_pdu_bo(in.msg);
 			if (!ec) {
 				ltrace(S.L) << "channel::on_recv_bind_header: msg->len: "
 					<< in.msg->len;

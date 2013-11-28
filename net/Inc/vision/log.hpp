@@ -132,6 +132,35 @@ namespace vision { namespace log {
 		}
 	}
 
+	namespace console {
+
+		typedef blsi::text_ostream_backend backend;
+		typedef blsi::synchronous_sink<backend> sink;
+
+		void add(bool autoflush = true) {
+			using boost::shared_ptr;
+			using boost::make_shared;
+
+			auto simple = ble::stream
+				<< ble::attr<std::uint32_t>("RecID")
+				<< "\t"
+				<< ": " << ble::format_date_time<boost::posix_time::ptime>(
+						"Time", "%d.%m.%Y %H:%M:%S.%f")
+				<< " [prc "
+					<< ble::attr<bla::current_process_id::value_type>("PrcID") << "]"
+				<< " [thr "
+					<< ble::attr<bla::current_thread_id::value_type>("ThrID") << "]"
+				<< " [chan "
+					<< ble::attr<std::string>("ChID") << "]"
+				<< "\t[" << ble::attr<severity>("Severity") << "]"
+				<< "\t"
+				<< ble::message;
+
+			bl::add_console_log(std::cout, blk::format = simple
+					, blk::auto_flush = autoflush);
+		}
+	}
+
 } }
 
 #define ltrace(lg)		BOOST_LOG_SEV(lg, vision::log::trace)

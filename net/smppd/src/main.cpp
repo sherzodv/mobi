@@ -23,6 +23,28 @@ namespace local {
 
 				virtual ~server() {
 				}
+
+				virtual bool open(smpp::session * s) {
+					ltrace(L) << "server::open: new incoming session:"
+						<< " password: " << s->password
+						<< " system_id: " << s->sys_id
+						<< " system_type: " << s->sys_type;
+					s->password.clear();
+					return false;
+				}
+
+				virtual void close(smpp::session * s) {
+					(void)(s);
+				}
+
+				virtual void on_recv_error(smpp::session * s) {
+					server_base::on_recv_error(s);
+				}
+
+				virtual void on_send_error(smpp::session * s
+						, smpp::pdu * msg) {
+					server_base::on_send_error(s, msg);
+				}
 	};
 
 }
@@ -33,8 +55,9 @@ int main()
 	namespace bs = boost::system;
 
 	vision::log::file::add("fastmqr%5N.log", true);
+	vision::log::console::add();
 
-	static auto L = std::move(vision::log::channel("main"));
+	static auto L = vision::log::channel("main");
 	static const char opt_sock_path[] = "/tmp/fastmqr.sock";
 
 	linfo(L) << "Log initialized";
@@ -44,15 +67,13 @@ int main()
 	ba::io_service io;
 
 	toolbox::io::stop_on_signal(io);
-	toolbox::io::stop_after(io, boost::posix_time::seconds(10));
+	//toolbox::io::stop_after(io, boost::posix_time::seconds(10));
 
 	try {
 		smpp::malloc_message_pool pool;
 		ba::ip::tcp::endpoint endpoint(ba::ip::tcp::v4(), 5555);
-		local::server server(io, pool, endpoint, L);
-
+		local::server server(io, pool, endpoint, vision::log::channel("srv"));
 		server.listen();
-
 		linfo(L) << "Starting io service";
 		io.run();
 		linfo(L) << "Bye!";

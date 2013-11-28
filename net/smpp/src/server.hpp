@@ -63,21 +63,19 @@ class server_base {
 				, this, ba::placeholders::error));
 		}
 
-		virtual bool open(session * s, const char * password);
-		virtual bool close(session * s);
-		virtual bool on_recv_error(session * s);
-		virtual bool on_send_error(session * s, pdu * msg);
-
 	protected:
 
 		log_t L;
 		message_pool_base & P;
 
+		virtual bool open(session * s) = 0;
+		virtual void close(session * s) = 0;
+
 		void on_accept(const bs::error_code & ec) {
 			if (!ec) {
 				linfo(L) << "server_base::on_accept: New incoming connection";
 				channel_t * ch = create(m_sock, *this);
-				ch->recv();
+				ch->recv_bind();
 				listen();
 			} else {
 				lerror(L) << ec.message();
@@ -87,6 +85,8 @@ class server_base {
 		void on_recv(channel_t * ch, pdu * msg) {
 			(void)(ch);
 			(void)(msg);
+			ltrace(L) << "server_base::on_recv: new pdu: "
+				<< " len: " << msg->len;
 		}
 
 		void on_send(channel_t * ch, pdu * msg) {
@@ -94,17 +94,17 @@ class server_base {
 			(void)(msg);
 		}
 
-		void on_recv_error(channel_t * ch) {
+		virtual void on_recv_error(session * ch) {
 			/* Default implementation:
 			 * unregister and destroy */
-			destroy(ch);
+			destroy(dynamic_cast<channel_t *>(ch));
 		}
 
-		void on_send_error(channel_t * ch, pdu * msg) {
+		virtual void on_send_error(session * ch, pdu * msg) {
 			(void)(msg);
 			/* Default implementation:
 			 * unregister and destroy */
-			destroy(ch);
+			destroy(dynamic_cast<channel_t *>(ch));
 		}
 
 		void on_recv_bind(channel_t * ch, pdu * msg) {
@@ -135,6 +135,13 @@ class server_base {
 					destroy(ch);
 					return;
 				}
+			}
+
+			if (open(ch)) {
+				ch->recv();
+			} else {
+				/* TODO: send error bind_response_r */
+				destroy(ch);
 			}
 		}
 
