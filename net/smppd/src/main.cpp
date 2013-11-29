@@ -30,7 +30,7 @@ namespace local {
 						<< " system_id: " << s->sys_id
 						<< " system_type: " << s->sys_type;
 					s->password.clear();
-					return false;
+					return true;
 				}
 
 				virtual void close(smpp::session * s) {
@@ -68,6 +68,8 @@ int main()
 
 	toolbox::io::stop_on_signal(io);
 	//toolbox::io::stop_after(io, boost::posix_time::seconds(10));
+
+	linfo(L) << "sizeof(pdu): " << sizeof(smpp::pdu);
 
 	try {
 		smpp::malloc_message_pool pool;

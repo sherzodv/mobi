@@ -9,6 +9,8 @@ namespace smpp {
 
 struct session {
 
+		proto::u32_t type;
+
 		proto::u8_t interface_version;
 		proto::u8_t addr_ton;
 		proto::u8_t addr_npi;
@@ -38,7 +40,8 @@ struct session {
 		virtual bool ready_to_recv() const = 0;
 
 		template <class BindT>
-		void bind_pdu(const BindT & bind) {
+		void set_properties(const BindT & bind) {
+			type = bind.command.id;
 			interface_version = bind.interface_version;
 			addr_ton = bind.addr_ton;
 			addr_npi = bind.addr_npi;

@@ -83,10 +83,14 @@ class server_base {
 		}
 
 		void on_recv(channel_t * ch, pdu * msg) {
+			static size_t counter = 0;
 			(void)(ch);
 			(void)(msg);
-			ltrace(L) << "server_base::on_recv: new pdu: "
+			++counter;
+			ltrace(L) << "server_base::on_recv: new pdu: #" << counter
 				<< " len: " << msg->len;
+			ch->recv();
+
 		}
 
 		void on_send(channel_t * ch, pdu * msg) {
@@ -107,46 +111,73 @@ class server_base {
 			destroy(dynamic_cast<channel_t *>(ch));
 		}
 
-		void on_recv_bind(channel_t * ch, pdu * msg) {
-			using namespace utl;
-			switch (msg->id) {
-				case command::bind_receiver: {
-					bind_receiver r;
-					parse_bind_receiver(r, w::asbuf(msg), L);
-					ch->bind_pdu(r);
-					break;
-				}
-				case command::bind_transmitter: {
-					bind_transmitter r;
-					parse_bind_transmitter(r, w::asbuf(msg), L);
-					ch->bind_pdu(r);
-					break;
-				}
-				case command::bind_transceiver: {
-					bind_transceiver r;
-					parse_bind_transceiver(r, w::asbuf(msg), L);
-					ch->bind_pdu(r);
-					break;
-				}
-				default: {
-					lerror(L) << "server_base::on_recv_bind:"
-						"wrong bind id: " << msg->id;
-					P.destroy_message(msg);
-					destroy(ch);
-					return;
-				}
-			}
+		template <class BindT>
+		void send_bind_r(channel_t * ch, pdu * omsg) {
+			/* TODO: Set correct sys_id and sc_interface_version */
+			pdu * msg;
+			typename the<BindT>::r_type r;
 
+			r.command.id = the<BindT>::r_id;
+			r.command.status = omsg->status;
+			r.command.seqno = omsg->seqno;
+			std::strcpy((char *)r.sys_id, "smppd");
+			r.sys_id_len = sizeof("smppd");
+			r.command.len = the<BindT>::r_size(r);
+
+			ltrace(L) << "server_base::send_bind_r: bytes: " << r.command.len;
+
+			msg = P.create_message(r.command.len);
+			write_bind_r(utl::asbuf(msg), r, L);
+			ch->send_bind_r(msg);
+		}
+
+		template <class BindT>
+		void bind_session(channel_t * ch, pdu * msg) {
+			BindT b;
+			parse_bind(b, utl::ascbuf(msg), L);
+			ch->set_properties(b);
 			if (open(ch)) {
-				ch->recv();
+				send_bind_r<BindT>(ch, msg);
 			} else {
 				/* TODO: send error bind_response_r */
 				destroy(ch);
 			}
 		}
 
+		void on_recv_bind(channel_t * ch, pdu * msg) {
+			switch (msg->id) {
+				case command::bind_receiver:
+					bind_session<bind_receiver>(ch, msg);
+					break;
+				case command::bind_transmitter:
+					bind_session<bind_transmitter>(ch, msg);
+					break;
+				case command::bind_transceiver: {
+					bind_session<bind_transceiver>(ch, msg);
+					break;
+				}
+				default: {
+					/* TODO: send generic_nack and then destroy channel */
+					lerror(L) << "server_base::on_recv_bind:"
+						"wrong bind id: " << msg->id;
+					break;
+				}
+			}
+			P.destroy_message(msg);
+		}
+
 		void on_recv_bind_error(channel_t * ch) {
 			(void)(ch);
+		}
+
+		void on_send_bind_r(channel_t * ch, pdu * msg) {
+			P.destroy_message(msg);
+			ch->recv();
+		}
+
+		void on_send_bind_r_error(channel_t * ch, pdu * msg) {
+			P.destroy_message(msg);
+			destroy(ch);
 		}
 
 	private:

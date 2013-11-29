@@ -10,15 +10,14 @@
 #include <smpp/proto.hpp>
 #include <smpp/session.hpp>
 
-#include <arpa/inet.h>
-
 namespace smpp {
 
 void fix_pdu_bo(pdu * p) {
-	p->len = ::ntohl(p->len);
-	p->id = ::ntohl(p->id);
-	p->status = ::ntohl(p->status);
-	p->seqno = ::ntohl(p->seqno);
+	using namespace utl::bo;
+	p->len		= tohost(p->len);
+	p->id		= tohost(p->id);
+	p->status	= tohost(p->status);
+	p->seqno	= tohost(p->seqno);
 }
 
 using boost::bind;
@@ -61,12 +60,24 @@ class channel: public session {
 				return;
 			pdu * msg = out.que.front();
 			out.que.pop();
-			send_message(msg);
+			send_message(msg, &channel::on_send_message);
 		}
 
 		virtual void send(pdu * msg) {
 			if (out.ready) {
-				send_message(msg);
+				using namespace utl;
+				/* Caller is responsible for destroying message. */
+				out.msg = msg;
+				out.ready = false;
+				ltrace(S.L) << "channel::send_message: bytes: " << msg->len;
+				/* Message to send is always comes with network byte order
+				 * , so call bo::tohost(msg->len) is needed */
+				ba::async_write(m_sock
+					, ba::buffer(ascbuf(out.msg), bo::tohost(msg->len))
+					, bind(&channel::on_out_bytes, this
+						, &channel::on_send_message
+						, ba::placeholders::error
+						, ba::placeholders::bytes_transferred));
 			} else {
 				out.que.push(msg);
 			}
@@ -80,6 +91,15 @@ class channel: public session {
 			recv_bind_header();
 		}
 
+		void send_bind_r(pdu * msg) {
+			if (out.ready) {
+				send_message(msg, &channel::on_send_bind_r);
+			} else {
+				/* out buffer should always be ready at this point */
+				lerror(S.L) << "Out buf is not ready to send bind_r";
+			}
+		}
+
 	private:
 		typedef void (channel::* cb_t)(const bs::error_code &);
 
@@ -88,13 +108,13 @@ class channel: public session {
 		sock_t m_sock;
 
 		struct inbuf {
-			pdu *msg;
+			pdu * msg;
 			bool ready;
 			std::size_t total_bytes;
 		} in;
 
 		struct outbuf {
-			pdu *msg;
+			pdu * msg;
 			bool ready;
 			std::queue<pdu *> que;
 			std::size_t total_bytes;
@@ -120,15 +140,19 @@ class channel: public session {
 			(this->*cb)(ec);
 		}
 
-		void send_message(pdu * msg)
+		void send_message(pdu * msg, cb_t cb)
 		{
 			using namespace utl;
 			/* Caller is responsible for destroying message. */
 			out.msg = msg;
 			out.ready = false;
-			ltrace(S.L) << "channel::send_message: bytes: " << msg->len;
-			ba::async_write(m_sock, ba::buffer(w::asbuf(out.msg), msg->len)
-				, bind(&channel::on_out_bytes, this, &channel::on_send_message
+			ltrace(S.L) << "channel::send_message: bytes: "
+				<< bo::tohost(msg->len);
+			/* Message to send is always comes with network byte order
+			 * , so call bo::tohost(msg->len) is needed */
+			ba::async_write(m_sock
+				, ba::buffer(ascbuf(out.msg), bo::tohost(msg->len))
+				, bind(&channel::on_out_bytes, this, cb
 					, ba::placeholders::error
 					, ba::placeholders::bytes_transferred));
 		}
@@ -144,7 +168,7 @@ class channel: public session {
 				}
 				pdu * msg = out.que.front();
 				out.que.pop();
-				send_message(msg);
+				send_message(msg, &channel::on_send_message);
 			} else {
 				/* Send cycle stop here. Call to flush is needed
 				 * in order to let messages in queue to be sent */
@@ -165,7 +189,7 @@ class channel: public session {
 			in.ready = false;
 			in.msg = S.P.create_message();
 			ltrace(S.L) << "channel::recv_header: bytes: " << sizeof(pdu);
-			m_sock.async_receive(ba::buffer(p::asbuf(in.msg), sizeof(pdu))
+			m_sock.async_receive(ba::buffer(asbuf(in.msg), sizeof(pdu))
 				, bind(&channel::on_in_bytes, this, &channel::on_recv_header
 					, ba::placeholders::error
 					, ba::placeholders::bytes_transferred));
@@ -220,7 +244,7 @@ class channel: public session {
 				<< in.msg->len - sizeof(pdu);
 			/* Read the remaining body of a messsage, beyond msg header */
 			m_sock.async_receive(
-				ba::buffer(p::asbuf(in.msg) + sizeof(pdu)
+				ba::buffer(asbuf(in.msg) + sizeof(pdu)
 					, in.msg->len-sizeof(pdu))
 				, bind(&channel::on_in_bytes, this, &channel::on_recv_body
 					, ba::placeholders::error
@@ -253,7 +277,7 @@ class channel: public session {
 			in.ready = false;
 			in.msg = S.P.create_message();
 			ltrace(S.L) << "channel::recv_bind_header: bytes: " << sizeof(pdu);
-			m_sock.async_receive(ba::buffer(p::asbuf(in.msg), sizeof(pdu))
+			m_sock.async_receive(ba::buffer(asbuf(in.msg), sizeof(pdu))
 				, bind(&channel::on_in_bytes, this
 					, &channel::on_recv_bind_header
 					, ba::placeholders::error
@@ -316,7 +340,7 @@ class channel: public session {
 				<< in.msg->len - sizeof(pdu);
 			/* Read the remaining body of a messsage, beyond msg header */
 			m_sock.async_receive(
-				ba::buffer(p::asbuf(in.msg) + sizeof(pdu)
+				ba::buffer(asbuf(in.msg) + sizeof(pdu)
 					, in.msg->len-sizeof(pdu))
 				, bind(&channel::on_in_bytes, this
 					, &channel::on_recv_bind_body
@@ -339,6 +363,29 @@ class channel: public session {
 				S.on_recv_bind_error(this);
 			}
 		}
+
+		void on_send_bind_r(const bs::error_code & ec)
+		{
+			out.ready = true;
+			if (!ec) {
+				ltrace(S.L) << "channel::on_send_bind_r: ok";
+				S.on_send_bind_r(this, out.msg);
+				if (out.que.empty()) {
+					return;
+				}
+				pdu * msg = out.que.front();
+				out.que.pop();
+				send_message(msg, &channel::on_send_message);
+			} else {
+				/* Send cycle stop here. Call to flush is needed
+				 * in order to let messages in queue to be sent */
+				lerror(S.L) << "channel::on_send_bind_r: " << ec.message();
+				/* !!! It's crucial to call callback at the very end of this
+				 * member function, since callback may delete this */
+				S.on_send_error(this, in.msg);
+			}
+		}
+
 };
 
 }
