@@ -69,7 +69,8 @@ class channel: public session {
 				/* Caller is responsible for destroying message. */
 				out.msg = msg;
 				out.ready = false;
-				ltrace(S.L) << "channel::send_message: bytes: " << msg->len;
+				ltrace(S.L) << "channel::send_message: bytes: "
+					<< bo::tohost(msg->len);
 				/* Message to send is always comes with network byte order
 				 * , so call bo::tohost(msg->len) is needed */
 				ba::async_write(m_sock

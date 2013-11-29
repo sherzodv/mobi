@@ -129,9 +129,11 @@ namespace smpp {
 
 	}
 
-	/* SMPP 3.4 BIND OPERATION STRUCTURES */
+	/* SMPP 3.4 OPERATION STRUCTURES */
 
 	namespace {
+
+		/* BIND OPERATION */
 
 		struct bind_transmitter {
 			pdu command;
@@ -223,6 +225,44 @@ namespace smpp {
 			{}
 		};
 
+		/* BIND OPERATION */
+
+		struct unbind {
+			pdu command;
+			unbind()
+				: command()
+			{}
+		};
+
+		struct unbind_r {
+			pdu command;
+			unbind_r()
+				: command()
+			{}
+		};
+
+		/* SUBMIT SM OPERATION */
+
+		struct submit_sm {
+			pdu command;
+
+			submit_sm()
+				: command()
+			{}
+		};
+
+		struct submit_sm_r {
+			pdu command;
+			proto::u8_t msg_id[65];
+
+			std::size_t msg_id_len;
+
+			submit_sm_r()
+				: command()
+				, msg_id_len(0)
+			{}
+		};
+
 	}
 
 	/* TYPE TRAITS */
@@ -288,6 +328,22 @@ namespace smpp {
 			}
 		};
 
+		template <>
+		struct the<submit_sm> {
+			typedef submit_sm type;
+			static const proto::u32_t id = command::submit_sm;
+
+			/* Corresponding response type */
+			typedef submit_sm_r r_type;
+
+			/* Corresponding response command id */
+			static const proto::u32_t r_id = command::submit_sm_r;
+
+			/* Response overall message length */
+			static std::size_t r_size(const r_type & r) {
+				return sizeof(pdu) + r.msg_id_len;
+			}
+		};
 	}
 
 	/* MEMORY MANIPULATION UTILITIES */
@@ -573,7 +629,7 @@ namespace smpp {
 
 	}
 
-	/* BIND P&W */
+	/* OPERATIONS P&W */
 
 	namespace {
 
@@ -625,6 +681,41 @@ namespace smpp {
 			if (r.sc_interface_version.tag != 0) {
 				buf = write(buf, r.sc_interface_version, L);
 			}
+		}
+
+		template <class LogT>
+		void parse(unbind & r, const proto::u8_t * buf, LogT & L) {
+			parse(r.command, buf, L);
+		}
+
+		template <class LogT>
+		void write(proto::u8_t * buf, const unbind & r, LogT & L) {
+			write(buf, r.command, L);
+		}
+
+		template <class LogT>
+		void parse(unbind_r & r, const proto::u8_t * buf, LogT & L) {
+			parse(r.command, buf, L);
+		}
+
+		template <class LogT>
+		void write(proto::u8_t * buf, const unbind_r & r, LogT & L) {
+			write(buf, r.command, L);
+		}
+
+		template <class LogT>
+		void parse(submit_sm_r & r, const proto::u8_t * buf
+				, const proto::u8_t * bend, LogT & L) {
+			using namespace utl;
+			buf = parse(r.command, buf, L);
+			buf = p::scpyl(r.msg_id, buf, sizeof(r.msg_id), r.msg_id_len);
+		}
+
+		template <class LogT>
+		void write(proto::u8_t * buf, const submit_sm_r & r, LogT & L) {
+			using namespace utl;
+			buf = write(buf, r.command, L);
+			buf = w::scpy(buf, r.msg_id, r.msg_id_len + 1);
 		}
 
 	}

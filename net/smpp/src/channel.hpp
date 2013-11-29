@@ -45,6 +45,10 @@ class channel: public session {
 			out.total_bytes = 0;
 		}
 
+		virtual ~channel() {
+			ltrace(L) << "channel::~channel: idx: " << m_idx;
+		}
+
 		std::size_t index() const { return m_idx; }
 
 		virtual bool ready_to_send() const {
@@ -69,7 +73,8 @@ class channel: public session {
 				/* Caller is responsible for destroying message. */
 				out.msg = msg;
 				out.ready = false;
-				ltrace(S.L) << "channel::send_message: bytes: " << msg->len;
+				ltrace(S.L) << "channel::send_message: bytes: "
+					<< bo::tohost(msg->len);
 				/* Message to send is always comes with network byte order
 				 * , so call bo::tohost(msg->len) is needed */
 				ba::async_write(m_sock

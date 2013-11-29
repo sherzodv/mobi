@@ -3,6 +3,8 @@
 #include <vision/log.hpp>
 #include <smpp/server.hpp>
 
+#include <sstream>
+
 namespace local {
 
 	namespace ba = boost::asio;
@@ -12,6 +14,7 @@ namespace local {
 	typedef smpp::tcp_server_base<log_t> server_base;
 
 	class server: public server_base {
+
 			public:
 				server(boost::asio::io_service & io
 						, smpp::message_pool_base & p
@@ -44,6 +47,20 @@ namespace local {
 				virtual void on_send_error(smpp::session * s
 						, smpp::pdu * msg) {
 					server_base::on_send_error(s, msg);
+				}
+
+				virtual std::string on_submit_sm(smpp::session * s
+						, smpp::submit_sm * msg) {
+					(void)(s);
+					(void)(msg);
+
+					static std::size_t counter = 0;
+					++counter;
+					std::stringstream msgid;
+					msgid << counter;
+					ltrace(L) << "------------------ " << counter
+						<< "-----------------------";
+					return msgid.str();
 				}
 	};
 

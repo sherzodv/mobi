@@ -70,45 +70,21 @@ class server_base {
 
 		virtual bool open(session * s) = 0;
 		virtual void close(session * s) = 0;
+		/* Return msg_id. */
+		virtual std::string on_submit_sm(session * s, submit_sm * msg) = 0;
 
-		void on_accept(const bs::error_code & ec) {
-			if (!ec) {
-				linfo(L) << "server_base::on_accept: New incoming connection";
-				channel_t * ch = create(m_sock, *this);
-				ch->recv_bind();
-				listen();
-			} else {
-				lerror(L) << ec.message();
-			}
-		}
-
-		void on_recv(channel_t * ch, pdu * msg) {
-			static size_t counter = 0;
-			(void)(ch);
-			(void)(msg);
-			++counter;
-			ltrace(L) << "server_base::on_recv: new pdu: #" << counter
-				<< " len: " << msg->len;
-			ch->recv();
-
-		}
-
-		void on_send(channel_t * ch, pdu * msg) {
-			(void)(ch);
-			(void)(msg);
-		}
-
-		virtual void on_recv_error(session * ch) {
-			/* Default implementation:
-			 * unregister and destroy */
-			destroy(dynamic_cast<channel_t *>(ch));
-		}
-
-		virtual void on_send_error(session * ch, pdu * msg) {
-			(void)(msg);
-			/* Default implementation:
-			 * unregister and destroy */
-			destroy(dynamic_cast<channel_t *>(ch));
+		void send_submit_sm_r(channel_t * ch, pdu * msg
+				, const std::string & msg_id) {
+			submit_sm_r r;
+			r.command.id = the<submit_sm>::r_id;
+			r.command.status = msg->status;
+			r.command.seqno = msg->seqno;
+			std::strcpy((char *)r.msg_id, msg_id.c_str());
+			r.msg_id_len = msg_id.size() + 1;
+			r.command.len = the<submit_sm>::r_size(r);
+			msg = P.create_message(r.command.len);
+			write(utl::asbuf(msg), r, L);
+			ch->send(msg);
 		}
 
 		template <class BindT>
@@ -178,6 +154,57 @@ class server_base {
 		void on_send_bind_r_error(channel_t * ch, pdu * msg) {
 			P.destroy_message(msg);
 			destroy(ch);
+		}
+
+		void on_recv(channel_t * ch, pdu * msg) {
+			ch->recv();
+			switch (msg->id) {
+				case command::submit_sm: {
+					ltrace(L) << "server_base::on_recv: submit_sm:"
+						" msg->len: " << msg->len;
+					std::string msg_id = std::move(on_submit_sm(ch, nullptr));
+					send_submit_sm_r(ch, msg, msg_id);
+					break;
+				}
+				default: {
+					ltrace(L) << "server_base::on_recv: unknown msg id: "
+						<< msg->id << " len: " << msg->len;
+					return;
+				}
+			}
+			P.destroy_message(msg);
+		}
+
+		void on_send(channel_t * ch, pdu * msg) {
+			/* TODO: Find out if need to notify implementaion */
+			(void)(ch);
+			P.destroy_message(msg);
+		}
+
+		void on_recv_error(session * ch) {
+			/* TODO: Find out if need to notify implementaion */
+			/* Default implementation:
+			 * unregister and destroy */
+			destroy(dynamic_cast<channel_t *>(ch));
+		}
+
+		void on_send_error(session * ch, pdu * msg) {
+			/* TODO: Find out if need to notify implementaion */
+			/* Default implementation:
+			 * unregister and destroy */
+			P.destroy_message(msg);
+			destroy(dynamic_cast<channel_t *>(ch));
+		}
+
+		void on_accept(const bs::error_code & ec) {
+			if (!ec) {
+				linfo(L) << "server_base::on_accept: New incoming connection";
+				channel_t * ch = create(m_sock, *this);
+				ch->recv_bind();
+				listen();
+			} else {
+				lerror(L) << ec.message();
+			}
 		}
 
 	private:
