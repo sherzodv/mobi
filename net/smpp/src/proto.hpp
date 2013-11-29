@@ -552,7 +552,7 @@ namespace smpp {
 		/* TLV<16> P&W */
 
 		template <class LogT>
-		const proto::u16_t * parse(tlv<proto::u16_t> & t
+		const proto::u8_t * parse(tlv<proto::u16_t> & t
 				, const proto::u8_t * buf, LogT & L) {
 			(void)(L);
 			using namespace utl;
@@ -563,7 +563,7 @@ namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u16_t * write(proto::u8_t * buf
+		proto::u8_t * write(proto::u8_t * buf
 				, const tlv<proto::u16_t> & t, LogT & L) {
 			(void)(L);
 			using namespace utl;
@@ -576,7 +576,7 @@ namespace smpp {
 		/* TLV<32> P&W */
 
 		template <class LogT>
-		const proto::u32_t * parse(tlv<proto::u32_t> & t
+		const proto::u8_t * parse(tlv<proto::u32_t> & t
 				, const proto::u8_t * buf, LogT & L) {
 			(void)(L);
 			using namespace utl;
@@ -587,7 +587,7 @@ namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u32_t * write(proto::u8_t * buf
+		proto::u8_t * write(proto::u8_t * buf
 				, const tlv<proto::u32_t> & t, LogT & L) {
 			(void)(L);
 			using namespace utl;
