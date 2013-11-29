@@ -1,27 +1,17 @@
 
-#include <iostream>
-#include <cassert>
-#include <cstdio>
+#define BOOST_TEST_MODULE MyTest
+#include <boost/test/unit_test.hpp>
 
 #include <smpp/proto.hpp>
 
-#define BUF_SIZE	0x100
+#define BUF_SIZE	0x1000
 #define FILE_NAME	"/tmp/.buffer"
 
-namespace tst {
+#define TLV_ASSERT(a, b)	assert(a.tag == b.tag);	\
+							assert(a.len == b.len);	\
+							assert(a.val == b.val)	\
 
-	/* compares buffers until 0 met */
-	bool is_equal_bufs(uint8_t * buf1, uint8_t * buf2) {
-		while (1) {
-			if (!*buf1 && !*buf2)
-				return true;
-			if (*buf1 != *buf2)
-				return false;
-
-			++buf1;
-			++buf2;
-		}
-	}
+namespace boost {
 
 	enum {
 		DEST_NUM_SUBUNIT			= 0x0005,
@@ -70,28 +60,26 @@ namespace tst {
 		ITS_SESSION_INFO			= 0x1383
 	};
 
-	size_t read_buf_from_file(uint8_t * buf, size_t len) {
+	void read_buf_from_file(uint8_t * buf, size_t len) {
 		FILE * fin;
-		if ((fin = fopen(FILE_NAME, "r")) == NULL) return 0;
-		return fread(buf, sizeof(uint8_t), len, fin), fclose(fin);
+		if ((fin = fopen(FILE_NAME, "r")) == NULL) return;
+		fread(buf, sizeof(uint8_t), len, fin);
+		fclose(fin);
 	}
-	size_t write_buf_to_file(uint8_t * buf, size_t len) {
+	void write_buf_to_file(uint8_t * buf, size_t len) {
 		FILE * fout;
-		if ((fout = fopen(FILE_NAME, "w")) == NULL) return 0;
-		return fwrite(buf, sizeof(uint8_t), len, fout), fclose(fout);
+		if ((fout = fopen(FILE_NAME, "w")) == NULL) return;
+		fwrite(buf, sizeof(uint8_t), len, fout);
+		fclose(fout);
 	}
 
-#define TLV_ASSERT(a, b)	assert(a.tag == b.tag);	\
-							assert(a.len == b.len);	\
-							assert(a.val == b.val)	\
+	namespace test {
+		using namespace smpp;
 
-	using namespace smpp;
-
-	void unit_test() {
-		proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
-
-		/* <proto::u8_t> */
+		BOOST_AUTO_TEST_CASE( test_tlv_1octet_val )
 		{
+			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
+
 			tlv_dest_addr_subunit ob1, ob2;
 
 			ob1.tag = DEST_NUM_SUBUNIT;
@@ -107,8 +95,11 @@ namespace tst {
 			assert(ob1.len == ob2.len);
 			assert(ob1.val == ob2.val);
 		}
-		/* <proto::u16_t> */
+
+		BOOST_AUTO_TEST_CASE( test_tlv_2octet_val )
 		{
+			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
+
 			tlv_dest_telematics_id ob1, ob2;
 
 			ob1.tag = DEST_TELEMATICS_ID;
@@ -126,8 +117,11 @@ namespace tst {
 			assert(ob1.len == ob2.len);
 			assert(ob1.val == ob2.val);
 		}
-		/* <proto::u32_t> */
+
+		BOOST_AUTO_TEST_CASE( test_tlv_4octet_val )
 		{
+			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
+
 			tlv_qos_time_to_live ob1, ob2;
 
 			ob1.tag = QOS_TIME_TO_LIVE;
@@ -144,8 +138,10 @@ namespace tst {
 			assert(ob1.val == ob2.val);
 		}
 
-		/* <proto::u8_t> */
+		BOOST_AUTO_TEST_CASE( test_tlv_all_val )
 		{
+			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
+
 			tlv_dest_addr_subunit ob8_1, ob8_2;
 			tlv_dest_telematics_id ob16_1, ob16_2;
 			tlv_qos_time_to_live ob32_1, ob32_2;
@@ -183,16 +179,7 @@ namespace tst {
 			TLV_ASSERT(ob16_1, ob16_2);
 			TLV_ASSERT(ob32_1, ob32_2);
 		}
-
-		fprintf(stdout, "Unit test [ PASSED ]\n");
 	}
-}
-
-int main()
-{
-	tst::unit_test();
-
-	return 0;
 }
 
 

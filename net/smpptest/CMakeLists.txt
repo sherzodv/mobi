@@ -12,6 +12,7 @@ find_package(Boost 1.54.0 COMPONENTS
 	filesystem
 	system
 	thread
+	unit_test_framework
 	log-mt
 	log_setup-mt)
 
@@ -26,7 +27,7 @@ find_library(lrt rt)
 find_library(lpthread pthread)
 find_library(lsmpp smpp ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)
 
-add_definitions(-D_GLIBCXX_USE_NANOSLEEP=1 -DBOOST_LOG_DYN_LINK)
+add_definitions(-D_GLIBCXX_USE_NANOSLEEP=1 -DBOOST_LOG_DYN_LINK -DBOOST_TEST_DYN_LINK)
 include_directories("../Inc")
 aux_source_directory(src SOURCES)
 add_executable(${pname} ${SOURCES})
