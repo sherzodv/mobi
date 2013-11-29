@@ -81,6 +81,10 @@ namespace tst {
 		return fwrite(buf, sizeof(uint8_t), len, fout), fclose(fout);
 	}
 
+#define TLV_ASSERT(a, b)	assert(a.tag == b.tag);	\
+							assert(a.len == b.len);	\
+							assert(a.val == b.val)	\
+
 	using namespace smpp;
 
 	void unit_test() {
@@ -103,14 +107,13 @@ namespace tst {
 			assert(ob1.len == ob2.len);
 			assert(ob1.val == ob2.val);
 		}
-
 		/* <proto::u16_t> */
 		{
 			tlv_dest_telematics_id ob1, ob2;
 
-			//ob1.tag = DEST_TELEMATICS_ID;
-			//ob1.len = 0x0002;
-			//ob1.val = 0x0100;
+			ob1.tag = DEST_TELEMATICS_ID;
+			ob1.len = 0x0002;
+			ob1.val = 0x0100;
 
 			write(buf, ob1, std::cout);
 
@@ -123,12 +126,14 @@ namespace tst {
 			assert(ob1.len == ob2.len);
 			assert(ob1.val == ob2.val);
 		}
-
-#if 0
 		/* <proto::u32_t> */
 		{
 			tlv_qos_time_to_live ob1, ob2;
 
+			ob1.tag = QOS_TIME_TO_LIVE;
+			ob1.len = 0x0004;
+			ob1.val = 0x00000100;
+
 			write(buf, ob1, std::cout);
 			write_buf_to_file(buf, BUF_SIZE);
 			read_buf_from_file(buf, BUF_SIZE);
@@ -139,7 +144,46 @@ namespace tst {
 			assert(ob1.val == ob2.val);
 		}
 
-#endif
+		/* <proto::u8_t> */
+		{
+			tlv_dest_addr_subunit ob8_1, ob8_2;
+			tlv_dest_telematics_id ob16_1, ob16_2;
+			tlv_qos_time_to_live ob32_1, ob32_2;
+
+			ob8_1.tag = DEST_NUM_SUBUNIT;
+			ob8_1.len = 0x0001;
+			ob8_1.val = 0x0F;
+
+			ob16_1.tag = DEST_TELEMATICS_ID;
+			ob16_1.len = 0x0002;
+			ob16_1.val = 0x0100;
+
+			ob32_1.tag = QOS_TIME_TO_LIVE;
+			ob32_1.len = 0x0004;
+			ob32_1.val = 0x00000100;
+
+			{
+				proto::u8_t * curr = buf;
+				curr = write(curr, ob8_1, std::cout);
+				curr = write(curr, ob16_1, std::cout);
+				curr = write(curr, ob32_1, std::cout);
+			}
+
+			write_buf_to_file(buf, BUF_SIZE);
+			read_buf_from_file(buf, BUF_SIZE);
+
+			{
+				const proto::u8_t * curr = buf;
+				curr = parse(ob8_2, curr, std::cout);
+				curr = parse(ob16_2, curr, std::cout);
+				curr = parse(ob32_2, curr, std::cout);
+			}
+
+			TLV_ASSERT(ob8_1, ob8_2);
+			TLV_ASSERT(ob16_1, ob16_2);
+			TLV_ASSERT(ob32_1, ob32_2);
+		}
+
 		fprintf(stdout, "Unit test [ PASSED ]\n");
 	}
 }
