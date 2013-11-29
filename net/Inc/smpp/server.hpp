@@ -113,6 +113,7 @@ class server_base {
 
 		template <class BindT>
 		void send_bind_r(channel_t * ch, pdu * omsg) {
+			/* TODO: Set correct sys_id and sc_interface_version */
 			pdu * msg;
 			typename the<BindT>::r_type r;
 

@@ -54,8 +54,8 @@ int main()
 	namespace ba = boost::asio;
 	namespace bs = boost::system;
 
-	vision::log::file::add("fastmqr%5N.log", true);
-	vision::log::console::add();
+	vision::log::file::add("fastmqr%5N.log", false);
+	//vision::log::console::add();
 
 	static auto L = vision::log::channel("main");
 	static const char opt_sock_path[] = "/tmp/fastmqr.sock";
