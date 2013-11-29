@@ -1,17 +1,14 @@
 
 #define BOOST_TEST_MODULE MyTest
 #include <boost/test/unit_test.hpp>
-
 #include <smpp/proto.hpp>
+#include <cstdio>
 
-#define BUF_SIZE	0x1000
-#define FILE_NAME	"/tmp/.buffer"
+namespace local {
+	using namespace smpp;
 
-#define TLV_ASSERT(a, b)	assert(a.tag == b.tag);	\
-							assert(a.len == b.len);	\
-							assert(a.val == b.val)	\
-
-namespace boost {
+	const int buf_size			= 0x1000;
+	const std::string file_name	= "/tmp/.buffer";
 
 	enum {
 		DEST_NUM_SUBUNIT			= 0x0005,
@@ -60,125 +57,105 @@ namespace boost {
 		ITS_SESSION_INFO			= 0x1383
 	};
 
-	void read_buf_from_file(uint8_t * buf, size_t len) {
-		FILE * fin;
-		if ((fin = fopen(FILE_NAME, "r")) == NULL) return;
-		fread(buf, sizeof(uint8_t), len, fin);
-		fclose(fin);
+	BOOST_AUTO_TEST_CASE( test_tlv_1octet_val )
+	{
+		proto::u8_t * buf = new proto::u8_t [buf_size];
+
+		tlv_dest_addr_subunit ob1, ob2;
+
+		ob1.tag = DEST_NUM_SUBUNIT;
+		ob1.len = 0x0001;
+		ob1.val = 0x0F;
+
+		write(buf, ob1, std::cout);
+		parse(ob2, buf, std::cout);
+
+		BOOST_CHECK(ob1.tag == ob2.tag);
+		BOOST_CHECK(ob1.len == ob2.len);
+		BOOST_CHECK(ob1.val == ob2.val);
 	}
-	void write_buf_to_file(uint8_t * buf, size_t len) {
-		FILE * fout;
-		if ((fout = fopen(FILE_NAME, "w")) == NULL) return;
-		fwrite(buf, sizeof(uint8_t), len, fout);
-		fclose(fout);
+
+	BOOST_AUTO_TEST_CASE( test_tlv_2octet_val )
+	{
+		proto::u8_t * buf = new proto::u8_t [buf_size];
+
+		tlv_dest_telematics_id ob1, ob2;
+
+		ob1.tag = DEST_TELEMATICS_ID;
+		ob1.len = 0x0002;
+		ob1.val = 0x0100;
+
+		write(buf, ob1, std::cout);
+		parse(ob2, buf, std::cout);
+
+		BOOST_CHECK(ob1.tag == ob2.tag);
+		BOOST_CHECK(ob1.len == ob2.len);
+		BOOST_CHECK(ob1.val == ob2.val);
 	}
 
-	namespace test {
-		using namespace smpp;
+	BOOST_AUTO_TEST_CASE( test_tlv_4octet_val )
+	{
+		proto::u8_t * buf = new proto::u8_t [buf_size];
 
-		BOOST_AUTO_TEST_CASE( test_tlv_1octet_val )
+		tlv_qos_time_to_live ob1, ob2;
+
+		ob1.tag = QOS_TIME_TO_LIVE;
+		ob1.len = 0x0004;
+		ob1.val = 0x00000100;
+
+		write(buf, ob1, std::cout);
+		parse(ob2, buf, std::cout);
+
+		BOOST_CHECK(ob1.tag == ob2.tag);
+		BOOST_CHECK(ob1.len == ob2.len);
+		BOOST_CHECK(ob1.val == ob2.val);
+	}
+
+	BOOST_AUTO_TEST_CASE( test_tlv_all_val )
+	{
+		proto::u8_t * buf = new proto::u8_t [buf_size];
+
+		tlv_dest_addr_subunit ob8_1, ob8_2;
+		tlv_dest_telematics_id ob16_1, ob16_2;
+		tlv_qos_time_to_live ob32_1, ob32_2;
+
+		ob8_1.tag = DEST_NUM_SUBUNIT;
+		ob8_1.len = 0x0001;
+		ob8_1.val = 0x0F;
+
+		ob16_1.tag = DEST_TELEMATICS_ID;
+		ob16_1.len = 0x0002;
+		ob16_1.val = 0x0100;
+
+		ob32_1.tag = QOS_TIME_TO_LIVE;
+		ob32_1.len = 0x0004;
+		ob32_1.val = 0x00000100;
+
 		{
-			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
-
-			tlv_dest_addr_subunit ob1, ob2;
-
-			ob1.tag = DEST_NUM_SUBUNIT;
-			ob1.len = 0x0001;
-			ob1.val = 0x0F;
-
-			write(buf, ob1, std::cout);
-			write_buf_to_file(buf, BUF_SIZE);
-			read_buf_from_file(buf, BUF_SIZE);
-			parse(ob2, buf, std::cout);
-
-			assert(ob1.tag == ob2.tag);
-			assert(ob1.len == ob2.len);
-			assert(ob1.val == ob2.val);
+			proto::u8_t * curr = buf;
+			curr = write(curr, ob8_1, std::cout);
+			curr = write(curr, ob16_1, std::cout);
+			curr = write(curr, ob32_1, std::cout);
 		}
 
-		BOOST_AUTO_TEST_CASE( test_tlv_2octet_val )
 		{
-			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
-
-			tlv_dest_telematics_id ob1, ob2;
-
-			ob1.tag = DEST_TELEMATICS_ID;
-			ob1.len = 0x0002;
-			ob1.val = 0x0100;
-
-			write(buf, ob1, std::cout);
-
-			write_buf_to_file(buf, BUF_SIZE);
-			read_buf_from_file(buf, BUF_SIZE);
-
-			parse(ob2, buf, std::cout);
-
-			assert(ob1.tag == ob2.tag);
-			assert(ob1.len == ob2.len);
-			assert(ob1.val == ob2.val);
+			const proto::u8_t * curr = buf;
+			curr = parse(ob8_2, curr, std::cout);
+			curr = parse(ob16_2, curr, std::cout);
+			curr = parse(ob32_2, curr, std::cout);
 		}
 
-		BOOST_AUTO_TEST_CASE( test_tlv_4octet_val )
-		{
-			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
+		BOOST_CHECK(ob8_1.tag == ob8_2.tag);
+		BOOST_CHECK(ob8_1.len == ob8_2.len);
+		BOOST_CHECK(ob8_1.val == ob8_2.val);
 
-			tlv_qos_time_to_live ob1, ob2;
+		BOOST_CHECK(ob16_1.tag == ob16_2.tag);
+		BOOST_CHECK(ob16_1.len == ob16_2.len);
+		BOOST_CHECK(ob16_1.val == ob16_2.val);
 
-			ob1.tag = QOS_TIME_TO_LIVE;
-			ob1.len = 0x0004;
-			ob1.val = 0x00000100;
-
-			write(buf, ob1, std::cout);
-			write_buf_to_file(buf, BUF_SIZE);
-			read_buf_from_file(buf, BUF_SIZE);
-			parse(ob2, buf, std::cout);
-
-			assert(ob1.tag == ob2.tag);
-			assert(ob1.len == ob2.len);
-			assert(ob1.val == ob2.val);
-		}
-
-		BOOST_AUTO_TEST_CASE( test_tlv_all_val )
-		{
-			proto::u8_t * buf = new proto::u8_t [BUF_SIZE];
-
-			tlv_dest_addr_subunit ob8_1, ob8_2;
-			tlv_dest_telematics_id ob16_1, ob16_2;
-			tlv_qos_time_to_live ob32_1, ob32_2;
-
-			ob8_1.tag = DEST_NUM_SUBUNIT;
-			ob8_1.len = 0x0001;
-			ob8_1.val = 0x0F;
-
-			ob16_1.tag = DEST_TELEMATICS_ID;
-			ob16_1.len = 0x0002;
-			ob16_1.val = 0x0100;
-
-			ob32_1.tag = QOS_TIME_TO_LIVE;
-			ob32_1.len = 0x0004;
-			ob32_1.val = 0x00000100;
-
-			{
-				proto::u8_t * curr = buf;
-				curr = write(curr, ob8_1, std::cout);
-				curr = write(curr, ob16_1, std::cout);
-				curr = write(curr, ob32_1, std::cout);
-			}
-
-			write_buf_to_file(buf, BUF_SIZE);
-			read_buf_from_file(buf, BUF_SIZE);
-
-			{
-				const proto::u8_t * curr = buf;
-				curr = parse(ob8_2, curr, std::cout);
-				curr = parse(ob16_2, curr, std::cout);
-				curr = parse(ob32_2, curr, std::cout);
-			}
-
-			TLV_ASSERT(ob8_1, ob8_2);
-			TLV_ASSERT(ob16_1, ob16_2);
-			TLV_ASSERT(ob32_1, ob32_2);
-		}
+		BOOST_CHECK(ob32_1.tag == ob32_2.tag);
+		BOOST_CHECK(ob32_1.len == ob32_2.len);
+		BOOST_CHECK(ob32_1.val == ob32_2.val);
 	}
 }
 
