@@ -46,7 +46,7 @@ class channel: public session {
 		}
 
 		virtual ~channel() {
-			ltrace(L) << "channel::~channel: idx: " << m_idx;
+			ltrace(S.L) << "channel::~channel: idx: " << m_idx;
 		}
 
 		std::size_t index() const { return m_idx; }

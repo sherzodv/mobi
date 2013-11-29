@@ -45,6 +45,10 @@ class channel: public session {
 			out.total_bytes = 0;
 		}
 
+		virtual ~channel() {
+			ltrace(S.L) << "channel::~channel: idx: " << m_idx;
+		}
+
 		std::size_t index() const { return m_idx; }
 
 		virtual bool ready_to_send() const {
