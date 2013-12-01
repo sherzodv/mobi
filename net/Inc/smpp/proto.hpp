@@ -59,6 +59,52 @@ namespace smpp {
 		const proto::u32_t data_sm_r			= 0x80000103;
 	}
 
+	/* SMPP 3.4 ERROR CODES */
+	namespace error_codes {
+		const proto::u32_t ESME_ROK				= 0x00000000;
+		const proto::u32_t ESME_RINVMSGLEN 		= 0x00000000;
+		const proto::u32_t ESME_RINVCMDLEN		= 0x00000000;
+		const proto::u32_t ESME_RINVCMDID		= 0x00000000;
+		const proto::u32_t ESME_RINVBNDSTS		= 0x00000000;
+		const proto::u32_t ESME_RALYBND			= 0x00000000;
+		const proto::u32_t ESME_RINVPRTFLG		= 0x00000000;
+		const proto::u32_t ESME_RINVREGDLVFLG	= 0x00000000;
+		const proto::u32_t ESME_RSYSERR			= 0x00000000;
+		const proto::u32_t ESME_RINVSRCADR		= 0x00000000;
+		const proto::u32_t ESME_RINVDSTADR		= 0x00000000;
+		const proto::u32_t ESME_RINVMSGID		= 0x00000000;
+		const proto::u32_t ESME_RBINDFAIL		= 0x00000000;
+		const proto::u32_t ESME_RINVPASWD		= 0x00000000;
+		const proto::u32_t ESME_RINVSYSID		= 0x00000000;
+		const proto::u32_t ESME_RCANCELFAIL		= 0x00000000;
+		const proto::u32_t ESME_RREPLACEFAIL	= 0x00000000;
+		const proto::u32_t ESME_RMSGQFUL		= 0x00000000;
+		const proto::u32_t ESME_RINVSERTYP		= 0x00000000;
+		const proto::u32_t ESME_RINVNUMDESTS	= 0x00000000;
+		const proto::u32_t ESME_RINVDLNAME 		= 0x00000000;
+		const proto::u32_t ESME_RINVDESTFLAG	= 0x00000000;
+		const proto::u32_t ESME_RINVSUBREP 		= 0x00000000;
+		const proto::u32_t ESME_RINVESMCLASS	= 0x00000000;
+		const proto::u32_t ESME_RCNTSUBDL 		= 0x00000000;
+		const proto::u32_t ESME_RSUBMITFAIL		= 0x00000000;
+		const proto::u32_t ESME_RINVSRCTON 		= 0x00000000;
+		const proto::u32_t ESME_RINVSRCNPI 		= 0x00000000;
+		const proto::u32_t ESME_RINVDSTTON 		= 0x00000000;
+		const proto::u32_t ESME_RINVDSTNPI 		= 0x00000000;
+		const proto::u32_t ESME_RINVSYSTYP 		= 0x00000000;
+		const proto::u32_t ESME_RINVREPFLAG		= 0x00000000;
+		const proto::u32_t ESME_RINVNUMMSGS		= 0x00000000;
+		const proto::u32_t ESME_RTHROTTLED 		= 0x00000000;
+		const proto::u32_t ESME_RINVSCHED 		= 0x00000000;
+		const proto::u32_t ESME_RINVEXPIRY 		= 0x00000000;
+		const proto::u32_t ESME_RINVDFTMSGID	= 0x00000000;
+		const proto::u32_t ESME_RX_T_APPN 		= 0x00000000;
+		const proto::u32_t ESME_RX_R_APPN 		= 0x00000000;
+		const proto::u32_t ESME_RQUERYFAIL 		= 0x00000000;
+		const proto::u32_t ESME_RINVOPT 		= 0x00000000;
+		/* NEED END */
+	}
+
 	/* SMPP 3.4 PDU header */
 	struct pdu {
 		proto::u32_t len;
@@ -460,14 +506,14 @@ namespace smpp {
 		namespace w {
 
 			inline u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst = *src++;
+				*dst++ = *src;
 				return dst;
 			}
 
 			inline u8_t * cp_u16(u8_t * dst, const u8_t * src) {
 				src += 1;
 				*dst++ = *src--;
-				*dst++ = *src--;
+				*dst++ = *src;
 				return dst;
 			}
 

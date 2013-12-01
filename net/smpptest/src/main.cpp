@@ -7,7 +7,6 @@
 namespace local {
 	const int buf_size			= 0x1000;
 	const std::string file_name	= "/tmp/.buffer";
-
 	enum {
 		DEST_NUM_SUBUNIT			= 0x0005,
 		DEST_NETWORK_TYPE			= 0x0006,
