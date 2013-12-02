@@ -32,7 +32,7 @@ namespace smpp {
 
 	/* SMPP 3.4 COMMAND IDS */
 
-	namespace command {
+	namespace command_id {
 		const proto::u32_t generic_nack			= 0x80000000;
 		const proto::u32_t bind_receiver		= 0x00000001;
 		const proto::u32_t bind_receiver_r		= 0x80000001;
@@ -61,6 +61,33 @@ namespace smpp {
 		const proto::u32_t data_sm				= 0x00000103;
 		const proto::u32_t data_sm_r			= 0x80000103;
 	}
+
+	/* SMPP 3.4 COMMAND STATUS/ERROR CODES */
+	namespace command_status {
+		const proto::u32_t ESME_ROK				= 0x00000000;
+		const proto::u32_t ESME_RINVMSGLEN		= 0x00000001;
+		const proto::u32_t ESME_RINVCMDLEN		= 0x00000002;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+		const proto::u32_t ESME_;
+	};
 
 	/* SMPP 3.4 TLV IDS */
 
@@ -112,51 +139,6 @@ namespace smpp {
 	}
 
 	/* SMPP 3.4 ERROR CODES */
-
-	namespace error {
-		/* TODO: Finish work on error codes */
-		const proto::u32_t esme_rok				= 0x00000000;
-		const proto::u32_t esme_rinvmsglen 		= 0x00000000;
-		const proto::u32_t esme_rinvcmdlen		= 0x00000000;
-		const proto::u32_t esme_rinvcmdid		= 0x00000000;
-		const proto::u32_t esme_rinvbndsts		= 0x00000000;
-		const proto::u32_t esme_ralybnd			= 0x00000000;
-		const proto::u32_t esme_rinvprtflg		= 0x00000000;
-		const proto::u32_t esme_rinvregdlvflg	= 0x00000000;
-		const proto::u32_t esme_rsyserr			= 0x00000000;
-		const proto::u32_t esme_rinvsrcadr		= 0x00000000;
-		const proto::u32_t esme_rinvdstadr		= 0x00000000;
-		const proto::u32_t esme_rinvmsgid		= 0x00000000;
-		const proto::u32_t esme_rbindfail		= 0x00000000;
-		const proto::u32_t esme_rinvpaswd		= 0x00000000;
-		const proto::u32_t esme_rinvsysid		= 0x00000000;
-		const proto::u32_t esme_rcancelfail		= 0x00000000;
-		const proto::u32_t esme_rreplacefail	= 0x00000000;
-		const proto::u32_t esme_rmsgqful		= 0x00000000;
-		const proto::u32_t esme_rinvsertyp		= 0x00000000;
-		const proto::u32_t esme_rinvnumdests	= 0x00000000;
-		const proto::u32_t esme_rinvdlname 		= 0x00000000;
-		const proto::u32_t esme_rinvdestflag	= 0x00000000;
-		const proto::u32_t esme_rinvsubrep 		= 0x00000000;
-		const proto::u32_t esme_rinvesmclass	= 0x00000000;
-		const proto::u32_t esme_rcntsubdl 		= 0x00000000;
-		const proto::u32_t esme_rsubmitfail		= 0x00000000;
-		const proto::u32_t esme_rinvsrcton 		= 0x00000000;
-		const proto::u32_t esme_rinvsrcnpi 		= 0x00000000;
-		const proto::u32_t esme_rinvdstton 		= 0x00000000;
-		const proto::u32_t esme_rinvdstnpi 		= 0x00000000;
-		const proto::u32_t esme_rinvsystyp 		= 0x00000000;
-		const proto::u32_t esme_rinvrepflag		= 0x00000000;
-		const proto::u32_t esme_rinvnummsgs		= 0x00000000;
-		const proto::u32_t esme_rthrottled 		= 0x00000000;
-		const proto::u32_t esme_rinvsched 		= 0x00000000;
-		const proto::u32_t esme_rinvexpiry 		= 0x00000000;
-		const proto::u32_t esme_rinvdftmsgid	= 0x00000000;
-		const proto::u32_t esme_rx_t_appn 		= 0x00000000;
-		const proto::u32_t esme_rx_r_appn 		= 0x00000000;
-		const proto::u32_t esme_rqueryfail 		= 0x00000000;
-		const proto::u32_t esme_rinvopt 		= 0x00000000;
-	}
 
 	/* SMPP 3.4 PDU header */
 
@@ -428,6 +410,348 @@ namespace smpp {
 			{}
 		};
 
+		/* SUBMIT MULTI Operations */
+
+		struct submit_multi {
+			pdu command;
+			proto::u8_t service_type[6];
+			proto::u8_t source_addr_ton;
+			proto::u8_t source_addr_npi;
+			proto::u8_t source_addr[21];
+			proto::u8_t number_of_dests;
+			/* TODO: 4.5.1 dest_address(es) */
+			proto::u8_t esm_class;
+			proto::u8_t protocol_id;
+			proto::u8_t priority_flag;
+			proto::u8_t schedule_delivery_time[17];
+			proto::u8_t validity_period[17];
+			proto::u8_t registered_delivery;
+			proto::u8_t replace_if_present_flag;
+			proto::u8_t data_coding;
+			proto::u8_t sm_default_msg_id;
+			proto::u8_t sm_length;
+			proto::u8_t short_message[254];
+
+			tlv_user_message_reference	user_message_reference;
+			tlv_source_port				source_port;
+			tlv_source_addr_subunit		source_addr_subunit;
+			tlv_dest_port				destination_port;
+			tlv_dest_addr_subunit		dest_addr_subunit;
+			tlv_sar_msg_ref_num			sar_msg_ref_num;
+			tlv_sar_total_segments		sar_total_segments;
+			tlv_sar_segment_seqnum		sar_segment_seqnum;
+			tlv_payload_type			payload_type;
+			tlv_message_payload			message_payload;
+			tlv_privacy_indicator		privacy_indicator;
+			tlv_callback_num			callback_num;
+			tlv_callback_num_pres_ind	callback_num_pres_ind;
+			tlv_callback_num_atag		callback_num_atag;
+			tlv_source_subaddress		source_subaddress;
+			tlv_dest_subaddress			dest_subaddress;
+			tlv_display_time			display_time;
+			tlv_sms_signal				sms_signal;
+			tlv_ms_validity				ms_validity;
+			tlv_ms_msg_wait_facilities	ms_msg_wait_facilities;
+			tlv_alert_on_message_delivery	alert_on_message_delivery;
+			tlv_language_indicator		language_indicator;
+
+			submit_multi()
+				: command()
+			{}
+		};
+
+		struct dest_address {
+			proto::u8_t 	dest_flag;
+			/* TODO: 4.5.1.1 SME_Address */
+		};
+
+		struct SME_dest_address {
+			proto::u8_t	dest_addr_ton;
+			proto::u8_t dest_addr_npi;
+			proto::u8_t	destination_addr[21];
+		};
+
+		struct DL_name {
+			proto::u8_t	dl_name[21];
+		};
+
+		struct submit_multi_r {
+			pdu command;
+
+			proto::u8_t	message_id[65];
+			proto::u8_t	no_unsuccess;
+			/* TODO: 4.5.2 unsuccess_sme(s) */
+
+			submit_multi_r()
+				: command()
+			{}
+		};
+
+		struct Unsuccess_smes {
+			proto::u8_t		dest_addr_ton;
+			proto::u8_t		dest_addr_npi;
+			proto::u8_t		destination_addr[21];
+			proto::u32_t	error_status_code;
+		};
+
+		/* DELIVER SM Operations */
+
+		struct deliver_sm {
+			pdu command;
+
+			proto::u8_t	service_type[6];
+			proto::u8_t source_addr_ton;
+			proto::u8_t	source_addr_npi;
+			proto::u8_t	source_addr[21];
+			proto::u8_t	dest_addr_ton;
+			proto::u8_t dest_addr_npi;
+			proto::u8_t destination_addr[21];
+			proto::u8_t	esm_class;
+			proto::u8_t	protocol_id;
+			proto::u8_t	priority_flag;
+			proto::u8_t	schedule_delivery_time;
+			proto::u8_t	validity_period;
+			proto::u8_t registered_delivery;
+			proto::u8_t	replace_if_present_flag;
+			proto::u8_t	data_coding;
+			proto::u8_t	sm_default_msg_id;
+			proto::u8_t	sm_length;
+			proto::u8_t short_message[254];
+
+			/* OPTIONAL PARAMETERS for DELIVER_SM */
+			tlv_user_message_reference	user_message_reference;
+			tlv_source_port				source_port;
+			tlv_dest_port				destination_port;
+			tlv_sar_msg_ref_num			sar_msg_ref_num;
+			tlv_sar_total_segments		sar_total_segments;
+			tlv_sar_segment_seqnum		sar_segment_seqnum;
+			tlv_user_response_code		user_response_code;
+			tlv_privacy_indicator		privacy_indicator;
+			tlv_payload_type			payload_type;
+			tlv_callback_num			callback_num;
+			tlv_source_subaddress		source_subaddress;
+			tlv_dest_subaddress			dest_subaddress;
+			tlv_language_indicator		language_indicator;
+			tlv_its_session_info		its_session_info;
+			tlv_network_error_code		network_error_code;
+			tlv_message_state			message_state;
+			tlv_receipted_message_id	receipted_message_id;
+
+			deliver_sm()
+				: command()
+			{}
+		};
+
+		struct deliver_sm_r {
+			pdu command;
+			proto::u8_t	message_id;
+
+			deliver_sm_r()
+				: command()
+			{}
+		};
+
+		/* DATA_SM Operations */
+
+		struct data_sm {
+			pdu command;
+
+			proto::u8_t		service_type[6];
+			proto::u8_t		source_addr_ton;
+			proto::u8_t		source_addr_npi;
+			proto::u8_t		source_addr[65];
+			proto::u8_t		dest_addr_ton;
+			proto::u8_t		dest_addr_npi;
+			proto::u8_t		destination_addr[65];
+			proto::u8_t		esm_class;
+			proto::u8_t		registered_delivery;
+			proto::u8_t		data_coding;
+
+			/* OPTIONAL PARAMETERS for DATA SM */
+
+			tlv_source_port					source_port;
+			tlv_source_addr_subunit			source_addr_subunit;
+			tlv_source_network_type			source_network_type;
+			tlv_source_bearer_type			source_bearer_type;
+			tlv_source_telematics_id		source_telematics_id;
+			tlv_dest_port					destination_port;
+			tlv_dest_addr_subunit			dest_addr_subunit;
+			tlv_dest_network_type			dest_network_type;
+			tlv_dest_bearer_type			dest_bearer_type;
+			tlv_dest_telematics_id			dest_telematics_id;
+			tlv_sar_msg_ref_num				sar_msg_ref_num;
+			tlv_sar_total_segments			sar_total_segments;
+			tlv_sar_segment_seqnum			sar_segment_seqnum;
+			tlv_more_messages_to_send		more_messages_to_send;
+			tlv_qos_time_to_live			qos_time_to_live;
+			tlv_payload_type				payload_type;
+			tlv_message_payload				message_payload;
+			tlv_set_dpf						set_dpf;
+			tlv_receipted_message_id		receipted_message_id;
+			tlv_message_state				message_state;
+			tlv_network_error_code			network_error_code;
+			tlv_user_message_reference		user_message_reference;
+			tlv_privacy_indicator			privacy_indicator;
+			tlv_callback_num				callback_num;
+			tlv_callback_num_pres_ind		callback_num_pres_ind;
+			tlv_callback_num_atag			callback_num_atag;
+			tlv_source_subaddress			source_subaddress;
+			tlv_dest_subaddress				dest_subaddress;
+			tlv_user_response_code			user_response_code;
+			tlv_display_time				display_time;
+			tlv_sms_signal					sms_signal;
+			tlv_ms_validity					ms_validity;
+			tlv_ms_msg_wait_facilities		ms_msg_wait_facilities;
+			tlv_number_of_messages			number_of_messages;
+			tlv_alert_on_message_delivery	alert_on_message_delivery;
+			tlv_language_indicator			language_indicator;
+			tlv_its_reply_type				its_reply_type;
+			tlv_its_session_info			its_session_info;
+
+			data_sm()
+				: data_sm()
+			{}
+		};
+
+		struct data_sm_r {
+			pdu command;
+
+			proto::u8_t message_id[65];
+
+			/* OPTIONAL PARAMETERS for DATA SM RESP */
+
+			tlv_delivery_failure_reason			delivery_failure_reason;
+			tlv_network_error_code				network_error_code;
+			tlv_additional_status_info_text		additional_status_info_text;
+			tlv_dpf_result						dpf_result;
+
+			data_sm_r()
+				: command()
+			{}
+		};
+
+		/* QUERY SM Operations */
+
+		struct query_sm {
+			pdu command;
+
+			proto::u8_t	message_id[65];
+			proto::u8_t	source_addr_ton;
+			proto::u8_t	source_addr_npi;
+			proto::u8_t	source_addr[21];
+
+			query_sm()
+				: command()
+			{}
+		};
+
+		struct query_sm_r {
+			pdu command;
+
+			proto::u8_t	message_id[65];
+			proto::u8_t	final_date[17];
+			proto::u8_t	message_state;
+			proto::u8_t	error_code;
+
+			query_sm_r()
+				: command()
+			{}
+		};
+
+		/* CANCEL SM Operations */
+
+		struct cancel_sm {
+			pdu command;
+
+			proto::u8_t	service_type[6];
+			proto::u8_t	message_id[65];
+			proto::u8_t	source_addr_ton;
+			proto::u8_t	source_addr_npi;
+			proto::u8_t	source_addr[21];
+			proto::u8_t	dest_addr_ton;
+			proto::u8_t dest_addr_npi;
+			proto::u8_t destination_addr[21];
+
+			cancel_sm()
+				: command()
+			{}
+		};
+
+		struct cancel_sm_r {
+			pdu command;
+
+			cancel_sm_r()
+				: command()
+			{}
+		};
+
+		/* REPLACE SM Operations */
+
+		struct replace_sm {
+			pdu command;
+
+			proto::u8_t	message_id[65];
+			proto::u8_t	source_addr_ton;
+			proto::u8_t	source_addr_npi;
+			proto::u8_t	source_addr[21];
+			proto::u8_t schedule_delivery_time[17];
+			proto::u8_t validity_period[17];
+			proto::u8_t registered_delivery;
+			proto::u8_t sm_default_msg_id;
+			proto::u8_t sm_length;
+			proto::u8_t short_message[254];
+
+			replace_sm()
+				: command()
+			{}
+		};
+		
+		struct replace_sm_r {
+			pdu command;
+
+			replace_sm_r()
+				: command()
+			{}
+		};
+
+		/* ENQUIRE LINK Operation */
+
+		struct enquire_link {
+			pdu command;
+
+			enquire_link()
+				: command()
+			{}
+		};
+
+		struct enquire_link_r {
+			pdu command;
+
+			enquire_link_r()
+				: command()
+			{}
+		};
+
+		/* ALERT NOTIFICATIONS Operation */
+
+		struct alert_notification {
+			pdu command;
+
+			proto::u8_t	source_addr_ton;
+			proto::u8_t	source_addr_npi;
+			proto::u8_t source_addr[65];
+			proto::u8_t	esme_addr_ton;
+			proto::u8_t esme_addr_npi;
+			proto::u8_t	esme_addr;
+
+			/* OPTIONAL PARAMETERS for ALERT NOTIFICATION */
+
+			tlv_ms_availability_status	ms_availability_status;
+
+			alert_notification()
+				: alert_notification()
+			{}
+		};
 	}
 
 	/* TYPE TRAITS */
