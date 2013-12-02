@@ -32,7 +32,7 @@ namespace smpp {
 
 	/* SMPP 3.4 COMMAND IDS */
 
-	namespace command_id {
+	namespace command {
 		const proto::u32_t generic_nack			= 0x80000000;
 		const proto::u32_t bind_receiver		= 0x00000001;
 		const proto::u32_t bind_receiver_r		= 0x80000001;
@@ -67,27 +67,52 @@ namespace smpp {
 		const proto::u32_t ESME_ROK				= 0x00000000;
 		const proto::u32_t ESME_RINVMSGLEN		= 0x00000001;
 		const proto::u32_t ESME_RINVCMDLEN		= 0x00000002;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-		const proto::u32_t ESME_;
-	};
+		const proto::u32_t ESME_RINVCMDID		= 0x00000003;
+		const proto::u32_t ESME_RINVBNDSTS		= 0x00000004;
+		const proto::u32_t ESME_RALYBND			= 0x00000005;
+		const proto::u32_t ESME_RINVPRTFLG		= 0x00000006;
+		const proto::u32_t ESME_RINVREGDLVFLG	= 0x00000007;
+		const proto::u32_t ESME_RSYSERR			= 0x00000008;
+		const proto::u32_t ESME_RINVSRCADR		= 0x0000000A;
+		const proto::u32_t ESME_RINVDSTADR		= 0x0000000B;
+		const proto::u32_t ESME_RINVMSGID		= 0x0000000C;
+		const proto::u32_t ESME_RBINDFAIL		= 0x0000000D;
+		const proto::u32_t ESME_RINVPASWD		= 0x0000000E;
+		const proto::u32_t ESME_RINVSYSID		= 0x0000000F;
+		const proto::u32_t ESME_RCANCELFAIL		= 0x00000011;
+		const proto::u32_t ESME_RREPLACEFAIL	= 0x00000013;
+		const proto::u32_t ESME_RMSGQFUL		= 0x00000014;
+		const proto::u32_t ESME_RINVSERTYP		= 0x00000015;
+		const proto::u32_t ESME_RINVNUMDESTS	= 0x00000033;
+		const proto::u32_t ESME_RINVDLNAME		= 0x00000034;
+		const proto::u32_t ESME_RINVDESTFLAG	= 0x00000040;
+		const proto::u32_t ESME_RINVSUBREP		= 0x00000042;
+		const proto::u32_t ESME_RINVESMCLASS	= 0x00000043;
+		const proto::u32_t ESME_RCNTSUBDL		= 0x00000044;
+		const proto::u32_t ESME_RSUBMITFAIL		= 0x00000045;
+		const proto::u32_t ESME_RINVSRCTON		= 0x00000048;
+		const proto::u32_t ESME_RINVSRCNPI		= 0x00000049;
+		const proto::u32_t ESME_RINVDSTTON		= 0x00000050;
+		const proto::u32_t ESME_RINVDSTNPI		= 0x00000051;
+		const proto::u32_t ESME_RINVSYSTYP		= 0x00000053;
+		const proto::u32_t ESME_RINVREPFLAG		= 0x00000054;
+		const proto::u32_t ESME_RINVNUMMSGS		= 0x00000055;
+		const proto::u32_t ESME_RTHROTTLED		= 0x00000058;
+		const proto::u32_t ESME_RINVSCHED		= 0x00000061;
+		const proto::u32_t ESME_RINVEXPIRY		= 0x00000062;
+		const proto::u32_t ESME_RINVDFTMSGID	= 0x00000063;
+		const proto::u32_t ESME_RX_T_APPN		= 0x00000064;
+		const proto::u32_t ESME_RX_P_APPN		= 0x00000065;
+		const proto::u32_t ESME_RX_R_APPN		= 0x00000066;
+		const proto::u32_t ESME_RQUERYFAIL		= 0x00000067;
+		const proto::u32_t ESME_RINVOPTPARSTREAM= 0x000000C0;
+		const proto::u32_t ESME_ROPTPARNOTALLWD	= 0x000000C1;
+		const proto::u32_t ESME_RINVPARLEN		= 0x000000C2;
+		const proto::u32_t ESME_RMISSINGOPTPARAM= 0x000000C3;
+		const proto::u32_t ESME_RINVOPTPARAMVAL	= 0x000000C4;
+		const proto::u32_t ESME_RDELIVERYFAILURE= 0x000000FE;
+		const proto::u32_t ESME_RUNKNOWNERR		= 0x000000FF;
+	}
 
 	/* SMPP 3.4 TLV IDS */
 
@@ -138,7 +163,45 @@ namespace smpp {
 		const proto::u16_t its_session_info					= 0x1383;
 	}
 
-	/* SMPP 3.4 ERROR CODES */
+	/* SMPP 3.4 TON VALUES */
+
+	namespace ton {
+		proto::u32_t unknown			= 0x00000000;
+		proto::u32_t international		= 0x00000001;
+		proto::u32_t national			= 0x00000010;
+		proto::u32_t network_specific	= 0x00000011;
+		proto::u32_t subscriber_number	= 0x00000100;
+		proto::u32_t alphanumeric		= 0x00000101;
+		proto::u32_t abbreviated		= 0x00000110;
+	}
+
+	/* SMPP 3.4 NPI VALUES */
+
+	namespace npi {
+		proto::u32_t unknown			= 0x00000000;
+		proto::u32_t isdn				= 0x00000001;
+		proto::u32_t data				= 0x00000011;
+		proto::u32_t telex				= 0x00000100;
+		proto::u32_t land_mobile		= 0x00000110;
+		proto::u32_t national			= 0x00001000;
+		proto::u32_t private_			= 0x00001001;
+		proto::u32_t ermes				= 0x00001010;
+		proto::u32_t internet			= 0x00001110;
+		proto::u32_t wap_client_id		= 0x00010010;
+	}
+
+	/* SMPP 3.4 SERVICE TYPES */
+
+	namespace service_types {
+		const proto::u8p_t	default_			= NULL;
+		const proto::u8_t cell_msging[]			= "CMT";
+		const proto::u8_t cell_paging[]			= "CPT";
+		const proto::u8_t voice_mail_notif[]	= "VMN";
+		const proto::u8_t voice_mail_alert[]	= "VMA";
+		const proto::u8_t wireless_app_protocol	= "WAP";
+		const proto::u8_t unstruct_sup_serv_dat	= "USSD";
+	}
+
 
 	/* SMPP 3.4 PDU header */
 
