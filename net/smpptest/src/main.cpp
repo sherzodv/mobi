@@ -55,7 +55,9 @@ namespace local {
 	};
 }
 
-BOOST_AUTO_TEST_CASE( test_tlv_1octet_val )
+/* TESTING SIGNLE OBJECTS */
+
+BOOST_AUTO_TEST_CASE( test_tlv8 )
 {
 	using namespace smpp;
 	using namespace local;
@@ -75,7 +77,7 @@ BOOST_AUTO_TEST_CASE( test_tlv_1octet_val )
 	BOOST_CHECK(ob1.val == ob2.val);
 }
 
-BOOST_AUTO_TEST_CASE( test_tlv_2octet_val )
+BOOST_AUTO_TEST_CASE( test_tlv16 )
 {
 	using namespace smpp;
 	using namespace local;
@@ -95,7 +97,7 @@ BOOST_AUTO_TEST_CASE( test_tlv_2octet_val )
 	BOOST_CHECK(ob1.val == ob2.val);
 }
 
-BOOST_AUTO_TEST_CASE( test_tlv_4octet_val )
+BOOST_AUTO_TEST_CASE( test_tlv32 )
 {
 	using namespace smpp;
 	using namespace local;
@@ -115,7 +117,65 @@ BOOST_AUTO_TEST_CASE( test_tlv_4octet_val )
 	BOOST_CHECK(ob1.val == ob2.val);
 }
 
-BOOST_AUTO_TEST_CASE( test_tlv_all_val )
+BOOST_AUTO_TEST_CASE( test_pdu )
+{
+	using namespace smpp;
+	using namespace local;
+	proto::u8_t * buf = new proto::u8_t [buf_size];
+
+	pdu ob1, ob2;
+
+	ob1.len		= 0x00000100;
+	ob1.id		= 0x0000000F;
+	ob1.status	= 0x0000FF00;
+	ob1.seqno	= 0x0000113D;
+
+	write(buf, ob1, std::cout);
+	parse(ob2, buf, std::cout);
+
+	BOOST_CHECK(ob1.len == ob2.len);
+	BOOST_CHECK(ob1.id == ob2.id);
+	BOOST_CHECK(ob1.status == ob2.status);
+	BOOST_CHECK(ob1.seqno == ob2.seqno);
+}
+
+BOOST_AUTO_TEST_CASE( test_bind_transmitter)
+{
+	using namespace smpp;
+	using namespace local;
+	proto::u8_t * buf = new proto::u8_t [buf_size];
+
+	bind_transmitter ob1, ob2;
+
+	ob1.command.len					= 0x00000100;
+	ob1.command.id					= 0x0000000F;
+	ob1.command.status				= 0x0000FF00;
+	ob1.command.seqno				= 0x0000113D;
+	strcpy((char *) ob1.sys_id, 	"hello, world!");
+	strcpy((char *) ob1.password,	"password123");
+	strcpy((char *) ob1.sys_type,	"dos");
+	ob1.interface_version			= 0x01;
+	ob1.addr_ton					= 0x0F;
+	ob1.addr_npi					= 0x0F;
+	strcpy((char *) ob1.addr_range,	"hello, world!");
+
+	write_bind(buf, ob1, std::cout);
+	parse_bind(ob2, buf, std::cout);
+
+	BOOST_CHECK(ob1.command.len == ob2.command.len);
+	BOOST_CHECK(ob1.command.id == ob2.command.id);
+	BOOST_CHECK(ob1.command.status == ob2.command.status);
+	BOOST_CHECK(ob1.command.seqno == ob2.command.seqno);
+
+	BOOST_CHECK(!strcmp((char *)ob1.sys_id,		(char *)ob2.sys_id));
+	BOOST_CHECK(!strcmp((char *)ob1.password,	(char *)ob2.password));
+	BOOST_CHECK(!strcmp((char *)ob1.sys_type,	(char *)ob2.sys_type));
+	BOOST_CHECK(!strcmp((char *)ob1.addr_range,	(char *)ob2.addr_range));
+}
+
+/* TESTING SET OF OBJECTS */
+
+BOOST_AUTO_TEST_CASE( test_tlv_all )
 {
 	using namespace smpp;
 	using namespace local;
@@ -163,4 +223,5 @@ BOOST_AUTO_TEST_CASE( test_tlv_all_val )
 	BOOST_CHECK(ob32_1.len == ob32_2.len);
 	BOOST_CHECK(ob32_1.val == ob32_2.val);
 }
+
 
