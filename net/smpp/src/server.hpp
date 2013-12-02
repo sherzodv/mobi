@@ -164,6 +164,11 @@ class server_base {
 						" msg->len: " << msg->len;
 					std::string msg_id = std::move(on_submit_sm(ch, nullptr));
 					send_submit_sm_r(ch, msg, msg_id);
+
+					submit_sm ssm;
+					parse(ssm, msg, L);
+					ltrace(L) << "server_base::on_recv: " << ssm;
+
 					break;
 				}
 				default: {

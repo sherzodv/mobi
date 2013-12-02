@@ -72,7 +72,7 @@ int main()
 	namespace bs = boost::system;
 
 	vision::log::file::add("fastmqr%5N.log", false);
-	//vision::log::console::add();
+	vision::log::console::add();
 
 	static auto L = vision::log::channel("main");
 	static const char opt_sock_path[] = "/tmp/fastmqr.sock";
@@ -87,6 +87,7 @@ int main()
 	//toolbox::io::stop_after(io, boost::posix_time::seconds(10));
 
 	linfo(L) << "sizeof(pdu): " << sizeof(smpp::pdu);
+	linfo(L) << "sizeof(submit_sm): " << sizeof(smpp::submit_sm);
 
 	try {
 		smpp::malloc_message_pool pool;

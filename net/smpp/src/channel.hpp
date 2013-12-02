@@ -43,6 +43,8 @@ class channel: public session {
 
 			out.ready = true;
 			out.total_bytes = 0;
+
+			ltrace(S.L) << "channel::channel: idx: " << m_idx;
 		}
 
 		virtual ~channel() {
