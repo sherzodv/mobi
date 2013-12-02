@@ -64,54 +64,54 @@ namespace smpp {
 
 	/* SMPP 3.4 COMMAND STATUS/ERROR CODES */
 	namespace command_status {
-		const proto::u32_t ESME_ROK				= 0x00000000;
-		const proto::u32_t ESME_RINVMSGLEN		= 0x00000001;
-		const proto::u32_t ESME_RINVCMDLEN		= 0x00000002;
-		const proto::u32_t ESME_RINVCMDID		= 0x00000003;
-		const proto::u32_t ESME_RINVBNDSTS		= 0x00000004;
-		const proto::u32_t ESME_RALYBND			= 0x00000005;
-		const proto::u32_t ESME_RINVPRTFLG		= 0x00000006;
-		const proto::u32_t ESME_RINVREGDLVFLG	= 0x00000007;
-		const proto::u32_t ESME_RSYSERR			= 0x00000008;
-		const proto::u32_t ESME_RINVSRCADR		= 0x0000000A;
-		const proto::u32_t ESME_RINVDSTADR		= 0x0000000B;
-		const proto::u32_t ESME_RINVMSGID		= 0x0000000C;
-		const proto::u32_t ESME_RBINDFAIL		= 0x0000000D;
-		const proto::u32_t ESME_RINVPASWD		= 0x0000000E;
-		const proto::u32_t ESME_RINVSYSID		= 0x0000000F;
-		const proto::u32_t ESME_RCANCELFAIL		= 0x00000011;
-		const proto::u32_t ESME_RREPLACEFAIL	= 0x00000013;
-		const proto::u32_t ESME_RMSGQFUL		= 0x00000014;
-		const proto::u32_t ESME_RINVSERTYP		= 0x00000015;
-		const proto::u32_t ESME_RINVNUMDESTS	= 0x00000033;
-		const proto::u32_t ESME_RINVDLNAME		= 0x00000034;
-		const proto::u32_t ESME_RINVDESTFLAG	= 0x00000040;
-		const proto::u32_t ESME_RINVSUBREP		= 0x00000042;
-		const proto::u32_t ESME_RINVESMCLASS	= 0x00000043;
-		const proto::u32_t ESME_RCNTSUBDL		= 0x00000044;
-		const proto::u32_t ESME_RSUBMITFAIL		= 0x00000045;
-		const proto::u32_t ESME_RINVSRCTON		= 0x00000048;
-		const proto::u32_t ESME_RINVSRCNPI		= 0x00000049;
-		const proto::u32_t ESME_RINVDSTTON		= 0x00000050;
-		const proto::u32_t ESME_RINVDSTNPI		= 0x00000051;
-		const proto::u32_t ESME_RINVSYSTYP		= 0x00000053;
-		const proto::u32_t ESME_RINVREPFLAG		= 0x00000054;
-		const proto::u32_t ESME_RINVNUMMSGS		= 0x00000055;
-		const proto::u32_t ESME_RTHROTTLED		= 0x00000058;
-		const proto::u32_t ESME_RINVSCHED		= 0x00000061;
-		const proto::u32_t ESME_RINVEXPIRY		= 0x00000062;
-		const proto::u32_t ESME_RINVDFTMSGID	= 0x00000063;
-		const proto::u32_t ESME_RX_T_APPN		= 0x00000064;
-		const proto::u32_t ESME_RX_P_APPN		= 0x00000065;
-		const proto::u32_t ESME_RX_R_APPN		= 0x00000066;
-		const proto::u32_t ESME_RQUERYFAIL		= 0x00000067;
-		const proto::u32_t ESME_RINVOPTPARSTREAM= 0x000000C0;
-		const proto::u32_t ESME_ROPTPARNOTALLWD	= 0x000000C1;
-		const proto::u32_t ESME_RINVPARLEN		= 0x000000C2;
-		const proto::u32_t ESME_RMISSINGOPTPARAM= 0x000000C3;
-		const proto::u32_t ESME_RINVOPTPARAMVAL	= 0x000000C4;
-		const proto::u32_t ESME_RDELIVERYFAILURE= 0x000000FE;
-		const proto::u32_t ESME_RUNKNOWNERR		= 0x000000FF;
+		const proto::u32_t esme_rok				= 0x00000000;
+		const proto::u32_t esme_rinvmsglen		= 0x00000001;
+		const proto::u32_t esme_rinvcmdlen		= 0x00000002;
+		const proto::u32_t esme_rinvcmdid		= 0x00000003;
+		const proto::u32_t esme_rinvbndsts		= 0x00000004;
+		const proto::u32_t esme_ralybnd			= 0x00000005;
+		const proto::u32_t esme_rinvprtflg		= 0x00000006;
+		const proto::u32_t esme_rinvregdlvflg	= 0x00000007;
+		const proto::u32_t esme_rsyserr			= 0x00000008;
+		const proto::u32_t esme_rinvsrcadr		= 0x0000000A;
+		const proto::u32_t esme_rinvdstadr		= 0x0000000B;
+		const proto::u32_t esme_rinvmsgid		= 0x0000000C;
+		const proto::u32_t esme_rbindfail		= 0x0000000D;
+		const proto::u32_t esme_rinvpaswd		= 0x0000000E;
+		const proto::u32_t esme_rinvsysid		= 0x0000000F;
+		const proto::u32_t esme_rcancelfail		= 0x00000011;
+		const proto::u32_t esme_rreplacefail	= 0x00000013;
+		const proto::u32_t esme_rmsgqful		= 0x00000014;
+		const proto::u32_t esme_rinvsertyp		= 0x00000015;
+		const proto::u32_t esme_rinvnumdests	= 0x00000033;
+		const proto::u32_t esme_rinvdlname		= 0x00000034;
+		const proto::u32_t esme_rinvdestflag	= 0x00000040;
+		const proto::u32_t esme_rinvsubrep		= 0x00000042;
+		const proto::u32_t esme_rinvesmclass	= 0x00000043;
+		const proto::u32_t esme_rcntsubdl		= 0x00000044;
+		const proto::u32_t esme_rsubmitfail		= 0x00000045;
+		const proto::u32_t esme_rinvsrcton		= 0x00000048;
+		const proto::u32_t esme_rinvsrcnpi		= 0x00000049;
+		const proto::u32_t esme_rinvdstton		= 0x00000050;
+		const proto::u32_t esme_rinvdstnpi		= 0x00000051;
+		const proto::u32_t esme_rinvsystyp		= 0x00000053;
+		const proto::u32_t esme_rinvrepflag		= 0x00000054;
+		const proto::u32_t esme_rinvnummsgs		= 0x00000055;
+		const proto::u32_t esme_rthrottled		= 0x00000058;
+		const proto::u32_t esme_rinvsched		= 0x00000061;
+		const proto::u32_t esme_rinvexpiry		= 0x00000062;
+		const proto::u32_t esme_rinvdftmsgid	= 0x00000063;
+		const proto::u32_t esme_rx_t_appn		= 0x00000064;
+		const proto::u32_t esme_rx_p_appn		= 0x00000065;
+		const proto::u32_t esme_rx_r_appn		= 0x00000066;
+		const proto::u32_t esme_rqueryfail		= 0x00000067;
+		const proto::u32_t esme_rinvoptparstream= 0x000000C0;
+		const proto::u32_t esme_roptparnotallwd	= 0x000000C1;
+		const proto::u32_t esme_rinvparlen		= 0x000000C2;
+		const proto::u32_t esme_rmissingoptparam= 0x000000C3;
+		const proto::u32_t esme_rinvoptparamval	= 0x000000C4;
+		const proto::u32_t esme_rdeliveryfailure= 0x000000FE;
+		const proto::u32_t esme_runknownerr		= 0x000000FF;
 	}
 
 	/* SMPP 3.4 TLV IDS */
@@ -193,13 +193,108 @@ namespace smpp {
 	/* SMPP 3.4 SERVICE TYPES */
 
 	namespace service_types {
-		const proto::u8p_t	default_			= NULL;
-		const proto::u8_t cell_msging[]			= "CMT";
-		const proto::u8_t cell_paging[]			= "CPT";
-		const proto::u8_t voice_mail_notif[]	= "VMN";
-		const proto::u8_t voice_mail_alert[]	= "VMA";
-		const proto::u8_t wireless_app_protocol	= "WAP";
-		const proto::u8_t unstruct_sup_serv_dat	= "USSD";
+		const proto::u8p_t	default_				= NULL;
+		const proto::u8_t cell_msging[]				= "CMT";
+		const proto::u8_t cell_paging[]				= "CPT";
+		const proto::u8_t voice_mail_notif[]		= "VMN";
+		const proto::u8_t voice_mail_alert[]		= "VMA";
+		const proto::u8_t wireless_app_protocol[]	= "WAP";
+		const proto::u8_t unstruct_sup_serv_dat[]	= "USSD";
+	}
+
+	/* SMPP 3.4 esm class consts */
+
+	namespace esm_c {
+
+		namespace submit_sm {
+			/* messaging mode, you should use switch (var&0x03) */
+			const proto::u8_t default_sms_mode		= 0x00;
+			const proto::u8_t datagram_mode			= 0x01;
+			const proto::u8_t forward_mode			= 0x02;
+			const proto::u8_t store_n_forward_mode	= 0x03;
+
+			/* message type, you should use switch (var&0x3C) */
+			const proto::u8_t default_msg_type		= 0x00;
+			const proto::u8_t esme_delivery_ack		= 0x08;
+			const proto::u8_t esme_manual_ack		= 0x10;
+
+			/* gsm network specific features, your should use switch (var&0xC0)*/
+			const proto::u8_t no_spec_features_sel	= 0x00;
+			const proto::u8_t udhi_ind				= 0x40;
+			const proto::u8_t set_reply_path		= 0x80;
+			const proto::u8_t set_udhi_reply_path	= 0xC0;
+		}
+
+		namespace submit_multi {
+			/* messaging mode, you should use switch (var&0x03) */
+			const proto::u8_t default_sms_mode		= 0x00;
+			const proto::u8_t datagram_mode			= 0x01;
+			const proto::u8_t forward_mode			= 0x02;
+			const proto::u8_t store_n_forward_mode	= 0x03;
+
+			/* message type, you should use switch (var&0x3C) */
+			const proto::u8_t default_msg_type		= 0x00;
+			const proto::u8_t esme_delivery_ack		= 0x08;
+			const proto::u8_t esme_manual_ack		= 0x10;
+
+			/* gsm network specific features, your should use switch (var&0xC0)*/
+			const proto::u8_t no_spec_features_sel	= 0x00;
+			const proto::u8_t udhi_ind				= 0x40;
+			const proto::u8_t set_reply_path		= 0x80;
+			const proto::u8_t set_udhi_reply_path	= 0xC0;
+		}
+
+		namespace data_sm {
+			const proto::u8_t not_applicable		= 0x00;
+
+			/* message type, you should use switch (var & 0x3C) */
+			const proto::u8_t default_msg_typ		= 0x00;
+			const proto::u8_t smsc_delivery_rec		= 0x04;
+			const proto::u8_t sme_delivery_ack		= 0x08;
+			const proto::u8_t sme_manual_ack		= 0x10;
+			const proto::u8_t conv_abort			= 0x18;
+			const proto::u8_t inter_delivery_notf	= 0x20;
+
+			/* gsm network specific features, 0xC0 */
+			const proto::u8_t no_spec_select		= 0x00;
+			const proto::u8_t udhi_ind_set			= 0x40;
+			const proto::u8_t reply_path			= 0x80;
+			const proto::u8_t udhi_n_reply_path		= 0xC0;
+			/* messaging mode, you should use switch (var&0x03) */
+			const proto::u8_t default_sms_mode		= 0x00;
+			const proto::u8_t datagram_mode			= 0x01;
+			const proto::u8_t forward_mode			= 0x02;
+			const proto::u8_t store_n_forward_mode	= 0x03;
+
+			/* message type, you should use switch (var&0x3C) */
+			const proto::u8_t default_msg_type		= 0x00;
+			const proto::u8_t esme_delivery_ack		= 0x08;
+			const proto::u8_t esme_manual_ack		= 0x10;
+
+			/* gsm network specific features, your should use switch (var&0xC0)*/
+			const proto::u8_t no_spec_features_sel	= 0x00;
+			const proto::u8_t udhi_ind				= 0x40;
+			const proto::u8_t set_reply_path		= 0x80;
+			const proto::u8_t set_udhi_reply_path	= 0xC0;
+		}
+
+		namespace deliver_sm {
+			const proto::u8_t not_applicable		= 0x00;
+
+			/* message type, you should use switch (var & 0x3C) */
+			const proto::u8_t default_msg_typ		= 0x00;
+			const proto::u8_t smsc_delivery_rec		= 0x04;
+			const proto::u8_t sme_delivery_ack		= 0x08;
+			const proto::u8_t sme_manual_ack		= 0x10;
+			const proto::u8_t conv_abort			= 0x18;
+			const proto::u8_t inter_delivery_notf	= 0x20;
+
+			/* gsm network specific features, 0xC0 */
+			const proto::u8_t no_spec_select		= 0x00;
+			const proto::u8_t udhi_ind_set			= 0x40;
+			const proto::u8_t reply_path			= 0x80;
+			const proto::u8_t udhi_n_reply_path		= 0xC0;
+		}
 	}
 
 
