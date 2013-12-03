@@ -387,6 +387,7 @@ namespace smpp {
 			proto::u8_t addr_npi;
 			proto::u8_t addr_range[41];
 
+			/* this values will not be writed to buffer */
 			std::size_t sys_id_len;
 			std::size_t password_len;
 			std::size_t sys_type_len;
@@ -1616,8 +1617,93 @@ namespace smpp {
 
 		template <class LogT>
 		void write(proto::u8_t * buf, const submit_sm & r, LogT & L) {
+
 			using namespace utl;
+
 			buf = write(buf, r.command, L);
+
+			buf = w::scpy(buf, r.service_type, 6);
+
+			/* Writing address of ESME */
+			buf = w::cp_u8(buf, r.src_addr_ton);
+			buf = w::cp_u8(buf, r.src_addr_npi);
+			buf = w::scpy(buf, r.src_addr, 21);
+
+			/* Writing ME */
+			buf = w::cp_u8(buf, r.dst_addr_ton);
+			buf = w::cp_u8(buf, r.dst_addr_npi);
+			buf = w::scpy(buf, r.dst_addr, 21);
+
+			buf = w::cp_u8(buf, r.esm_class);
+			buf = w::cp_u8(buf, r.protocol_id);
+			buf = w::cp_u8(buf, r.priority_flag);
+
+			buf = w::scpy(buf, r.schedule_delivery_time, 17);
+			buf = w::scpy(buf, r.validity_period, 17);
+
+			buf = w::cp_u8(buf, r.registered_delivery);
+			buf = w::cp_u8(buf, r.replace_if_present_flag);
+			buf = w::cp_u8(buf, r.data_coding);
+
+			buf = w::cp_u8(buf, r.sm_default_msg_id);
+
+			buf = w::cp_u8(buf, r.sm_len);
+			buf = w::scpy(buf, r.short_message, 254);
+
+			if (r.user_message_reference.tag != 0)
+				buf = write(buf, r.user_message_reference, L);
+			if (r.source_port.tag != 0)
+				buf = write(buf, r.source_port, L);
+			if (r.source_addr_subunit.tag != 0)
+				buf = write(buf, r.source_addr_subunit, L);
+			if (r.dest_port.tag != 0)
+				buf = write(buf, r.dest_port.tag, L);
+			if (r.dest_addr_subunit.tag != 0)
+				buf = write(buf, r.dest_addr_subunit, L);
+			if (r.sar_msg_ref_num.tag != 0)
+				buf = write(buf, r.sar_msg_ref_num, L);
+			if (r.sar_total_segments.tag != 0)
+				buf = write(buf, r.sar_total_segments, L);
+			if (r.sar_segment_seqnum.tag != 0)
+				buf = write(buf, r.sar_segment_seqnum, L);
+			if (r.more_messages_to_send.tag != 0)
+				buf = write(buf, r.more_messages_to_send, L);
+			if (r.payload_type.tag != 0)
+				buf = write(buf, r.payload_type, L);
+			if (r.message_payload.tag != 0)
+				buf = write(buf, r.message_payload.tag, L);
+			if (r.privacy_indicator.tag != 0)
+				buf = write(buf, r.privacy_indicator, L);
+			if (r.callback_num.tag != 0)
+				buf = write(buf, r.callback_num, L);
+			if (r.callback_num_pres_ind.tag != 0)
+				buf = write(buf, r.callback_num_pres_ind, L);
+			if (r.callback_num_atag.tag != 0)
+				buf = write(buf, r.callback_num_atag, L);
+			if (r.source_subaddress.tag != 0)
+				buf = write(buf, r.source_subaddress, L);
+			if (r.user_response_code.tag != 0)
+				buf = write(buf, r.user_response_code, L);
+			if (r.display_time.tag != 0)
+				buf = write(buf, r.display_time, L);
+			if (r.sms_signal.tag != 0)
+				buf = write(buf, r.sms_signal, L);
+			if (r.ms_validity.tag != 0)
+				buf = write(buf, r.ms_validity, L);
+			if (r.ms_msg_wait_facilities.tag != 0)
+				buf = write(buf, r.ms_msg_wait_facilities, L);
+			if (r.number_of_messages.tag != 0)
+				buf =write(buf, r.number_of_messages, L);
+			if (r.alert_on_message_delivery.tag != 0)
+				buf = write(buf, r.alert_on_message_delivery, L);
+			if (r.language_indicator.tag != 0)
+				buf = write(buf, r.language_indicator, L);
+			if (r.its_reply_type.tag != 0)
+				buf = write(buf, r.its_reply_type, L);
+			if (r.its_session_info.tag != 0)
+				buf = write(buf, r.its_session_info, L);
+			if (r.ussd_service_op.tag != 0)
+				buf = write(buf, r.ussd_service_op, L);
 		}
 
 		template <class LogT>
@@ -1730,26 +1816,81 @@ namespace smpp {
 		}
 
 		template< typename CharT, typename TraitsT >
-		std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const submit_sm & r) {
+		std::basic_ostream< CharT, TraitsT >&
+		operator<<(std::basic_ostream< CharT, TraitsT >& L
+				, const submit_sm & r) {
 			L << "submit_sm: "
-				<< " [service_type:" << r.service_type << "]"
-				<< " [src_addr_ton:" << std::bitset<8>(r.src_addr_ton) << "]"
-				<< " [src_addr_npi:" << std::bitset<8>(r.src_addr_npi) << "]"
-				<< " [src_addr:" << r.src_addr<< "]"
-				<< " [dst_addr_ton:" << std::bitset<8>(r.dst_addr_ton) << "]"
-				<< " [dst_addr_npi:" << std::bitset<8>(r.dst_addr_npi) << "]"
-				<< " [dst_addr:" << r.dst_addr<< "]"
-				<< " [esm_class:" << std::bitset<8>(r.esm_class) << "]"
-				<< " [protocol_id:" << static_cast<int>(r.protocol_id) << "]"
-				<< " [priority_flag:" << static_cast<int>(r.priority_flag) << "]"
-				<< " [schedule_delivery_time:" << r.schedule_delivery_time << "]"
-				<< " [validity_period:" << r.validity_period << "]"
-				<< " [registered_delivery:" << static_cast<bool>(r.registered_delivery) << "]"
-				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag) << "]"
-				<< " [data_coding:" << std::bitset<8>(r.data_coding) << "]"
-				<< " [sm_default_msg_id:" << static_cast<int>(r.sm_default_msg_id) << "]"
-				<< " [sm_len:" << r.sm_len << "]"
-				<< " [short_message:" << std::string(r.short_message, r.short_message + r.sm_len) << "]"
+				<< " [service_type:"
+					<< r.service_type
+				<< "]"
+
+				<< " [src_addr_ton:"
+					<< std::bitset<8>(r.src_addr_ton)
+				<< "]"
+
+				<< " [src_addr_npi:"
+					<< std::bitset<8>(r.src_addr_npi)
+				<< "]"
+
+				<< " [src_addr:"
+					<< r.src_addr
+				<< "]"
+
+				<< " [dst_addr_ton:"
+					<< std::bitset<8>(r.dst_addr_ton)
+				<< "]"
+
+				<< " [dst_addr_npi:"
+					<< std::bitset<8>(r.dst_addr_npi)
+				<< "]"
+
+				<< " [dst_addr:"
+					<< r.dst_addr
+				<< "]"
+
+				<< " [esm_class:"
+					<< std::bitset<8>(r.esm_class)
+				<< "]"
+
+				<< " [protocol_id:"
+					<< static_cast<int>(r.protocol_id)
+				<< "]"
+
+				<< " [priority_flag:"
+					<< static_cast<int>(r.priority_flag)
+				<< "]"
+
+				<< " [schedule_delivery_time:"
+					<< r.schedule_delivery_time
+				<< "]"
+
+				<< " [validity_period:"
+					<< r.validity_period
+				<< "]"
+
+				<< " [registered_delivery:"
+					<< static_cast<bool>(r.registered_delivery)
+				<< "]"
+
+				<< " [replace_if_present_flag:"
+					<< static_cast<bool>(r.replace_if_present_flag)
+				<< "]"
+
+				<< " [data_coding:"
+					<< std::bitset<8>(r.data_coding)
+				<< "]"
+
+				<< " [sm_default_msg_id:"
+					<< static_cast<int>(r.sm_default_msg_id)
+				<< "]"
+
+				<< " [sm_len:"
+					<< r.sm_len
+				<< "]"
+
+				<< " [short_message:"
+					<< std::string(r.short_message, r.short_message + r.sm_len)
+				<< "]"
 			;
 
 			if (r.user_message_reference.tag != 0) {
