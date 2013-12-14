@@ -121,7 +121,7 @@ namespace smpp {
 		const proto::u16_t dest_networ_type					= 0x0006;
 		const proto::u16_t dest_bearer_type					= 0x0007;
 		const proto::u16_t dest_telematics_id				= 0x0008;
-		const proto::u16_t source_addr_subunit				= 0x000D;
+		const proto::u16_t src_addr_subunit				= 0x000D;
 		const proto::u16_t source_networ_type				= 0x000E;
 		const proto::u16_t source_bearer_type				= 0x000F;
 		const proto::u16_t source_telematics_id				= 0x0010;
@@ -322,7 +322,7 @@ namespace smpp {
 	namespace {
 
 		typedef tlv<proto::u8_t>		tlv_dest_addr_subunit;
-		typedef tlv<proto::u8_t>		tlv_source_addr_subunit;
+		typedef tlv<proto::u8_t>		tlv_src_addr_subunit;
 		typedef tlv<proto::u8_t>		tlv_dest_network_type;
 		typedef tlv<proto::u8_t>		tlv_source_network_type;
 		typedef tlv<proto::u8_t>		tlv_dest_bearer_type;
@@ -521,7 +521,7 @@ namespace smpp {
 
 			tlv_user_message_reference		user_message_reference;
 			tlv_source_port					source_port;
-			tlv_source_addr_subunit			source_addr_subunit;
+			tlv_src_addr_subunit			src_addr_subunit;
 			tlv_dest_port					dest_port;
 			tlv_dest_addr_subunit			dest_addr_subunit;
 			tlv_sar_msg_ref_num				sar_msg_ref_num;
@@ -574,9 +574,9 @@ namespace smpp {
 		struct submit_multi {
 			pdu command;
 			proto::u8_t service_type[6];
-			proto::u8_t source_addr_ton;
-			proto::u8_t source_addr_npi;
-			proto::u8_t source_addr[21];
+			proto::u8_t src_addr_ton;
+			proto::u8_t src_addr_npi;
+			proto::u8_t src_addr[21];
 			proto::u8_t number_of_dests;
 			/* TODO: 4.5.1 dest_address(es) */
 			proto::u8_t esm_class;
@@ -593,8 +593,8 @@ namespace smpp {
 
 			tlv_user_message_reference	user_message_reference;
 			tlv_source_port				source_port;
-			tlv_source_addr_subunit		source_addr_subunit;
-			tlv_dest_port				destination_port;
+			tlv_src_addr_subunit		src_addr_subunit;
+			tlv_dest_port				dest_port;
 			tlv_dest_addr_subunit		dest_addr_subunit;
 			tlv_sar_msg_ref_num			sar_msg_ref_num;
 			tlv_sar_total_segments		sar_total_segments;
@@ -613,6 +613,11 @@ namespace smpp {
 			tlv_ms_msg_wait_facilities	ms_msg_wait_facilities;
 			tlv_alert_on_message_delivery	alert_on_message_delivery;
 			tlv_language_indicator		language_indicator;
+
+			std::size_t service_type_len;
+			std::size_t src_addr_len;
+			std::size_t dst_addr_len;
+			std::size_t short_message_len;
 
 			submit_multi()
 				: command()
@@ -659,9 +664,9 @@ namespace smpp {
 			pdu command;
 
 			proto::u8_t	service_type[6];
-			proto::u8_t source_addr_ton;
-			proto::u8_t	source_addr_npi;
-			proto::u8_t	source_addr[21];
+			proto::u8_t src_addr_ton;
+			proto::u8_t	src_addr_npi;
+			proto::u8_t	src_addr[21];
 			proto::u8_t	dest_addr_ton;
 			proto::u8_t dest_addr_npi;
 			proto::u8_t destination_addr[21];
@@ -680,7 +685,7 @@ namespace smpp {
 			/* OPTIONAL PARAMETERS for DELIVER_SM */
 			tlv_user_message_reference	user_message_reference;
 			tlv_source_port				source_port;
-			tlv_dest_port				destination_port;
+			tlv_dest_port				dest_port;
 			tlv_sar_msg_ref_num			sar_msg_ref_num;
 			tlv_sar_total_segments		sar_total_segments;
 			tlv_sar_segment_seqnum		sar_segment_seqnum;
@@ -716,9 +721,9 @@ namespace smpp {
 			pdu command;
 
 			proto::u8_t		service_type[6];
-			proto::u8_t		source_addr_ton;
-			proto::u8_t		source_addr_npi;
-			proto::u8_t		source_addr[65];
+			proto::u8_t		src_addr_ton;
+			proto::u8_t		src_addr_npi;
+			proto::u8_t		src_addr[65];
 			proto::u8_t		dest_addr_ton;
 			proto::u8_t		dest_addr_npi;
 			proto::u8_t		destination_addr[65];
@@ -729,11 +734,11 @@ namespace smpp {
 			/* OPTIONAL PARAMETERS for DATA SM */
 
 			tlv_source_port					source_port;
-			tlv_source_addr_subunit			source_addr_subunit;
+			tlv_src_addr_subunit			src_addr_subunit;
 			tlv_source_network_type			source_network_type;
 			tlv_source_bearer_type			source_bearer_type;
 			tlv_source_telematics_id		source_telematics_id;
-			tlv_dest_port					destination_port;
+			tlv_dest_port					dest_port;
 			tlv_dest_addr_subunit			dest_addr_subunit;
 			tlv_dest_network_type			dest_network_type;
 			tlv_dest_bearer_type			dest_bearer_type;
@@ -795,9 +800,9 @@ namespace smpp {
 			pdu command;
 
 			proto::u8_t	message_id[65];
-			proto::u8_t	source_addr_ton;
-			proto::u8_t	source_addr_npi;
-			proto::u8_t	source_addr[21];
+			proto::u8_t	src_addr_ton;
+			proto::u8_t	src_addr_npi;
+			proto::u8_t	src_addr[21];
 
 			query_sm()
 				: command()
@@ -824,9 +829,9 @@ namespace smpp {
 
 			proto::u8_t	service_type[6];
 			proto::u8_t	message_id[65];
-			proto::u8_t	source_addr_ton;
-			proto::u8_t	source_addr_npi;
-			proto::u8_t	source_addr[21];
+			proto::u8_t	src_addr_ton;
+			proto::u8_t	src_addr_npi;
+			proto::u8_t	src_addr[21];
 			proto::u8_t	dest_addr_ton;
 			proto::u8_t dest_addr_npi;
 			proto::u8_t destination_addr[21];
@@ -850,9 +855,9 @@ namespace smpp {
 			pdu command;
 
 			proto::u8_t	message_id[65];
-			proto::u8_t	source_addr_ton;
-			proto::u8_t	source_addr_npi;
-			proto::u8_t	source_addr[21];
+			proto::u8_t	src_addr_ton;
+			proto::u8_t	src_addr_npi;
+			proto::u8_t	src_addr[21];
 			proto::u8_t schedule_delivery_time[17];
 			proto::u8_t validity_period[17];
 			proto::u8_t registered_delivery;
@@ -896,9 +901,9 @@ namespace smpp {
 		struct alert_notification {
 			pdu command;
 
-			proto::u8_t	source_addr_ton;
-			proto::u8_t	source_addr_npi;
-			proto::u8_t source_addr[65];
+			proto::u8_t	src_addr_ton;
+			proto::u8_t	src_addr_npi;
+			proto::u8_t src_addr[65];
 			proto::u8_t	esme_addr_ton;
 			proto::u8_t esme_addr_npi;
 			proto::u8_t	esme_addr;
@@ -1518,40 +1523,32 @@ namespace smpp {
 						, sizeof(r.sm_len)));
 
 			buf = p::cp_u16(asbuf(optid), buf);
-			buf -= sizeof(proto::u16_t);
+			/*
+			buf += sizeof(proto::u16_t);
+			*/
 
 			while (buf < bend) {
 				switch (optid) {
 					case option::user_message_reference:
-						buf = parse(r.user_message_reference, buf, L);
-						break;
+						buf = parse(r.user_message_reference, buf, L); break;
 					case option::source_port:
-						buf = parse(r.source_port, buf, L);
-						break;
-					case option::source_addr_subunit:
-						buf = parse(r.source_addr_subunit, buf, L);
-						break;
+						buf = parse(r.source_port, buf, L); break;
+					case option::src_addr_subunit:
+						buf = parse(r.src_addr_subunit, buf, L); break;
 					case option::dest_port:
-						buf = parse(r.dest_port, buf, L);
-						break;
+						buf = parse(r.dest_port, buf, L); break;
 					case option::dest_addr_subunit:
-						buf = parse(r.dest_addr_subunit, buf, L);
-						break;
+						buf = parse(r.dest_addr_subunit, buf, L); break;
 					case option::sar_msg_ref_num:
-						buf = parse(r.sar_msg_ref_num, buf, L);
-						break;
+						buf = parse(r.sar_msg_ref_num, buf, L); break;
 					case option::sar_total_segments:
-						buf = parse(r.sar_total_segments, buf, L);
-						break;
+						buf = parse(r.sar_total_segments, buf, L); break;
 					case option::sar_segment_seqnum:
-						buf = parse(r.sar_segment_seqnum, buf, L);
-						break;
+						buf = parse(r.sar_segment_seqnum, buf, L); break;
 					case option::more_messages_to_send:
-						buf = parse(r.more_messages_to_send, buf, L);
-						break;
+						buf = parse(r.more_messages_to_send, buf, L); break;
 					case option::payload_type:
-						buf = parse(r.payload_type, buf, L);
-						break;
+						buf = parse(r.payload_type, buf, L); break;
 					/* TODO: Parse message_payload*/
 					/*
 					case option::message_payload:
@@ -1559,151 +1556,97 @@ namespace smpp {
 						break;
 					*/
 					case option::privacy_indicator:
-						buf = parse(r.privacy_indicator, buf, L);
-						break;
+						buf = parse(r.privacy_indicator, buf, L); break;
 					case option::callback_num:
-						buf = parse(r.callback_num, buf, L);
-						break;
+						buf = parse(r.callback_num, buf, L); break;
 					case option::callback_num_pres_ind:
-						buf = parse(r.callback_num_pres_ind, buf, L);
-						break;
+						buf = parse(r.callback_num_pres_ind, buf, L); break;
 					case option::callback_num_atag:
-						buf = parse(r.callback_num_atag, buf, L);
-						break;
+						buf = parse(r.callback_num_atag, buf, L); break;
 					case option::source_subaddress:
-						buf = parse(r.source_subaddress, buf, L);
-						break;
+						buf = parse(r.source_subaddress, buf, L); break;
 					case option::dest_subaddress:
-						buf = parse(r.dest_subaddress, buf, L);
-						break;
+						buf = parse(r.dest_subaddress, buf, L); break;
 					case option::user_response_code:
-						buf = parse(r.user_response_code, buf, L);
-						break;
+						buf = parse(r.user_response_code, buf, L); break;
 					case option::display_time:
-						buf = parse(r.display_time, buf, L);
-						break;
+						buf = parse(r.display_time, buf, L); break;
 					case option::sms_signal:
-						buf = parse(r.sms_signal, buf, L);
-						break;
+						buf = parse(r.sms_signal, buf, L); break;
 					case option::ms_validity:
-						buf = parse(r.ms_validity, buf, L);
-						break;
+						buf = parse(r.ms_validity, buf, L); break;
 					case option::ms_msg_wait_facilities:
-						buf = parse(r.ms_msg_wait_facilities, buf, L);
-						break;
+						buf = parse(r.ms_msg_wait_facilities, buf, L); break;
 					case option::number_of_messages:
-						buf = parse(r.number_of_messages, buf, L);
-						break;
+						buf = parse(r.number_of_messages, buf, L); break;
 					case option::alert_on_message_delivery:
-						buf = parse(r.alert_on_message_delivery, buf, L);
-						break;
+						buf = parse(r.alert_on_message_delivery, buf, L); break;
 					case option::language_indicator:
-						buf = parse(r.language_indicator, buf, L);
-						break;
+						buf = parse(r.language_indicator, buf, L); break;
 					case option::its_reply_type:
-						buf = parse(r.its_reply_type, buf, L);
-						break;
+						buf = parse(r.its_reply_type, buf, L); break;
 					case option::its_session_info:
-						buf = parse(r.its_session_info, buf, L);
-						break;
+						buf = parse(r.its_session_info, buf, L); break;
 					case option::ussd_service_op:
-						buf = parse(r.ussd_service_op, buf, L);
-						break;
-					default:
-						return;
+						buf = parse(r.ussd_service_op, buf, L); break;
+					default: return;
 				}
+				buf = p::cp_u16(asbuf(optid), buf);
 			}
 		}
 
 		template <class LogT>
 		void write(proto::u8_t * buf, const submit_sm & r, LogT & L) {
-
 			using namespace utl;
-
 			buf = write(buf, r.command, L);
-
 			buf = w::scpy(buf, r.service_type, 6);
-
 			/* Writing address of ESME */
 			buf = w::cp_u8(buf, r.src_addr_ton);
 			buf = w::cp_u8(buf, r.src_addr_npi);
 			buf = w::scpy(buf, r.src_addr, 21);
-
 			/* Writing ME */
 			buf = w::cp_u8(buf, r.dst_addr_ton);
 			buf = w::cp_u8(buf, r.dst_addr_npi);
 			buf = w::scpy(buf, r.dst_addr, 21);
-
 			buf = w::cp_u8(buf, r.esm_class);
 			buf = w::cp_u8(buf, r.protocol_id);
 			buf = w::cp_u8(buf, r.priority_flag);
-
 			buf = w::scpy(buf, r.schedule_delivery_time, 17);
 			buf = w::scpy(buf, r.validity_period, 17);
-
 			buf = w::cp_u8(buf, r.registered_delivery);
 			buf = w::cp_u8(buf, r.replace_if_present_flag);
 			buf = w::cp_u8(buf, r.data_coding);
-
 			buf = w::cp_u8(buf, r.sm_default_msg_id);
-
 			buf = w::cp_u8(buf, r.sm_len);
 			buf = w::scpy(buf, r.short_message, 254);
 
-			if (r.user_message_reference.tag != 0)
-				buf = write(buf, r.user_message_reference, L);
-			if (r.source_port.tag != 0)
-				buf = write(buf, r.source_port, L);
-			if (r.source_addr_subunit.tag != 0)
-				buf = write(buf, r.source_addr_subunit, L);
-			if (r.dest_port.tag != 0)
-				buf = write(buf, r.dest_port.tag, L);
-			if (r.dest_addr_subunit.tag != 0)
-				buf = write(buf, r.dest_addr_subunit, L);
-			if (r.sar_msg_ref_num.tag != 0)
-				buf = write(buf, r.sar_msg_ref_num, L);
-			if (r.sar_total_segments.tag != 0)
-				buf = write(buf, r.sar_total_segments, L);
-			if (r.sar_segment_seqnum.tag != 0)
-				buf = write(buf, r.sar_segment_seqnum, L);
-			if (r.more_messages_to_send.tag != 0)
-				buf = write(buf, r.more_messages_to_send, L);
-			if (r.payload_type.tag != 0)
-				buf = write(buf, r.payload_type, L);
-			if (r.message_payload.tag != 0)
-				buf = write(buf, r.message_payload.tag, L);
-			if (r.privacy_indicator.tag != 0)
-				buf = write(buf, r.privacy_indicator, L);
-			if (r.callback_num.tag != 0)
-				buf = write(buf, r.callback_num, L);
-			if (r.callback_num_pres_ind.tag != 0)
-				buf = write(buf, r.callback_num_pres_ind, L);
-			if (r.callback_num_atag.tag != 0)
-				buf = write(buf, r.callback_num_atag, L);
-			if (r.source_subaddress.tag != 0)
-				buf = write(buf, r.source_subaddress, L);
-			if (r.user_response_code.tag != 0)
-				buf = write(buf, r.user_response_code, L);
-			if (r.display_time.tag != 0)
-				buf = write(buf, r.display_time, L);
-			if (r.sms_signal.tag != 0)
-				buf = write(buf, r.sms_signal, L);
-			if (r.ms_validity.tag != 0)
-				buf = write(buf, r.ms_validity, L);
-			if (r.ms_msg_wait_facilities.tag != 0)
-				buf = write(buf, r.ms_msg_wait_facilities, L);
-			if (r.number_of_messages.tag != 0)
-				buf =write(buf, r.number_of_messages, L);
-			if (r.alert_on_message_delivery.tag != 0)
-				buf = write(buf, r.alert_on_message_delivery, L);
-			if (r.language_indicator.tag != 0)
-				buf = write(buf, r.language_indicator, L);
-			if (r.its_reply_type.tag != 0)
-				buf = write(buf, r.its_reply_type, L);
-			if (r.its_session_info.tag != 0)
-				buf = write(buf, r.its_session_info, L);
-			if (r.ussd_service_op.tag != 0)
-				buf = write(buf, r.ussd_service_op, L);
+			if (r.user_message_reference.tag != 0)	buf = write(buf, r.user_message_reference, L);
+			if (r.source_port.tag != 0)				buf = write(buf, r.source_port, L);
+			if (r.src_addr_subunit.tag != 0)		buf = write(buf, r.src_addr_subunit, L);
+			if (r.dest_port.tag != 0)				buf = write(buf, r.dest_port.tag, L);
+			if (r.dest_addr_subunit.tag != 0)		buf = write(buf, r.dest_addr_subunit, L);
+			if (r.sar_msg_ref_num.tag != 0)			buf = write(buf, r.sar_msg_ref_num, L);
+			if (r.sar_total_segments.tag != 0)		buf = write(buf, r.sar_total_segments, L);
+			if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
+			if (r.more_messages_to_send.tag != 0)	buf = write(buf, r.more_messages_to_send, L);
+			if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
+			if (r.message_payload.tag != 0)			buf = write(buf, r.message_payload.tag, L);
+			if (r.privacy_indicator.tag != 0)		buf = write(buf, r.privacy_indicator, L);
+			if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
+			if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
+			if (r.callback_num_atag.tag != 0)		buf = write(buf, r.callback_num_atag, L);
+			if (r.source_subaddress.tag != 0)		buf = write(buf, r.source_subaddress, L);
+			if (r.user_response_code.tag != 0)		buf = write(buf, r.user_response_code, L);
+			if (r.display_time.tag != 0)			buf = write(buf, r.display_time, L);
+			if (r.sms_signal.tag != 0)				buf = write(buf, r.sms_signal, L);
+			if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
+			if (r.ms_msg_wait_facilities.tag != 0)	buf = write(buf, r.ms_msg_wait_facilities, L);
+			if (r.number_of_messages.tag != 0)		buf =write(buf, r.number_of_messages, L);
+			if (r.alert_on_message_delivery.tag!=0)	buf = write(buf, r.alert_on_message_delivery, L);
+			if (r.language_indicator.tag != 0)		buf = write(buf, r.language_indicator, L);
+			if (r.its_reply_type.tag != 0)			buf = write(buf, r.its_reply_type, L);
+			if (r.its_session_info.tag != 0)		buf = write(buf, r.its_session_info, L);
+			if (r.ussd_service_op.tag != 0)			buf = write(buf, r.ussd_service_op, L);
 		}
 
 		template <class LogT>
@@ -1719,6 +1662,150 @@ namespace smpp {
 			using namespace utl;
 			buf = write(buf, r.command, L);
 			buf = w::scpy(buf, r.msg_id, r.msg_id_len + 1);
+		}
+
+		template <class LogT>
+		void parse(submit_multi & r, const pdu * msg, LogT & L) {
+
+			using namespace utl;
+
+			proto::u16_t optid;
+			const proto::u8_t * buf, * bend;
+
+			buf = ascbuf(msg);
+			bend = buf + msg->len;
+
+			buf = parse(r.command, buf, L);
+			buf = p::scpyl(r.service_type, buf
+					, sizeof (r.service_type), r.service_type_len);
+			buf = p::cp_u8(&r.src_addr_ton, buf);
+			buf = p::cp_u8(&r.src_addr_npi, buf);
+			buf = p::scpyl(r.src_addr, buf
+					, sizeof (r.src_addr), r.src_addr_len);
+			buf = p::cp_u8(&r.number_of_dests, buf);
+			buf = p::cp_u8(&r.esm_class, buf);
+			buf = p::cp_u8(&r.protocol_id, buf);
+			buf = p::cp_u8(&r.priority_flag, buf);
+			buf = p::scpyf(r.schedule_delivery_time, buf
+					, sizeof (r.schedule_delivery_time));
+			buf = p::scpyf(r.validity_period, buf
+					, sizeof (r.validity_period));
+			buf = p::cp_u8(&r.registered_delivery, buf);
+			buf = p::cp_u8(&r.replace_if_present_flag, buf);
+			buf = p::cp_u8(&r.data_coding, buf);
+			buf = p::cp_u8(&r.sm_default_msg_id, buf);
+			buf = p::cp_u8(&r.sm_length, buf);
+			buf = p::scpyl(r.short_message, buf
+					, sizeof (r.short_message), r.short_message_len);
+
+			buf = p::cp_u16(asbuf(optid), buf);
+			/*
+			buf += sizeof(proto::u16_t);
+			*/
+
+			while (buf < bend) {
+				switch (optid) {
+					case option::user_message_reference:
+						buf = parse(r.user_message_reference, buf, L); break;
+					case option::source_port:
+						buf = parse(r.source_port, buf, L); break;
+					case option::src_addr_subunit:
+						buf = parse(r.src_addr_subunit, buf, L); break;
+					case option::dest_port:
+						buf = parse(r.dest_port, buf, L); break;
+					case option::dest_addr_subunit:
+						buf = parse(r.dest_addr_subunit, buf, L); break;
+					case option::sar_msg_ref_num:
+						buf = parse(r.sar_msg_ref_num, buf, L); break;
+					case option::sar_total_segments:
+						buf = parse(r.sar_total_segments, buf, L); break;
+					case option::sar_segment_seqnum:
+						buf = parse(r.sar_segment_seqnum, buf, L); break;
+					case option::payload_type:
+						buf = parse(r.payload_type, buf, L); break;
+					/* TODO: Parse message_payload*/
+					/*
+					case option::message_payload:
+						buf = parse(r.message_payload, buf, L);
+						break;
+					*/
+					case option::privacy_indicator:
+						buf = parse(r.privacy_indicator, buf, L); break;
+					case option::callback_num:
+						buf = parse(r.callback_num, buf, L); break;
+					case option::callback_num_pres_ind:
+						buf = parse(r.callback_num_pres_ind, buf, L); break;
+					case option::callback_num_atag:
+						buf = parse(r.callback_num_atag, buf, L); break;
+					case option::source_subaddress:
+						buf = parse(r.source_subaddress, buf, L); break;
+					case option::dest_subaddress:
+						buf = parse(r.dest_subaddress, buf, L); break;
+					case option::display_time:
+						buf = parse(r.display_time, buf, L); break;
+					case option::sms_signal:
+						buf = parse(r.sms_signal, buf, L); break;
+					case option::ms_validity:
+						buf = parse(r.ms_validity, buf, L); break;
+					case option::ms_msg_wait_facilities:
+						buf = parse(r.ms_msg_wait_facilities, buf, L); break;
+					case option::alert_on_message_delivery:
+						buf = parse(r.alert_on_message_delivery, buf, L); break;
+					case option::language_indicator:
+						buf = parse(r.language_indicator, buf, L); break;
+					default: return;
+				}
+				buf = p::cp_u16(asbuf(optid), buf);
+			}
+		}
+
+		template <class LogT>
+		void write(proto::u8_t * buf, const submit_multi & r, LogT & L) {
+			using namespace utl;
+			buf = write(buf, r.command, L);
+			buf = w::scpy(buf, r.service_type, 6);
+			
+			buf = w::cp_u8(buf, r.src_addr_ton);
+			buf = w::cp_u8(buf, r.src_addr_npi);
+			buf = w::scpy(buf, r.src_addr, 21);
+			buf = w::cp_u8(buf, r.number_of_dests);
+			/*
+			TODO dest_address(es)
+			*/
+			buf = w::cp_u8(buf, r.esm_class);
+			buf = w::cp_u8(buf, r.protocol_id);
+			buf = w::cp_u8(buf, r.priority_flag);
+			buf = w::scpy(buf, r.schedule_delivery_time, 17);
+			buf = w::scpy(buf, r.validity_period, 17);
+			buf = w::cp_u8(buf, r.registered_delivery);
+			buf = w::cp_u8(buf, r.replace_if_present_flag);
+			buf = w::cp_u8(buf, r.data_coding);
+			buf = w::cp_u8(buf, r.sm_default_msg_id);
+			buf = w::cp_u8(buf, r.sm_length);
+			buf = w::scpy(buf, r.short_message, 254);
+
+			if (r.user_message_reference.tag != 0)	buf = write(buf, r.user_message_reference, L);
+			if (r.source_port.tag != 0)				buf = write(buf, r.source_port, L);
+			if (r.src_addr_subunit.tag != 0)		buf = write(buf, r.src_addr_subunit, L);
+			if (r.dest_port.tag != 0)				buf = write(buf, r.dest_port.tag, L);
+			if (r.dest_addr_subunit.tag != 0)		buf = write(buf, r.dest_addr_subunit, L);
+			if (r.sar_msg_ref_num.tag != 0)			buf = write(buf, r.sar_msg_ref_num, L);
+			if (r.sar_total_segments.tag != 0)		buf = write(buf, r.sar_total_segments, L);
+			if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
+			if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
+			if (r.message_payload.tag != 0)			buf = write(buf, r.message_payload.tag, L);
+			if (r.privacy_indicator.tag != 0)		buf = write(buf, r.privacy_indicator, L);
+			if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
+			if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
+			if (r.callback_num_atag.tag != 0)		buf = write(buf, r.callback_num_atag, L);
+			if (r.source_subaddress.tag != 0)		buf = write(buf, r.source_subaddress, L);
+			if (r.dest_subaddress.tag != 0)			buf = write(buf, r.dest_subaddress, L);
+			if (r.display_time.tag != 0)			buf = write(buf, r.display_time, L);
+			if (r.sms_signal.tag != 0)				buf = write(buf, r.sms_signal, L);
+			if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
+			if (r.ms_msg_wait_facilities.tag != 0)	buf = write(buf, r.ms_msg_wait_facilities, L);
+			if (r.alert_on_message_delivery.tag!=0)	buf = write(buf, r.alert_on_message_delivery, L);
+			if (r.language_indicator.tag != 0)		buf = write(buf, r.language_indicator, L);
 		}
 
 	}
@@ -1819,79 +1906,41 @@ namespace smpp {
 		std::basic_ostream< CharT, TraitsT >&
 		operator<<(std::basic_ostream< CharT, TraitsT >& L
 				, const submit_sm & r) {
-			L << "submit_sm: "
-				<< " [service_type:"
-					<< r.service_type
-				<< "]"
+			L	<< "submit_sm: " << " [service_type:" << r.service_type << "]"
 
-				<< " [src_addr_ton:"
-					<< std::bitset<8>(r.src_addr_ton)
-				<< "]"
+				<< " [src_addr_ton:" << std::bitset<8>(r.src_addr_ton) << "]"
 
-				<< " [src_addr_npi:"
-					<< std::bitset<8>(r.src_addr_npi)
-				<< "]"
+				<< " [src_addr_npi:" << std::bitset<8>(r.src_addr_npi) << "]"
 
-				<< " [src_addr:"
-					<< r.src_addr
-				<< "]"
+				<< " [src_addr:" << r.src_addr << "]"
 
-				<< " [dst_addr_ton:"
-					<< std::bitset<8>(r.dst_addr_ton)
-				<< "]"
+				<< " [dst_addr_ton:" << std::bitset<8>(r.dst_addr_ton) << "]"
 
-				<< " [dst_addr_npi:"
-					<< std::bitset<8>(r.dst_addr_npi)
-				<< "]"
+				<< " [dst_addr_npi:" << std::bitset<8>(r.dst_addr_npi) << "]"
 
-				<< " [dst_addr:"
-					<< r.dst_addr
-				<< "]"
+				<< " [dst_addr:" << r.dst_addr << "]"
 
-				<< " [esm_class:"
-					<< std::bitset<8>(r.esm_class)
-				<< "]"
+				<< " [esm_class:" << std::bitset<8>(r.esm_class) << "]"
 
-				<< " [protocol_id:"
-					<< static_cast<int>(r.protocol_id)
-				<< "]"
+				<< " [protocol_id:" << static_cast<int>(r.protocol_id) << "]"
 
-				<< " [priority_flag:"
-					<< static_cast<int>(r.priority_flag)
-				<< "]"
+				<< " [priority_flag:" << static_cast<int>(r.priority_flag) << "]"
 
-				<< " [schedule_delivery_time:"
-					<< r.schedule_delivery_time
-				<< "]"
+				<< " [schedule_delivery_time:" << r.schedule_delivery_time << "]"
 
-				<< " [validity_period:"
-					<< r.validity_period
-				<< "]"
+				<< " [validity_period:" << r.validity_period << "]"
 
-				<< " [registered_delivery:"
-					<< static_cast<bool>(r.registered_delivery)
-				<< "]"
+				<< " [registered_delivery:" << static_cast<bool>(r.registered_delivery) << "]"
 
-				<< " [replace_if_present_flag:"
-					<< static_cast<bool>(r.replace_if_present_flag)
-				<< "]"
+				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag) << "]"
 
-				<< " [data_coding:"
-					<< std::bitset<8>(r.data_coding)
-				<< "]"
+				<< " [data_coding:" << std::bitset<8>(r.data_coding) << "]"
 
-				<< " [sm_default_msg_id:"
-					<< static_cast<int>(r.sm_default_msg_id)
-				<< "]"
+				<< " [sm_default_msg_id:" << static_cast<int>(r.sm_default_msg_id) << "]"
 
-				<< " [sm_len:"
-					<< r.sm_len
-				<< "]"
+				<< " [sm_len:" << r.sm_len << "]"
 
-				<< " [short_message:"
-					<< std::string(r.short_message, r.short_message + r.sm_len)
-				<< "]"
-			;
+				<< " [short_message:" << std::string(r.short_message, r.short_message + r.sm_len) << "]" ;
 
 			if (r.user_message_reference.tag != 0) {
 				L << " [user_message_reference:"
@@ -1905,9 +1954,9 @@ namespace smpp {
 					<< "]";
 			}
 
-			if (r.source_addr_subunit.tag != 0) {
-				L << " [source_addr_subunit:"
-					<< r.source_addr_subunit
+			if (r.src_addr_subunit.tag != 0) {
+				L << " [src_addr_subunit:"
+					<< r.src_addr_subunit
 					<< "]";
 			}
 
