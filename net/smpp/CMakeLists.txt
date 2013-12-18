@@ -48,4 +48,6 @@ foreach(header ${headers})
 endforeach(header)
 
 add_custom_target(copy_${pname}_headers ALL DEPENDS ${HEADERS})
+add_dependencies(${pname} copy_${pname}_headers)
+
 install(TARGETS ${pname} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../Lib)

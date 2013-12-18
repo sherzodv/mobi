@@ -1,6 +1,10 @@
 
 #include <ss7/sccp.hpp>
 #include <ss7/m3ua.hpp>
+#include <ss7/tcap.hpp>
+#include <ss7/map.hpp>
+#include <asn/ber.hpp>
+
 #include <iostream>
 #include <cstring>
 
@@ -115,13 +119,67 @@ void test_m3ua() {
 	m3ua::dump(std::cout, buf, sizeof(m3ua_raw1));
 }
 
+void test_tcap() {
+
+	using namespace ss7;
+	using namespace asn;
+
+	const tcap::proto::u8_t *cur, *cend;
+	tcap::proto::u8_t buf[255];
+
+	const tcap::proto::u8_t tcap_raw1[] =
+		"\x62\x27\x48\x04\x29\x00\x32\xce\x6c\x1f\xa1\x1d\x02\x01\x01\x02"
+		"\x01\x2d\x30\x15\x80\x07\x91\x99\x63\x65\x52\x57\xf8\x81\x01\x01"
+		"\x82\x07\x91\x99\x63\x95\x99\x99\xf1";
+
+	(void)(buf);
+	(void)(tcap_raw1);
+
+	using ber::operator<<;
+
+	ber::tag tag;
+
+	cur = tcap_raw1;
+	cend = tcap_raw1 + sizeof(tcap_raw1);
+
+	/* Parse TCAP Message type tag with len */
+	cur = ber::parse_tag(tag, cur, cend, std::cout);
+	if (cur == nullptr) {
+		std::cout << "Can't parse TC message type tag" << std::endl;
+	}
+
+	/* TODO: check for dialog portion and parse if exists */
+
+	/* Parse TCAP Component portion tag with len */
+	cur = ber::parse_tag(tag, cur, cend, std::cout);
+	if (cur == nullptr) {
+		std::cout << "Can't parse TC component portion tag" << std::endl;
+	}
+
+	if (tag.len == 0) {
+		std::cout << "No components in TC message" << std::endl;
+		return;
+	}
+
+	while (cur < cend) {
+		/* Parse TCAP Component tag with len */
+		cur = ber::parse_tag(tag, cur, cend, std::cout);
+		if (cur == nullptr) {
+			std::cout << "Can't parse TC component" << std::endl;
+		}
+	}
+
+}
+
 int main() {
 
 	(void)(test_sccp);
 	(void)(test_m3ua);
+	(void)(test_tcap);
 
-	test_sccp();
-	test_m3ua();
+	//test_sccp();
+	//test_m3ua();
+	test_tcap();
 
 	return 0;
 }

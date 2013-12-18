@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-set(pname vision)
+set(pname asn)
 project(${pname})
 
 set(Boost_USE_STATIC_LIBS		off)
