@@ -209,12 +209,13 @@ namespace asn { namespace ber {
 
 			/* Reverse copy */
 			inline const u8_t * ypc(u8_t * dst, const u8_t * src, sz_t len) {
+				std::size_t templ = len;
 				src += len - 1;
 				while (len) {
 					*dst++ = *src--;
 					--len;
 				}
-				return src + len;
+				return src + templ + 1;
 			}
 		}
 
@@ -305,6 +306,12 @@ namespace asn { namespace ber {
 		proto::u64_t	len;
 	};
 
+	inline bool operator==(const tag & l, const tag & r) {
+		/* Use to determine type of element before parsing, that is
+		 * why we don't compare length here */
+		return l.klass == r.klass && l.form == r.form && l.code == r.code;
+	}
+
 	len_type get_len_type(proto::u8_t first) {
 		/* 0x80 0b10000000 */
 		/* 0x7F 0b01111111 */
@@ -322,6 +329,20 @@ namespace asn { namespace ber {
 		raw_tag rt;
 		buf = p::cp_u8(asbuf(rt), buf);
 		return rt.code;
+	}
+
+	template <class LogT>
+	const proto::u8_t * parse_integer(proto::s8_t & val
+			, const proto::u8_t * buf
+			, const proto::u8_t * bend, LogT & L) {
+		(void)(L);
+		using namespace utl;
+
+		if (buf + 1 >= bend) {
+			return nullptr;
+		}
+
+		return p::cp_u8(asbuf(val), buf);
 	}
 
 	template <class LogT>
@@ -459,6 +480,7 @@ namespace asn { namespace ber {
 			<< t.klass
 			<< t.form
 			<< "[code:" << t.code << "]"
+			<< "[len:" << t.len << "]"
 		<< "]";
 		return L;
 	}

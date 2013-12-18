@@ -135,40 +135,67 @@ void test_tcap() {
 	(void)(buf);
 	(void)(tcap_raw1);
 
-	using ber::operator<<;
-
-	ber::tag tag;
-
 	cur = tcap_raw1;
-	cend = tcap_raw1 + sizeof(tcap_raw1);
+	cend = cur + sizeof(tcap_raw1) - 1;
 
-	/* Parse TCAP Message type tag with len */
-	cur = ber::parse_tag(tag, cur, cend, std::cout);
+	class parser: public tcap::parser<std::ostream> {
+		public:
+			parser(std::ostream & out): tcap::parser<std::ostream>(out) {}
+			virtual ~parser() {}
+
+		protected:
+
+			virtual action on_uni(const tcap::element::uni & el) {
+				(void)(el);
+				return stop;
+			}
+
+			virtual action on_begin(const tcap::element::begin & el) {
+				using tcap::operator<<;
+				L << std::hex << el << std::endl;
+				return resume;
+			}
+
+			virtual action on_end(const tcap::element::uni & el) {
+				(void)(el);
+				return stop;
+			}
+
+			virtual action on_resume(const tcap::element::resume & el) {
+				(void)(el);
+				return stop;
+			}
+
+			virtual action on_abort(const tcap::element::abort & el) {
+				(void)(el);
+				return stop;
+			}
+
+			virtual action on_invoke(const tcap::element::invoke & el) {
+				using tcap::operator<<;
+				L << el << std::endl;
+				return resume;
+			}
+
+			virtual action on_primitive(asn::ber::tag el, const tcap::proto::u8_t * data) {
+				(void)(data);
+				L << el << std::endl;
+				tcap::dump(L, data, el.len);
+				return resume;
+			}
+
+			virtual action on_constructor(asn::ber::tag el, const tcap::proto::u8_t * data) {
+				(void)(data);
+				L << el << std::endl;
+				return resume;
+			}
+
+	} p(std::cout);
+
+	cur = p.parse(cur, cend);
 	if (cur == nullptr) {
-		std::cout << "Can't parse TC message type tag" << std::endl;
+		std::cout << "parse error" << std::endl;
 	}
-
-	/* TODO: check for dialog portion and parse if exists */
-
-	/* Parse TCAP Component portion tag with len */
-	cur = ber::parse_tag(tag, cur, cend, std::cout);
-	if (cur == nullptr) {
-		std::cout << "Can't parse TC component portion tag" << std::endl;
-	}
-
-	if (tag.len == 0) {
-		std::cout << "No components in TC message" << std::endl;
-		return;
-	}
-
-	while (cur < cend) {
-		/* Parse TCAP Component tag with len */
-		cur = ber::parse_tag(tag, cur, cend, std::cout);
-		if (cur == nullptr) {
-			std::cout << "Can't parse TC component" << std::endl;
-		}
-	}
-
 }
 
 int main() {
