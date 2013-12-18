@@ -293,6 +293,25 @@ namespace asn { namespace ber {
 		tagform_constructor	= 0x01,
 	};
 
+	enum tag_code {
+		tagcode_boolean		= 0x01,
+		tagcode_integer		= 0x02,
+		tagcode_bitstring	= 0x03,
+		tagcode_octstring	= 0x04,
+		tagcode_null		= 0x05,
+		tagcode_oid			= 0x06,
+		tagcode_obj_descr	= 0x07,
+		tagcode_external	= 0x08,
+		tagcode_real		= 0x09,
+		tagcode_enum		= 0x0A,
+		tagcode_embedded	= 0x0B,
+		tagcode_utf8string	= 0x0C,
+		tagcode_rel_oid		= 0x0D,
+		tagcode_time		= 0x0E,
+		tagcode_sequence	= 0x10,
+		tagcode_set			= 0x11,
+	};
+
 	struct raw_tag {
 		proto::u8_t code	: 5;
 		tag_form	form	: 1;
@@ -306,10 +325,25 @@ namespace asn { namespace ber {
 		proto::u64_t	len;
 	};
 
+	namespace type {
+		const tag boolean		= { tagclass_universal, tagform_primitive, tagcode_boolean, 0x00 };
+		const tag integer		= { tagclass_universal, tagform_primitive, tagcode_integer, 0x00 };
+		const tag bitstring		= { tagclass_universal, tagform_primitive, tagcode_bitstring, 0x00 };
+		const tag octstring		= { tagclass_universal, tagform_primitive, tagcode_octstring, 0x00 };
+		const tag null			= { tagclass_universal, tagform_primitive, tagcode_null, 0x00 };
+		const tag oid			= { tagclass_universal, tagform_primitive, tagcode_oid, 0x00 };
+		const tag sequence		= { tagclass_universal, tagform_constructor, tagcode_sequence, 0x00 };
+		const tag set			= { tagclass_universal, tagform_constructor, tagcode_set, 0x00 };
+	}
+
 	inline bool operator==(const tag & l, const tag & r) {
 		/* Use to determine type of element before parsing, that is
 		 * why we don't compare length here */
 		return l.klass == r.klass && l.form == r.form && l.code == r.code;
+	}
+
+	inline bool operator!=(const tag & l, const tag & r) {
+		return !(l == r);
 	}
 
 	len_type get_len_type(proto::u8_t first) {
