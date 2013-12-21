@@ -1,7 +1,7 @@
 #ifndef smpp_proto_hpp
 #define smpp_proto_hpp
 
-#define nullptr NULL /* for a while */
+#define RETURN_NULL_IF(a) if (a) { return nullptr; }
 
 #include <bitset>
 #include <cstdint>
@@ -644,10 +644,11 @@ namespace smpp {
 		struct submit_multi_r {
 			pdu command;
 
-			proto::u8_t	message_id[65];
+			proto::u8_t	msg_id[65];
 			proto::u8_t	no_unsuccess;
 			/* TODO: 4.5.2 unsuccess_sme(s) */
 
+			size_t msg_id_len;
 			submit_multi_r()
 				: command()
 			{}
@@ -1102,17 +1103,16 @@ namespace smpp {
 			 * l will contain number of characters parsed not counting the
 			 * terminating zero. */
 			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
-					, sz_t len, sz_t & l) {
-				l = 0;
-				while (len) {
+					, const u8_t * srcend, sz_t len, sz_t & l) {
+				for (l = 0; len && (src < srcend); ++l) {
 					if (*src == 0) {
 						*dst++ = *src++;
 						return src;
 					}
 					*dst++ = *src++;
 					--len;
-					++l;
 				}
+				RETURN_NULL_IF(src == srcend);
 				return src;
 			}
 		}
@@ -1420,32 +1420,32 @@ namespace smpp {
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
-			if (buf + sizeof (r.command) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
 			/* how error control must be realized here ? TODO */
-			if (buf + sizeof (r.sys_id) >= bend) { return nullptr; }
-			buf = p::scpyl(r.sys_id, buf, sizeof(r.sys_id), r.sys_id_len);
+			RETURN_NULL_IF(buf + sizeof (r.sys_id) >= bend);
+			buf = p::scpyl(r.sys_id, buf, bend, sizeof(r.sys_id), r.sys_id_len);
 
 			/* how error control must be realized here ? TODO */
-			if (buf + sizeof (r.password) >= bend) { return nullptr; }
-			buf = p::scpyl(r.password, buf , sizeof(r.password), r.password_len);
+			RETURN_NULL_IF(buf + sizeof (r.password) >= bend);
+			buf = p::scpyl(r.password, buf, bend, sizeof(r.password), r.password_len);
 
 			/* how error control must be realized here ? TODO */
-			if (buf + sizeof (r.sys_type) >= bend) { return nullptr; }
-			buf = p::scpyl(r.sys_type, buf, sizeof(r.sys_type), r.sys_id_len);
+			RETURN_NULL_IF(buf + sizeof (r.sys_type) >= bend);
+			buf = p::scpyl(r.sys_type, buf, bend, sizeof(r.sys_type), r.sys_id_len);
 
-			if (buf + sizeof (r.interface_version) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
 			buf = p::cp_u8(&r.interface_version, buf);
 
-			if (buf + sizeof (r.addr_ton) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.addr_ton) >= bend);
 			buf = p::cp_u8(&r.addr_ton, buf);
 
-			if (buf + sizeof (r.addr_npi) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.addr_npi) >= bend);
 			buf = p::cp_u8(&r.addr_npi, buf);
 
-			if (buf + sizeof (r.addr_range) > bend) { return nullptr; }
-			buf = p::scpyl(r.addr_range, buf
+			RETURN_NULL_IF(buf + sizeof (r.addr_range) >= bend);
+			buf = p::scpyl(r.addr_range, buf, bend
 					, sizeof(r.addr_range), r.addr_range_len);
 		}
 
@@ -1468,12 +1468,12 @@ namespace smpp {
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
-			if (buf + sizeof (r.command) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
 			/* TODO */
-			if (buf + sizeof (r.command) > bend) { return nullptr; }
-			buf = p::scpyl(r.sys_id, buf, sizeof(r.sys_id), r.sys_id_len);
+			RETURN_NULL_IF(buf + sizeof (r.command) > bend);
+			buf = p::scpyl(r.sys_id, buf, bend, sizeof(r.sys_id), r.sys_id_len);
 			if (buf < bend) {
 				buf = parse(r.sc_interface_version, buf, L);
 			}
@@ -1494,7 +1494,7 @@ namespace smpp {
 		template <class LogT>
 		void parse(unbind & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
-			if (buf + sizeof (r.command) > bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) > bend);
 			parse(r.command, buf, L);
 		}
 
@@ -1506,7 +1506,7 @@ namespace smpp {
 		template <class LogT>
 		void parse(unbind_r & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
-			if (buf + sizeof (r.command) > bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) > bend);
 			parse(r.command, buf, L);
 		}
 
@@ -1527,64 +1527,64 @@ namespace smpp {
 			buf = ascbuf(buf);
 			/*bend = buf + msg->len; */
 
-			if (buf + sizeof (r.command) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			if (buf + sizeof (r.service_type) >= bend) { return nullptr; }
-			buf = p::scpyl(r.service_type, buf
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = p::scpyl(r.service_type, buf, bend
 					, sizeof(r.service_type), r.service_type_len);
 
-			if (buf + sizeof (r.src_addr_ton) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.src_addr_ton) >= bend);
 			buf = p::cp_u8(&r.src_addr_ton, buf);
 
-			if (buf + sizeof (r.src_addr_npi) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.src_addr_npi) >= bend);
 			buf = p::cp_u8(&r.src_addr_npi, buf);
 
-			if (buf + sizeof (r.src_addr) >= bend) { return nullptr; }
-			buf = p::scpyl(r.src_addr, buf
+			RETURN_NULL_IF(buf + sizeof (r.src_addr) >= bend);
+			buf = p::scpyl(r.src_addr, buf, bend
 					, sizeof(r.src_addr), r.src_addr_len);
 
-			if (buf + sizeof (r.dst_addr_ton) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.dst_addr_ton) >= bend);
 			buf = p::cp_u8(&r.dst_addr_ton, buf);
 
-			if (buf + sizeof (r.dst_addr_npi) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.dst_addr_npi) >= bend);
 			buf = p::cp_u8(&r.dst_addr_npi, buf);
 
-			buf = p::scpyl(r.dst_addr, buf
+			buf = p::scpyl(r.dst_addr, buf, bend
 					, sizeof(r.dst_addr), r.dst_addr_len);
 
-			if (buf + sizeof (r.esm_class) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.esm_class) >= bend);
 			buf = p::cp_u8(&r.esm_class, buf);
 
-			if (buf + sizeof (r.protocol_id) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.protocol_id) >= bend);
 			buf = p::cp_u8(&r.protocol_id, buf);
 
-			if (buf + sizeof (r.priority_flag) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.priority_flag) >= bend);
 			buf = p::cp_u8(&r.priority_flag, buf);
 
-			if (buf + sizeof (r.schedule_delivery_time) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.schedule_delivery_time));
 			buf = p::scpyf(r.schedule_delivery_time, buf
 					, sizeof(r.schedule_delivery_time));
 
-			if (buf + sizeof (r.validity_period) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.validity_period) >= bend);
 			buf = p::scpyf(r.validity_period, buf, sizeof(r.validity_period));
 			
-			if (buf + sizeof (r.registered_delivery) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.registered_delivery) >= bend);
 			buf = p::cp_u8(&r.registered_delivery, buf);
 
-			if (buf + sizeof (r.replace_if_present_flag) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.replace_if_present_flag) >= bend);
 			buf = p::cp_u8(&r.replace_if_present_flag, buf);
 
-			if (buf + sizeof (r.data_coding) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.data_coding) >= bend);
 			buf = p::cp_u8(&r.data_coding, buf);
 
-			if (buf + sizeof (r.sm_default_msg_id) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.sm_default_msg_id) >= bend);
 			buf = p::cp_u8(&r.sm_default_msg_id, buf);
 
-			if (buf + sizeof (r.sm_len) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.sm_len) >= bend)
 			buf = p::cp_u8(&r.sm_len, buf);
 
-			if (buf + sizeof (r.short_message) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.short_message) >= bend);
 			buf = p::cpy(r.short_message, buf
 					, std::min(static_cast<std::size_t>(r.sm_len)
 						, sizeof(r.sm_len)));
@@ -1660,9 +1660,7 @@ namespace smpp {
 				}
 
 				/* may be optional parameter wasn't writed corretly */
-				if (buf + sizeof (optid) > bend) {
-					return nullptr;
-				}
+				RETURN_NULL_IF(buf + sizeof (optid) > bend);
 				buf = p::cp_u16(asbuf(optid), buf);
 			}
 		}
@@ -1722,15 +1720,15 @@ namespace smpp {
 		}
 
 		template <class LogT>
-		void parse(submit_sm_r & r, const proto::u8_t * buf
+		void parse(submit_sm_r & r, const proto::u8_t * buf 
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
-			if (buf + sizeof (r.command) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			if (buf + sizeof (r.msg_id) > bend) { return nullptr; }
-			buf = p::scpyl(r.msg_id, buf, sizeof(r.msg_id), r.msg_id_len);
+			RETURN_NULL_IF(buf + sizeof (r.msg_id) > bend);
+			buf = p::scpyl(r.msg_id, buf, bend, sizeof(r.msg_id), r.msg_id_len);
 		}
 
 		template <class LogT>
@@ -1750,60 +1748,60 @@ namespace smpp {
 			proto::u16_t optid;
 			buf = ascbuf(buf);
 
-			if (buf + sizeof (r.command) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			if (buf + sizeof (r.service_type) >= bend) { return nullptr; }
-			buf = p::scpyl(r.service_type, buf
+			RETURN_NULL_IF(buf + sizeof (r.service_type) >= bend);
+			buf = p::scpyl(r.service_type, buf, bend
 					, sizeof (r.service_type), r.service_type_len);
 
-			if (buf + sizeof (r.src_addr_ton) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.src_addr_ton) >= bend);
 			buf = p::cp_u8(&r.src_addr_ton, buf);
 
-			if (buf + sizeof (r.src_addr_npi) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.src_addr_npi) >= bend);
 			buf = p::cp_u8(&r.src_addr_npi, buf);
 
-			if (buf + sizeof (r.src_addr) >= bend) { return nullptr; }
-			buf = p::scpyl(r.src_addr, buf
+			RETURN_NULL_IF(buf + sizeof (r.src_addr) >= bend);
+			buf = p::scpyl(r.src_addr, buf, bend
 					, sizeof (r.src_addr), r.src_addr_len);
 
-			if (buf + sizeof (r.number_of_dests) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.number_of_dests) >= bend);
 			buf = p::cp_u8(&r.number_of_dests, buf);
 
-			if (buf + sizeof (r.esm_class) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.esm_class) >= bend);
 			buf = p::cp_u8(&r.esm_class, buf);
 
-			if (buf + sizeof (r.protocol_id) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.protocol_id) >= bend);
 			buf = p::cp_u8(&r.protocol_id, buf);
 
-			if (buf + sizeof (r.priority_flag) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.priority_flag) >= bend);
 			buf = p::cp_u8(&r.priority_flag, buf);
 
-			if (buf + sizeof (r.schedule_deliver_time) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.schedule_delivery_time) >= bend);
 			buf = p::scpyf(r.schedule_delivery_time, buf
 					, sizeof (r.schedule_delivery_time));
 
-			if (buf + sizeof (r.validity_period) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.validity_period) >= bend);
 			buf = p::scpyf(r.validity_period, buf
 					, sizeof (r.validity_period));
 
-			if (buf + sizeof (r.registered_deliver) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.registered_delivery) >= bend);
 			buf = p::cp_u8(&r.registered_delivery, buf);
 
-			if (buf + sizeof (r.replace_if_present_flag) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.replace_if_present_flag) >= bend);
 			buf = p::cp_u8(&r.replace_if_present_flag, buf);
 
-			if (buf + sizeof (r.data_coding) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.data_coding) >= bend);
 			buf = p::cp_u8(&r.data_coding, buf);
 
-			if (buf + sizeof (r.sm_default_msg_id) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.sm_default_msg_id) >= bend);
 			buf = p::cp_u8(&r.sm_default_msg_id, buf);
 
-			if (buf + sizeof (r.sm_length) >= bend) { return nullptr; }
+			RETURN_NULL_IF(buf + sizeof (r.sm_length) >= bend);
 			buf = p::cp_u8(&r.sm_length, buf);
 
-			if (buf + sizeof (r.short_message) >= bend) { return nullptr; }
-			buf = p::scpyl(r.short_message, buf
+			RETURN_NULL_IF(buf + sizeof (r.short_message) >= bend);
+			buf = p::scpyl(r.short_message, buf, bend
 					, sizeof (r.short_message), r.short_message_len);
 
 			buf = p::cp_u16(asbuf(optid), buf);
@@ -1863,6 +1861,7 @@ namespace smpp {
 						buf = parse(r.language_indicator, buf, L); break;
 					default: return;
 				}
+				RETURN_NULL_IF(buf + sizeof (optid) > bend);
 				buf = p::cp_u16(asbuf(optid), buf);
 			}
 		}
@@ -1918,8 +1917,11 @@ namespace smpp {
 
 		/* DEST_ADDRESS P&W */
 		template <class LogT>
-		void parse(dest_address & r, const proto::u8_t * buf, LogT & L) {
+		void parse(dest_address & r, const proto::u8_t * buf
+				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
+
+			RETURN_NULL_IF(buf + sizeof (r.dest_flag) >= bend);
 			buf = p::cp_u8(&r.dest_flag, buf);
 			/* TODO: 4.5.1.1 SME_Address */
 		}
@@ -1933,10 +1935,14 @@ namespace smpp {
 
 		/* SME_DEST_ADDRESS P&W */
 		template <class LogT>
-		void parse(SME_dest_address & r, const proto::u8_t * buf, LogT & L) {
+		void parse(SME_dest_address & r, const proto::u8_t * buf
+				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
+			RETURN_NULL_IF(buf + sizeof (r.dest_addr_ton) >= bend);
 			buf = p::cp_u8(&r.dest_addr_ton, buf);
+			RETURN_NULL_IF(buf + sizeof (r.dest_addr_npi) >= bend);
 			buf = p::cp_u8(&r.dest_addr_npi, buf);
+			RETURN_NULL_IF(buf + sizeof (r.dest_addr) > bend);
 			buf = p::scpyf(r.dest_addr, buf, sizeof (r.dest_addr));
 		}
 
@@ -1950,8 +1956,11 @@ namespace smpp {
 
 		/* DL_NAME P&W */
 		template <class LogT>
-		void parse(DL_name & r, const proto::u8_t * buf, LogT & L) {
+		void parse(DL_name & r, const proto::u8_t * buf
+				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
+			RETURN_NULL_IF((buf + sizeof (r.dl_name) > bend)
+					&& (buf+1 != bend));
 			buf = p::scpyf(r.dl_name, buf, sizeof (r.dl_name));
 		}
 
@@ -1963,7 +1972,21 @@ namespace smpp {
 
 		/* SUBMIT_MULTI_R P&W */
 		template <class LogT>
-		void parse(submit_multi_r & r, const pdu * msg, LogT & L) {
+		void parse(submit_multi_r & r, const proto::u8_t * buf
+				, const proto::u8_t * bend, LogT & L) {
+			using namespace utl;
+			buf = ascbuf(buf);
+
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = parse(r.command, buf, L);
+
+			RETURN_NULL_IF(!(buf = p::scpyl(r.msg_id, buf, bend
+						, sizeof (r.msg_id), r.msg_id_len)));
+
+			RETURN_NULL_IF(buf + sizeof (r.no_unsuccess) >= bend);
+			buf = p::cp_u8(&r.no_unsuccess, buf);
+
+			/* TODO unsuccess_sme(s) */
 		}
 	}
 
