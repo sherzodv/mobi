@@ -1416,24 +1416,21 @@ namespace smpp {
 		/* GENERIC BIND P&W */
 
 		template <class BindT, class LogT>
-		void parse_bind(BindT & r, const proto::u8_t * buf
+		proto::u8_t * parse_bind(BindT & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			/* how error control must be realized here ? TODO */
-			RETURN_NULL_IF(buf + sizeof (r.sys_id) >= bend);
-			buf = p::scpyl(r.sys_id, buf, bend, sizeof(r.sys_id), r.sys_id_len);
+			RETURN_NULL_IF(!(buf = p::scpyl(r.sys_id, buf, bend
+						, sizeof(r.sys_id), r.sys_id_len)));
 
-			/* how error control must be realized here ? TODO */
-			RETURN_NULL_IF(buf + sizeof (r.password) >= bend);
-			buf = p::scpyl(r.password, buf, bend, sizeof(r.password), r.password_len);
+			RETURN_NULL_IF(!(buf = p::scpyl(r.password, buf, bend
+						, sizeof(r.password), r.password_len)));
 
-			/* how error control must be realized here ? TODO */
-			RETURN_NULL_IF(buf + sizeof (r.sys_type) >= bend);
-			buf = p::scpyl(r.sys_type, buf, bend, sizeof(r.sys_type), r.sys_id_len);
+			RETURN_NULL_IF(!(buf = p::scpyl(r.sys_type, buf, bend
+						, sizeof(r.sys_type), r.sys_id_len)));
 
 			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
 			buf = p::cp_u8(&r.interface_version, buf);
@@ -1985,6 +1982,8 @@ namespace smpp {
 
 			RETURN_NULL_IF(buf + sizeof (r.no_unsuccess) >= bend);
 			buf = p::cp_u8(&r.no_unsuccess, buf);
+
+			/* TODO unsuccess_sme(s) */
 		}
 	}
 
