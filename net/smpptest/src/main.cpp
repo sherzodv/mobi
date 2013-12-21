@@ -176,7 +176,7 @@ BOOST_CHECK(ob32_1.val == ob32_2.val);
 
 #endif
 
-BOOST_AUTO_TEST_CASE( BindT_test_1 )
+BOOST_AUTO_TEST_CASE( bind_parse_test_1 )
 {
 	smpp::proto::u8_t raw_dat[] = {
 		"\x00\x00\x00\x28\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x01\x61"
@@ -184,10 +184,80 @@ BOOST_AUTO_TEST_CASE( BindT_test_1 )
 		"\x50\x00\x01\x00\x00\x00"
 	};
 
-	smpp::bind_transmitter fri_dat;
-	smpp::parse_bind(fri_dat, raw_dat, raw_dat + sizeof (raw_dat) - 1, std::cout);
+	smpp::bind_transmitter r;
+	if (smpp::parse_bind(r, raw_dat
+			, raw_dat + sizeof (raw_dat) - 1, std::cout) == NULL) {
+		std::cout << "Error while handling buffer" << std::endl;
+		return;
+	}
 
+	/* DUMP */
+	{
+	std::cout << std::endl;
+	std::cout << "pdu len: " << r.command.len << std::endl;
+	std::cout << "pdu id:  " << r.command.id << std::endl;
+	std::cout << "pdu stat:" << r.command.status << std::endl;
+	std::cout << "pdu seq: " << r.command.seqno << std::endl;
+	std::cout << "sys_id:  " << r.sys_id << std::endl;
+	std::cout << "passwd:  " << r.password << std::endl;
+	std::cout << "sys_type:" << r.sys_type << std::endl;
+	std::cout << "iver:    " << (int)r.interface_version << std::endl;
+	std::cout << "addr_ton:" << (int)r.addr_ton << std::endl;
+	std::cout << "addr_npi:" << (int)r.addr_npi << std::endl;
+	/*
+	for (int i = 0; i < 41; ++i)
+		std::cout << (int)r.addr_range[i] << ' '; std::cout << std::endl;
+		*/
+	}
+}
 
-	//std::cout << fri_dat.command.len << std::endl;
+BOOST_AUTO_TEST_CASE( bind_write_test_1 )
+{
+	smpp::proto::u8_t raw_dat[0x100] = {
+		"\x00\x00\x00\x28\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x01\x61"
+		"\x62\x68\x69\x6b\x00\x70\x61\x73\x73\x77\x6f\x72\x64\x00\x53\x4d\x50"
+		"\x50\x00\x01\x00\x00\x00"
+	};
+
+	smpp::proto::u8_t hand_dat[0x100];
+
+	size_t i;
+	union { uint32_t len; uint8_t oct[4]; };
+	/* getting len of package */
+	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
+
+	smpp::bind_transmitter r;
+	BOOST_CHECK(smpp::parse_bind(r, raw_dat, raw_dat + len, std::cout) != NULL);
+
+	BOOST_CHECK((smpp::write_bind(hand_dat
+				, hand_dat + r.command.len, r, std::cout)) != NULL);
+
+	smpp::proto::u8_t * ptr1 = hand_dat;
+	smpp::proto::u8_t * ptr2 = raw_dat;
+
+	for (i = 0; i < len; ++i) {
+		BOOST_CHECK(*ptr1++ == *ptr2++);
+	}
+
+	BOOST_CHECK(smpp::parse_bind(r, raw_dat, raw_dat + len, std::cout) != NULL);
+
+	/* DUMP */
+	{
+	std::cout << std::endl;
+	std::cout << "pdu len: " << r.command.len << std::endl;
+	std::cout << "pdu id:  " << r.command.id << std::endl;
+	std::cout << "pdu stat:" << r.command.status << std::endl;
+	std::cout << "pdu seq: " << r.command.seqno << std::endl;
+	std::cout << "sys_id:  " << r.sys_id << std::endl;
+	std::cout << "passwd:  " << r.password << std::endl;
+	std::cout << "sys_type:" << r.sys_type << std::endl;
+	std::cout << "iver:    " << (int)r.interface_version << std::endl;
+	std::cout << "addr_ton:" << (int)r.addr_ton << std::endl;
+	std::cout << "addr_npi:" << (int)r.addr_npi << std::endl;
+	/*
+	for (int i = 0; i < 41; ++i)
+		std::cout << (int)r.addr_range[i] << ' '; std::cout << std::endl;
+		*/
+	}
 }
 

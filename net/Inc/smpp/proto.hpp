@@ -1104,14 +1104,14 @@ namespace smpp {
 			 * terminating zero. */
 			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
 					, const u8_t * srcend, sz_t len, sz_t & l) {
-				for (l = 0; len && (src < srcend); ++l) {
+				for (l = 0; (l < len) && (src < srcend); ++l) {
 					if (*src == 0) {
 						*dst++ = *src++;
 						return src;
 					}
 					*dst++ = *src++;
-					--len;
 				}
+				RETURN_NULL_IF(l > len);
 				RETURN_NULL_IF(src == srcend);
 				return src;
 			}
@@ -1162,6 +1162,13 @@ namespace smpp {
 				return dst;
 			}
 
+			inline u8_t * scpyf(u8_t * dst, const u8_t * src, sz_t len) {
+				while (len--)
+					*dst++ = *src++;
+				*dst++ = 0;
+				return dst;
+			}
+
 			inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
 				while (len) {
 					if (*src == 0) {
@@ -1171,6 +1178,8 @@ namespace smpp {
 					*dst++ = *src++;
 					--len;
 				}
+				*dst++ = 0;
+
 				return dst;
 			}
 		}
@@ -1416,7 +1425,7 @@ namespace smpp {
 		/* GENERIC BIND P&W */
 
 		template <class BindT, class LogT>
-		proto::u8_t * parse_bind(BindT & r, const proto::u8_t * buf
+		const proto::u8_t * parse_bind(BindT & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
@@ -1430,7 +1439,7 @@ namespace smpp {
 						, sizeof(r.password), r.password_len)));
 
 			RETURN_NULL_IF(!(buf = p::scpyl(r.sys_type, buf, bend
-						, sizeof(r.sys_type), r.sys_id_len)));
+						, sizeof(r.sys_type), r.sys_type_len)));
 
 			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
 			buf = p::cp_u8(&r.interface_version, buf);
@@ -1441,23 +1450,42 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.addr_npi) >= bend);
 			buf = p::cp_u8(&r.addr_npi, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.addr_range) >= bend);
-			buf = p::scpyl(r.addr_range, buf, bend
-					, sizeof(r.addr_range), r.addr_range_len);
+			RETURN_NULL_IF(!(buf = p::scpyl(r.addr_range, buf, bend
+					, sizeof(r.addr_range), r.addr_range_len)));
+
+			return buf;
 		}
 
 		template <class BindT, class LogT>
-		void write_bind(proto::u8_t * buf, const BindT & r, LogT & L) {
+		proto::u8_t * write_bind(proto::u8_t * buf, proto::u8_t * bend
+				, const BindT & r, LogT & L) {
 			using namespace utl;
 
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = write(buf, r.command, L);
-			buf = w::scpy(buf, r.sys_id, r.sys_id_len + 1);
-			buf = w::scpy(buf, r.password, r.password_len + 1);
-			buf = w::scpy(buf, r.sys_type, r.sys_id_len + 1);
+
+			RETURN_NULL_IF(buf + r.sys_id_len >= bend);
+			buf = w::scpyf(buf, r.sys_id, r.sys_id_len);
+
+			RETURN_NULL_IF(buf + r.password_len >= bend);
+			buf = w::scpyf(buf, r.password, r.password_len);
+
+			RETURN_NULL_IF(buf + r.sys_type_len >= bend);
+			buf = w::scpyf(buf, r.sys_type, r.sys_type_len);
+
+			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
 			buf = w::cp_u8(buf, &r.interface_version);
+
+			RETURN_NULL_IF(buf + sizeof (r.addr_ton) >= bend);
 			buf = w::cp_u8(buf, &r.addr_ton);
+
+			RETURN_NULL_IF(buf + sizeof (r.addr_npi) >= bend);
 			buf = w::cp_u8(buf, &r.addr_npi);
-			buf = w::scpy(buf, r.addr_range, r.addr_range_len + 1);
+
+			RETURN_NULL_IF(buf + r.addr_range_len > bend);
+			buf = w::scpyf(buf, r.addr_range, r.addr_range_len+1);
+
+			return buf;
 		}
 
 		template <class BindRT, class LogT>
