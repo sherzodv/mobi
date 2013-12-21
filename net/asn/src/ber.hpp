@@ -8,6 +8,8 @@
 #include <ostream>
 #include <arpa/inet.h>
 
+#define RETURN_NULL_IF(expr) if (expr) return nullptr
+
 /* ITU-T Rec Q.773, TCAP */
 
 /*
@@ -480,6 +482,42 @@ namespace asn { namespace ber {
 
 		/* Unexpected end of buffer */
 		return nullptr;
+	}
+
+	template <class ValT, class LogT>
+	const proto::u8_t * parse_el_boolean(ValT & val
+			, const proto::u8_t * buf
+			, const proto::u8_t * bend, LogT & L) {
+		(void)(L);
+		using namespace utl;
+
+		tag t;
+
+		buf = parse_tag(t, buf, bend, L);
+
+		RETURN_NULL_IF(buf == nullptr || t != type::boolean);
+		RETURN_NULL_IF(buf + 1 >= bend);
+
+		return p::cp_u8(asbuf(val), buf);
+	}
+
+	template <class StringT, class LogT>
+	const proto::u8_t * parse_el_octstring(StringT & val
+			, const proto::u8_t * buf
+			, const proto::u8_t * bend, LogT & L) {
+		(void)(L);
+		using namespace utl;
+
+		tag t;
+
+		buf = parse_tag(t, buf, bend, L);
+
+		val.len = t.len;
+
+		RETURN_NULL_IF(buf == nullptr);
+		RETURN_NULL_IF(buf + val.len >= bend);
+
+		return p::cpy(asbuf(val.data), buf, val.len);
 	}
 
 	template< typename CharT, typename TraitsT >

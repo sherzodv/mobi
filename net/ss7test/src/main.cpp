@@ -1,9 +1,10 @@
 
+#include <asn/ber.hpp>
+
 #include <ss7/sccp.hpp>
 #include <ss7/m3ua.hpp>
 #include <ss7/tcap.hpp>
 #include <ss7/map.hpp>
-#include <asn/ber.hpp>
 
 #include <iostream>
 #include <cstring>
@@ -225,6 +226,57 @@ void test_tcap() {
 	}
 }
 
+void test_map() {
+
+	using namespace ss7;
+	using namespace asn;
+
+	const tcap::proto::u8_t * cur;
+
+	const tcap::proto::u8_t tcap_raw1[] =
+		"\x62\x27\x48\x04\x29\x00\x32\xce\x6c\x1f\xa1\x1d\x02\x01\x01\x02"
+		"\x01\x2d\x30\x15\x80\x07\x91\x99\x63\x65\x52\x57\xf8\x81\x01\x01"
+		"\x82\x07\x91\x99\x63\x95\x99\x99\xf1";
+
+	const tcap::proto::u8_t tcap_raw2[] =
+		"\x64\x29\x49\x04\x2b\x00\xec\x98\x6c\x21\xa2\x1f\x02\x01\x01\x30"
+		"\x1a\x02\x01\x2d\x30\x15\x04\x08\x34\x08\x32\x00\x60\x95\x10\xf9"
+		"\xa0\x09\x81\x07\x91\x99\x63\x95\x99\x99\xf9";
+
+	(void)(tcap_raw1);
+	(void)(tcap_raw2);
+
+	class parser: public map::parser<std::ostream> {
+		public:
+			parser(std::ostream & out): map::parser<std::ostream>(out) {}
+			virtual ~parser() {}
+
+		protected:
+			virtual action on_message(const map::operation::empty & msg) {
+				(void)(msg);
+				return resume;
+			}
+
+			virtual action send_routing_info_for_sm(const map::operation::routing_info_for_sm_arg & msg) {
+				using map::operator<<;
+				L << msg << std::endl;
+				return resume;
+			}
+	} p(std::cout);
+
+	std::cout << "----------------------------------------" << std::endl;
+	cur = p.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
+	if (cur == nullptr) {
+		std::cout << "parse error" << std::endl;
+	}
+
+	std::cout << "----------------------------------------" << std::endl;
+	cur = p.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
+	if (cur == nullptr) {
+		std::cout << "parse error" << std::endl;
+	}
+}
+
 int main() {
 
 	(void)(test_sccp);
@@ -233,7 +285,8 @@ int main() {
 
 	//test_sccp();
 	//test_m3ua();
-	test_tcap();
+	//test_tcap();
+	test_map();
 
 	return 0;
 }

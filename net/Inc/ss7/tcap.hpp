@@ -10,8 +10,6 @@
 
 #include <asn/ber.hpp>
 
-#define RETURN_NULL_IF(expr) if (expr) return nullptr
-
 namespace ss7 { namespace tcap {
 
 	namespace proto {
@@ -70,6 +68,8 @@ namespace ss7 { namespace tcap {
 			proto::s8_t id;
 			proto::s8_t linked_id;
 			proto::u32_t op_code;
+			const proto::u8_t *data;
+			const proto::u8_t *dend;
 		};
 
 		struct return_result {
@@ -100,7 +100,14 @@ namespace ss7 { namespace tcap {
 		protected:
 			LogT & L;
 
-			enum action { stop, resume };
+			enum action {
+				stop		/* Stop parsing immediately */
+				, resume	/* Resume parsing */
+				, skip		/* Skip the value (may be constructor)
+							   of an element */
+			};
+
+			/* TODO: implement skipping */
 
 			virtual action on_uni(const element::uni & el) = 0;
 			virtual action on_begin(const element::begin & el) = 0;
@@ -307,9 +314,15 @@ namespace ss7 { namespace tcap {
 
 				/* Parse operationCode value */
 				buf = parse_integer(inv.op_code, t.len, buf, bend, L);
-				RETURN_NULL_IF(on_invoke(inv) == stop);
 
-				return parse_elements(buf, bend);
+				inv.data = buf;
+				inv.dend = bend;
+
+				switch (on_invoke(inv)) {
+					case stop: return nullptr;
+					case skip: return bend;
+					default: return parse_elements(buf, bend);
+				}
 			}
 
 			const proto::u8_t * parse_return_result(
@@ -378,7 +391,6 @@ namespace ss7 { namespace tcap {
 				using namespace asn::ber;
 				tag t;
 				while (buf < bend) {
-					/* Parse invokeID tag */
 					buf = parse_tag(t, buf, bend, L);
 					RETURN_NULL_IF(buf == nullptr);
 					if (t.form == tagform_primitive) {
