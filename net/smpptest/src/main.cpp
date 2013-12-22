@@ -318,8 +318,16 @@ BOOST_AUTO_TEST_CASE( submit_sm_3 )
 	union { uint32_t len; uint8_t oct[4]; };
 	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
 
-	smpp::parse(r, raw_dat, raw_dat+len, std::cout);
-	smpp::write(hand_dat, hand_dat+r.command.len, r, std::cout);
+	BOOST_CHECK(smpp::parse(r, raw_dat, raw_dat+len, std::cout));
+
+	std::cout << std::endl;
+	std::cout << r << std::endl;
+
+	BOOST_CHECK(smpp::write(hand_dat, hand_dat+r.command.len, r, std::cout));
+	BOOST_CHECK(smpp::parse(r, hand_dat, hand_dat+len, std::cout));
+
+	for (i = 0; i < len; ++i)
+		BOOST_CHECK(hand_dat[i] == raw_dat[i]);
 
 	std::cout << std::endl;
 	std::cout << r << std::endl;
