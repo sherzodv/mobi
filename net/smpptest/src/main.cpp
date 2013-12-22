@@ -108,8 +108,8 @@ ob1.addr_ton					= 0x0F;
 ob1.addr_npi					= 0x0F;
 strcpy((char *) ob1.addr_range,	"hello, world!");
 
-write_bind(buf, ob1, std::cout);
-parse_bind(ob2, buf, std::cout);
+write(buf, ob1, std::cout);
+parse(ob2, buf, std::cout);
 
 BOOST_CHECK(ob1.command.len == ob2.command.len);
 BOOST_CHECK(ob1.command.id == ob2.command.id);
@@ -174,8 +174,6 @@ BOOST_CHECK(ob32_1.val == ob32_2.val);
 }
 */
 
-#endif
-
 BOOST_AUTO_TEST_CASE( bind_parse_test_1 )
 {
 	smpp::proto::u8_t raw_dat[] = {
@@ -185,7 +183,7 @@ BOOST_AUTO_TEST_CASE( bind_parse_test_1 )
 	};
 
 	smpp::bind_transmitter r;
-	if (smpp::parse_bind(r, raw_dat
+	if (smpp::parse(r, raw_dat
 			, raw_dat + sizeof (raw_dat) - 1, std::cout) == NULL) {
 		std::cout << "Error while handling buffer" << std::endl;
 		return;
@@ -227,9 +225,9 @@ BOOST_AUTO_TEST_CASE( bind_write_test_1 )
 	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
 
 	smpp::bind_transmitter r;
-	BOOST_CHECK(smpp::parse_bind(r, raw_dat, raw_dat + len, std::cout) != NULL);
+	BOOST_CHECK(smpp::parse(r, raw_dat, raw_dat + len, std::cout) != NULL);
 
-	BOOST_CHECK((smpp::write_bind(hand_dat
+	BOOST_CHECK((smpp::write(hand_dat
 				, hand_dat + r.command.len, r, std::cout)) != NULL);
 
 	smpp::proto::u8_t * ptr1 = hand_dat;
@@ -239,7 +237,7 @@ BOOST_AUTO_TEST_CASE( bind_write_test_1 )
 		BOOST_CHECK(*ptr1++ == *ptr2++);
 	}
 
-	BOOST_CHECK(smpp::parse_bind(r, raw_dat, raw_dat + len, std::cout) != NULL);
+	BOOST_CHECK(smpp::parse(r, raw_dat, raw_dat + len, std::cout) != NULL);
 
 	/* DUMP */
 	{
@@ -259,5 +257,71 @@ BOOST_AUTO_TEST_CASE( bind_write_test_1 )
 		std::cout << (int)r.addr_range[i] << ' '; std::cout << std::endl;
 		*/
 	}
+}
+
+BOOST_AUTO_TEST_CASE( submit_sm_1 )
+{
+	smpp::proto::u8_t raw_dat[0x100] = {
+		"\x00\x00\x00\x32\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x03"
+		"\x00\x00\x01\x31\x30\x30\x00\x01\x01\x31\x32\x33\x34\x35\x36\x37"
+		"\x38\x39\x30\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04\x74\x65"
+		"\x73\x74"
+	};
+
+	size_t i;
+	smpp::submit_sm r;
+
+	union { uint32_t len; uint8_t oct[4]; };
+	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
+
+	smpp::parse(r, raw_dat, raw_dat+len, std::cout);
+
+	std::cout << std::endl;
+	std::cout << r << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE( submit_sm_2 )
+{
+	smpp::proto::u8_t raw_dat[0x100] = {
+		"\x00\x00\x00\x37\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x01"
+		"\x00\x06\x01\x32\x31\x37\x30\x00\x02\x01\x34\x38\x35\x30\x37\x31"
+		"\x37\x36\x31\x33\x30\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x07"
+		"\x74\x65\x73\x74\x69\x6e\x67"
+	};
+
+	size_t i;
+	smpp::submit_sm r;
+
+	union { uint32_t len; uint8_t oct[4]; };
+	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
+
+	smpp::parse(r, raw_dat, raw_dat+len, std::cout);
+
+	std::cout << std::endl;
+	std::cout << r << std::endl;
+}
+#endif
+
+BOOST_AUTO_TEST_CASE( submit_sm_3 )
+{
+	smpp::proto::u8_t raw_dat[0x100] = {
+		"\x00\x00\x00\x32\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x03"
+		"\x00\x00\x01\x31\x30\x30\x00\x01\x01\x31\x32\x33\x34\x35\x36\x37"
+		"\x38\x39\x30\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04\x74\x65"
+		"\x73\x74"
+	};
+	smpp::proto::u8_t hand_dat[0x100];
+
+	size_t i;
+	smpp::submit_sm r;
+
+	union { uint32_t len; uint8_t oct[4]; };
+	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
+
+	smpp::parse(r, raw_dat, raw_dat+len, std::cout);
+	smpp::write(hand_dat, hand_dat+r.command.len, r, std::cout);
+
+	std::cout << std::endl;
+	std::cout << r << std::endl;
 }
 

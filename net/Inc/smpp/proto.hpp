@@ -1,7 +1,7 @@
 #ifndef smpp_proto_hpp
 #define smpp_proto_hpp
 
-#define RETURN_NULL_IF(a) if (a) { return nullptr; }
+#define RETURN_NULL_IF(a) if ((a)) { return nullptr; }
 
 #include <bitset>
 #include <cstdint>
@@ -130,12 +130,12 @@ namespace smpp {
 		const proto::u16_t qos_time_to_live					= 0x0017;
 		const proto::u16_t payload_type						= 0x0019;
 		const proto::u16_t additional_status_info_text		= 0x0019;
-		const proto::u16_t receipted_message_id				= 0x001E;
+		const proto::u16_t receipted_msg_id				= 0x001E;
 		const proto::u16_t ms_msg_wait_facilities			= 0x0030;
 		const proto::u16_t privacy_indicator				= 0x0201;
 		const proto::u16_t source_subaddress				= 0x0202;
 		const proto::u16_t dest_subaddress					= 0x0203;
-		const proto::u16_t user_message_reference			= 0x0204;
+		const proto::u16_t user_msg_reference			= 0x0204;
 		const proto::u16_t user_response_code				= 0x0205;
 		const proto::u16_t source_port						= 0x020A;
 		const proto::u16_t dest_port						= 0x020B;
@@ -146,21 +146,21 @@ namespace smpp {
 		const proto::u16_t sc_interface_version				= 0x0210;
 		const proto::u16_t callback_num_pres_ind			= 0x0302;
 		const proto::u16_t callback_num_atag				= 0x0303;
-		const proto::u16_t number_of_messages				= 0x0304;
+		const proto::u16_t number_of_msgs				= 0x0304;
 		const proto::u16_t callback_num						= 0x0381;
 		const proto::u16_t dpf_result						= 0x0420;
 		const proto::u16_t set_dpf							= 0x0421;
 		const proto::u16_t ms_availability_status			= 0x0422;
 		const proto::u16_t network_error_code				= 0x0423;
-		const proto::u16_t message_payload					= 0x0424;
+		const proto::u16_t msg_payload					= 0x0424;
 		const proto::u16_t delivery_failure_reason			= 0x0425;
-		const proto::u16_t more_messages_to_send			= 0x0426;
-		const proto::u16_t message_state					= 0x0427;
+		const proto::u16_t more_msgs_to_send			= 0x0426;
+		const proto::u16_t msg_state					= 0x0427;
 		const proto::u16_t ussd_service_op					= 0x0501;
 		const proto::u16_t display_time						= 0x1201;
 		const proto::u16_t sms_signal						= 0x1203;
 		const proto::u16_t ms_validity						= 0x1204;
-		const proto::u16_t alert_on_message_delivery		= 0x130C;
+		const proto::u16_t alert_on_msg_delivery		= 0x130C;
 		const proto::u16_t its_reply_type					= 0x1380;
 		const proto::u16_t its_session_info					= 0x1383;
 	}
@@ -215,7 +215,7 @@ namespace smpp {
 			const proto::u8_t forward_mode			= 0x02;
 			const proto::u8_t store_n_forward_mode	= 0x03;
 
-			/* message type, you should use switch (var&0x3C) */
+			/* msg type, you should use switch (var&0x3C) */
 			const proto::u8_t default_msg_type		= 0x00;
 			const proto::u8_t esme_delivery_ack		= 0x08;
 			const proto::u8_t esme_manual_ack		= 0x10;
@@ -234,7 +234,7 @@ namespace smpp {
 			const proto::u8_t forward_mode			= 0x02;
 			const proto::u8_t store_n_forward_mode	= 0x03;
 
-			/* message type, you should use switch (var&0x3C) */
+			/* msg type, you should use switch (var&0x3C) */
 			const proto::u8_t default_msg_type		= 0x00;
 			const proto::u8_t esme_delivery_ack		= 0x08;
 			const proto::u8_t esme_manual_ack		= 0x10;
@@ -249,7 +249,7 @@ namespace smpp {
 		namespace data_sm {
 			const proto::u8_t not_applicable		= 0x00;
 
-			/* message type, you should use switch (var & 0x3C) */
+			/* msg type, you should use switch (var & 0x3C) */
 			const proto::u8_t default_msg_typ		= 0x00;
 			const proto::u8_t smsc_delivery_rec		= 0x04;
 			const proto::u8_t sme_delivery_ack		= 0x08;
@@ -268,7 +268,7 @@ namespace smpp {
 			const proto::u8_t forward_mode			= 0x02;
 			const proto::u8_t store_n_forward_mode	= 0x03;
 
-			/* message type, you should use switch (var&0x3C) */
+			/* msg type, you should use switch (var&0x3C) */
 			const proto::u8_t default_msg_type		= 0x00;
 			const proto::u8_t esme_delivery_ack		= 0x08;
 			const proto::u8_t esme_manual_ack		= 0x10;
@@ -283,7 +283,7 @@ namespace smpp {
 		namespace deliver_sm {
 			const proto::u8_t not_applicable		= 0x00;
 
-			/* message type, you should use switch (var & 0x3C) */
+			/* msg type, you should use switch (var & 0x3C) */
 			const proto::u8_t default_msg_typ		= 0x00;
 			const proto::u8_t smsc_delivery_rec		= 0x04;
 			const proto::u8_t sme_delivery_ack		= 0x08;
@@ -334,12 +334,12 @@ namespace smpp {
 		typedef tlv<proto::u32_t>		tlv_qos_time_to_live;
 		typedef tlv<proto::u8_t>		tlv_payload_type;
 		typedef tlv<proto::u8_t[256]>	tlv_additional_status_info_text;
-		typedef tlv<proto::u8_t[65]>	tlv_receipted_message_id;
+		typedef tlv<proto::u8_t[65]>	tlv_receipted_msg_id;
 		typedef tlv<proto::u8_t>		tlv_ms_msg_wait_facilities;
 		typedef tlv<proto::u8_t>		tlv_privacy_indicator;
 		typedef tlv<proto::u8_t[23]>	tlv_source_subaddress;
 		typedef tlv<proto::u8_t[23]> 	tlv_dest_subaddress;
-		typedef tlv<proto::u16_t> 		tlv_user_message_reference;
+		typedef tlv<proto::u16_t> 		tlv_user_msg_reference;
 		typedef tlv<proto::u8_t>  		tlv_user_response_code;
 		typedef tlv<proto::u8_t>  		tlv_language_indicator;
 		typedef tlv<proto::u16_t> 		tlv_source_port;
@@ -356,17 +356,17 @@ namespace smpp {
 		typedef tlv<proto::u8_t[3]>		tlv_network_error_code;
 
 		/* length of field 'value' is variable */
-		typedef tlv<proto::u8p_t>		tlv_message_payload;
+		typedef tlv<proto::u8p_t>		tlv_msg_payload;
 
 		typedef tlv<proto::u8_t>		tlv_delivery_failure_reason;
-		typedef tlv<proto::u8_t>		tlv_more_messages_to_send;
-		typedef tlv<proto::u8_t>		tlv_message_state;
+		typedef tlv<proto::u8_t>		tlv_more_msgs_to_send;
+		typedef tlv<proto::u8_t>		tlv_msg_state;
 		typedef tlv<proto::u8_t[19]>	tlv_callback_num;
 		typedef tlv<proto::u8_t>		tlv_callback_num_pres_ind;
 		typedef tlv<proto::u8_t[65]>	tlv_callback_num_atag;
-		typedef tlv<proto::u8_t>		tlv_number_of_messages;
+		typedef tlv<proto::u8_t>		tlv_number_of_msgs;
 		typedef tlv<proto::u16_t>		tlv_sms_signal;
-		typedef tlv<proto::u8_t>		tlv_alert_on_message_delivery;
+		typedef tlv<proto::u8_t>		tlv_alert_on_msg_delivery;
 		typedef tlv<proto::u8_t>		tlv_its_reply_type;
 		typedef tlv<proto::u8_t[2]>		tlv_its_session_info;
 		typedef tlv<proto::u8_t[1]>		tlv_ussd_service_op;
@@ -493,12 +493,12 @@ namespace smpp {
 
 			proto::u8_t	service_type[6];
 
-			/* Address of ESME which originated this message */
+			/* Address of ESME which originated this msg */
 			proto::u8_t src_addr_ton;
 			proto::u8_t src_addr_npi;
 			proto::u8_t src_addr[21];
 
-			/* Address  ME which originated this message */
+			/* Address  ME which originated this msg */
 			proto::u8_t dst_addr_ton;
 			proto::u8_t dst_addr_npi;
 			proto::u8_t dst_addr[21];
@@ -519,9 +519,9 @@ namespace smpp {
 			proto::u8_t sm_default_msg_id;
 
 			proto::u8_t sm_len;
-			proto::u8_t short_message[254];
+			proto::u8_t short_msg[254];
 
-			tlv_user_message_reference		user_message_reference;
+			tlv_user_msg_reference		user_msg_reference;
 			tlv_source_port					source_port;
 			tlv_src_addr_subunit			src_addr_subunit;
 			tlv_dest_port					dest_port;
@@ -529,9 +529,9 @@ namespace smpp {
 			tlv_sar_msg_ref_num				sar_msg_ref_num;
 			tlv_sar_total_segments			sar_total_segments;
 			tlv_sar_segment_seqnum			sar_segment_seqnum;
-			tlv_more_messages_to_send		more_messages_to_send;
+			tlv_more_msgs_to_send		more_msgs_to_send;
 			tlv_payload_type				payload_type;
-			tlv_message_payload				message_payload;
+			tlv_msg_payload				msg_payload;
 			tlv_privacy_indicator			privacy_indicator;
 			tlv_callback_num				callback_num;
 			tlv_callback_num_pres_ind		callback_num_pres_ind;
@@ -543,16 +543,20 @@ namespace smpp {
 			tlv_sms_signal					sms_signal;
 			tlv_ms_validity					ms_validity;
 			tlv_ms_msg_wait_facilities		ms_msg_wait_facilities;
-			tlv_number_of_messages			number_of_messages;
-			tlv_alert_on_message_delivery	alert_on_message_delivery;
+			tlv_number_of_msgs			number_of_msgs;
+			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
 			tlv_language_indicator			language_indicator;
 			tlv_its_reply_type				its_reply_type;
 			tlv_its_session_info			its_session_info;
 			tlv_ussd_service_op				ussd_service_op;
 
+			std::size_t short_msg_len;
 			std::size_t service_type_len;
 			std::size_t src_addr_len;
 			std::size_t dst_addr_len;
+			std::size_t schedule_delivery_time_len;
+			std::size_t validity_period_len;
+			std::size_t registered_delivery_len;
 
 			submit_sm()
 				: command()
@@ -591,9 +595,9 @@ namespace smpp {
 			proto::u8_t data_coding;
 			proto::u8_t sm_default_msg_id;
 			proto::u8_t sm_length;
-			proto::u8_t short_message[254];
+			proto::u8_t short_msg[254];
 
-			tlv_user_message_reference	user_message_reference;
+			tlv_user_msg_reference	user_msg_reference;
 			tlv_source_port				source_port;
 			tlv_src_addr_subunit		src_addr_subunit;
 			tlv_dest_port				dest_port;
@@ -602,7 +606,7 @@ namespace smpp {
 			tlv_sar_total_segments		sar_total_segments;
 			tlv_sar_segment_seqnum		sar_segment_seqnum;
 			tlv_payload_type			payload_type;
-			tlv_message_payload			message_payload;
+			tlv_msg_payload			msg_payload;
 			tlv_privacy_indicator		privacy_indicator;
 			tlv_callback_num			callback_num;
 			tlv_callback_num_pres_ind	callback_num_pres_ind;
@@ -613,13 +617,13 @@ namespace smpp {
 			tlv_sms_signal				sms_signal;
 			tlv_ms_validity				ms_validity;
 			tlv_ms_msg_wait_facilities	ms_msg_wait_facilities;
-			tlv_alert_on_message_delivery	alert_on_message_delivery;
+			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
 			tlv_language_indicator		language_indicator;
 
 			std::size_t service_type_len;
 			std::size_t src_addr_len;
 			std::size_t dst_addr_len;
-			std::size_t short_message_len;
+			std::size_t short_msg_len;
 
 			submit_multi()
 				: command()
@@ -683,10 +687,10 @@ namespace smpp {
 			proto::u8_t	data_coding;
 			proto::u8_t	sm_default_msg_id;
 			proto::u8_t	sm_length;
-			proto::u8_t short_message[254];
+			proto::u8_t short_msg[254];
 
 			/* OPTIONAL PARAMETERS for DELIVER_SM */
-			tlv_user_message_reference	user_message_reference;
+			tlv_user_msg_reference	user_msg_reference;
 			tlv_source_port				source_port;
 			tlv_dest_port				dest_port;
 			tlv_sar_msg_ref_num			sar_msg_ref_num;
@@ -701,8 +705,8 @@ namespace smpp {
 			tlv_language_indicator		language_indicator;
 			tlv_its_session_info		its_session_info;
 			tlv_network_error_code		network_error_code;
-			tlv_message_state			message_state;
-			tlv_receipted_message_id	receipted_message_id;
+			tlv_msg_state			msg_state;
+			tlv_receipted_msg_id	receipted_msg_id;
 
 			deliver_sm()
 				: command()
@@ -711,7 +715,7 @@ namespace smpp {
 
 		struct deliver_sm_r {
 			pdu command;
-			proto::u8_t	message_id;
+			proto::u8_t	msg_id;
 
 			deliver_sm_r()
 				: command()
@@ -749,15 +753,15 @@ namespace smpp {
 			tlv_sar_msg_ref_num				sar_msg_ref_num;
 			tlv_sar_total_segments			sar_total_segments;
 			tlv_sar_segment_seqnum			sar_segment_seqnum;
-			tlv_more_messages_to_send		more_messages_to_send;
+			tlv_more_msgs_to_send		more_msgs_to_send;
 			tlv_qos_time_to_live			qos_time_to_live;
 			tlv_payload_type				payload_type;
-			tlv_message_payload				message_payload;
+			tlv_msg_payload				msg_payload;
 			tlv_set_dpf						set_dpf;
-			tlv_receipted_message_id		receipted_message_id;
-			tlv_message_state				message_state;
+			tlv_receipted_msg_id		receipted_msg_id;
+			tlv_msg_state				msg_state;
 			tlv_network_error_code			network_error_code;
-			tlv_user_message_reference		user_message_reference;
+			tlv_user_msg_reference		user_msg_reference;
 			tlv_privacy_indicator			privacy_indicator;
 			tlv_callback_num				callback_num;
 			tlv_callback_num_pres_ind		callback_num_pres_ind;
@@ -769,8 +773,8 @@ namespace smpp {
 			tlv_sms_signal					sms_signal;
 			tlv_ms_validity					ms_validity;
 			tlv_ms_msg_wait_facilities		ms_msg_wait_facilities;
-			tlv_number_of_messages			number_of_messages;
-			tlv_alert_on_message_delivery	alert_on_message_delivery;
+			tlv_number_of_msgs			number_of_msgs;
+			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
 			tlv_language_indicator			language_indicator;
 			tlv_its_reply_type				its_reply_type;
 			tlv_its_session_info			its_session_info;
@@ -783,7 +787,7 @@ namespace smpp {
 		struct data_sm_r {
 			pdu command;
 
-			proto::u8_t message_id[65];
+			proto::u8_t msg_id[65];
 
 			/* OPTIONAL PARAMETERS for DATA SM RESP */
 
@@ -802,7 +806,7 @@ namespace smpp {
 		struct query_sm {
 			pdu command;
 
-			proto::u8_t	message_id[65];
+			proto::u8_t	msg_id[65];
 			proto::u8_t	src_addr_ton;
 			proto::u8_t	src_addr_npi;
 			proto::u8_t	src_addr[21];
@@ -815,9 +819,9 @@ namespace smpp {
 		struct query_sm_r {
 			pdu command;
 
-			proto::u8_t	message_id[65];
+			proto::u8_t	msg_id[65];
 			proto::u8_t	final_date[17];
-			proto::u8_t	message_state;
+			proto::u8_t	msg_state;
 			proto::u8_t	error_code;
 
 			query_sm_r()
@@ -831,7 +835,7 @@ namespace smpp {
 			pdu command;
 
 			proto::u8_t	service_type[6];
-			proto::u8_t	message_id[65];
+			proto::u8_t	msg_id[65];
 			proto::u8_t	src_addr_ton;
 			proto::u8_t	src_addr_npi;
 			proto::u8_t	src_addr[21];
@@ -857,7 +861,7 @@ namespace smpp {
 		struct replace_sm {
 			pdu command;
 
-			proto::u8_t	message_id[65];
+			proto::u8_t	msg_id[65];
 			proto::u8_t	src_addr_ton;
 			proto::u8_t	src_addr_npi;
 			proto::u8_t	src_addr[21];
@@ -866,7 +870,7 @@ namespace smpp {
 			proto::u8_t registered_delivery;
 			proto::u8_t sm_default_msg_id;
 			proto::u8_t sm_length;
-			proto::u8_t short_message[254];
+			proto::u8_t short_msg[254];
 
 			replace_sm()
 				: command()
@@ -941,7 +945,7 @@ namespace smpp {
 			/* Corresponding response command id */
 			static const proto::u32_t r_id = command::bind_receiver_r;
 
-			/* Response overall message length */
+			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu)
 					+ (r.sc_interface_version.tag != 0)
@@ -958,7 +962,7 @@ namespace smpp {
 			/* Corresponding response command id */
 			static const proto::u32_t r_id = command::bind_transmitter_r;
 
-			/* Response overall message length */
+			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu)
 					+ (r.sc_interface_version.tag != 0)
@@ -975,7 +979,7 @@ namespace smpp {
 			/* Corresponding response command id */
 			static const proto::u32_t r_id = command::bind_transceiver_r;
 
-			/* Response overall message length */
+			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu)
 					+ ((r.sc_interface_version.tag != 0)
@@ -995,7 +999,7 @@ namespace smpp {
 			/* Corresponding response command id */
 			static const proto::u32_t r_id = command::submit_sm_r;
 
-			/* Response overall message length */
+			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu) + r.msg_id_len;
 			}
@@ -1087,13 +1091,22 @@ namespace smpp {
 			/* Parse fixed size string. It will contain either exactly
 			 * len-1 characters and a terminating zero, or only and only
 			 * terminating zero, see SMPP 3.4 spec for details */
-			inline const u8_t * scpyf(u8_t * dst, const u8_t * src, sz_t len) {
+
+			//TAG2
+			inline const u8_t * scpyf(u8_t * dst, const u8_t * src
+					, const u8_t * srcend, sz_t len) {
+				if (src == srcend)
+					return NULL;
+
 				if (*src == 0) {
 					*dst++ = *src++;
 					return src;
 				}
+
 				while (len) {
 					*dst++ = *src++;
+					if (src >= srcend)
+						return NULL;
 					--len;
 				}
 				return src;
@@ -1425,21 +1438,27 @@ namespace smpp {
 		/* GENERIC BIND P&W */
 
 		template <class BindT, class LogT>
-		const proto::u8_t * parse_bind(BindT & r, const proto::u8_t * buf
+		const proto::u8_t * parse(BindT & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			RETURN_NULL_IF(!(buf = p::scpyl(r.sys_id, buf, bend
-						, sizeof(r.sys_id), r.sys_id_len)));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.sys_id, buf, bend
+					, sizeof (r.sys_id), r.sys_id_len);
+			RETURN_NULL_IF(buf == NULL);
 
-			RETURN_NULL_IF(!(buf = p::scpyl(r.password, buf, bend
-						, sizeof(r.password), r.password_len)));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.password, buf, bend
+					, sizeof (r.password), r.password_len);
+			RETURN_NULL_IF(buf == NULL);
 
-			RETURN_NULL_IF(!(buf = p::scpyl(r.sys_type, buf, bend
-						, sizeof(r.sys_type), r.sys_type_len)));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.sys_type, buf, bend
+						, sizeof(r.sys_type), r.sys_type_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
 			buf = p::cp_u8(&r.interface_version, buf);
@@ -1450,14 +1469,16 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.addr_npi) >= bend);
 			buf = p::cp_u8(&r.addr_npi, buf);
 
-			RETURN_NULL_IF(!(buf = p::scpyl(r.addr_range, buf, bend
-					, sizeof(r.addr_range), r.addr_range_len)));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.addr_range, buf, bend
+					, sizeof(r.addr_range), r.addr_range_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			return buf;
 		}
 
 		template <class BindT, class LogT>
-		proto::u8_t * write_bind(proto::u8_t * buf, proto::u8_t * bend
+		proto::u8_t * write(proto::u8_t * buf, proto::u8_t * bend
 				, const BindT & r, LogT & L) {
 			using namespace utl;
 
@@ -1489,7 +1510,7 @@ namespace smpp {
 		}
 
 		template <class BindRT, class LogT>
-		void parse_bind_r(BindRT & r, const proto::u8_t * buf
+		void parse_r(BindRT & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
 			using namespace utl;
 
@@ -1505,7 +1526,7 @@ namespace smpp {
 		}
 
 		template <class BindRT, class LogT>
-		void write_bind_r(proto::u8_t * buf, const BindRT & r, LogT & L) {
+		void write_r(proto::u8_t * buf, const BindRT & r, LogT & L) {
 			using namespace utl;
 			buf = write(buf, r.command, L);
 			buf = w::scpy(buf, r.sys_id, r.sys_id_len + 1);
@@ -1543,7 +1564,7 @@ namespace smpp {
 		/* SUBMIT_SM P&W */
 
 		template <class LogT>
-		void parse(submit_sm & r, const proto::u8_t * buf
+		const proto::u8_t * parse(submit_sm & r, const proto::u8_t * buf
 				, const proto::u8_t * bend, LogT & L) {
 
 			using namespace utl;
@@ -1555,9 +1576,10 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			/* scpyl returns NULL if error has occurred */
 			buf = p::scpyl(r.service_type, buf, bend
 					, sizeof(r.service_type), r.service_type_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			RETURN_NULL_IF(buf + sizeof (r.src_addr_ton) >= bend);
 			buf = p::cp_u8(&r.src_addr_ton, buf);
@@ -1565,9 +1587,10 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.src_addr_npi) >= bend);
 			buf = p::cp_u8(&r.src_addr_npi, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.src_addr) >= bend);
+			/* scpyl returns NULL if error has occurred */
 			buf = p::scpyl(r.src_addr, buf, bend
 					, sizeof(r.src_addr), r.src_addr_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			RETURN_NULL_IF(buf + sizeof (r.dst_addr_ton) >= bend);
 			buf = p::cp_u8(&r.dst_addr_ton, buf);
@@ -1575,8 +1598,10 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.dst_addr_npi) >= bend);
 			buf = p::cp_u8(&r.dst_addr_npi, buf);
 
+			/* scpyl returns NULL if error has occurred */
 			buf = p::scpyl(r.dst_addr, buf, bend
 					, sizeof(r.dst_addr), r.dst_addr_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			RETURN_NULL_IF(buf + sizeof (r.esm_class) >= bend);
 			buf = p::cp_u8(&r.esm_class, buf);
@@ -1587,12 +1612,15 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.priority_flag) >= bend);
 			buf = p::cp_u8(&r.priority_flag, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.schedule_delivery_time));
-			buf = p::scpyf(r.schedule_delivery_time, buf
-					, sizeof(r.schedule_delivery_time));
-
-			RETURN_NULL_IF(buf + sizeof (r.validity_period) >= bend);
-			buf = p::scpyf(r.validity_period, buf, sizeof(r.validity_period));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyf(r.schedule_delivery_time
+							, buf, bend, sizeof(r.schedule_delivery_time));
+			RETURN_NULL_IF(buf == NULL);
+// TAG1
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyf(r.validity_period
+							, buf, bend, sizeof(r.validity_period));
+			RETURN_NULL_IF(buf == NULL);
 			
 			RETURN_NULL_IF(buf + sizeof (r.registered_delivery) >= bend);
 			buf = p::cp_u8(&r.registered_delivery, buf);
@@ -1609,20 +1637,21 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.sm_len) >= bend)
 			buf = p::cp_u8(&r.sm_len, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.short_message) >= bend);
-			buf = p::cpy(r.short_message, buf
-					, std::min(static_cast<std::size_t>(r.sm_len)
-						, sizeof(r.sm_len)));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.short_msg, buf, bend
+					, sizeof(r.short_msg), r.short_msg_len);
+			RETURN_NULL_IF(buf == NULL);
 
-			buf = p::cp_u16(asbuf(optid), buf);
+			/* RETURN_NULL_IF(buf + sizeof (tlv) > bend); */
+			p::cp_u16(asbuf(optid), buf);
 			/*
 			buf += sizeof(proto::u16_t);
 			*/
 
 			while (buf < bend) {
 				switch (optid) {
-					case option::user_message_reference:
-						buf = parse(r.user_message_reference, buf, L); break;
+					case option::user_msg_reference:
+						buf = parse(r.user_msg_reference, buf, L); break;
 					case option::source_port:
 						buf = parse(r.source_port, buf, L); break;
 					case option::src_addr_subunit:
@@ -1637,16 +1666,15 @@ namespace smpp {
 						buf = parse(r.sar_total_segments, buf, L); break;
 					case option::sar_segment_seqnum:
 						buf = parse(r.sar_segment_seqnum, buf, L); break;
-					case option::more_messages_to_send:
-						buf = parse(r.more_messages_to_send, buf, L); break;
+					case option::more_msgs_to_send:
+						buf = parse(r.more_msgs_to_send, buf, L); break;
 					case option::payload_type:
 						buf = parse(r.payload_type, buf, L); break;
-					/* TODO: Parse message_payload*/
-					/*
-					case option::message_payload:
-						buf = parse(r.message_payload, buf, L);
+					/* TODO: Parse msg_payload*/
+					case option::msg_payload:
+						/*buf = parse(r.msg_payload, buf, L);*/
+						buf += sizeof (r.msg_payload);
 						break;
-					*/
 					case option::privacy_indicator:
 						buf = parse(r.privacy_indicator, buf, L); break;
 					case option::callback_num:
@@ -1669,10 +1697,10 @@ namespace smpp {
 						buf = parse(r.ms_validity, buf, L); break;
 					case option::ms_msg_wait_facilities:
 						buf = parse(r.ms_msg_wait_facilities, buf, L); break;
-					case option::number_of_messages:
-						buf = parse(r.number_of_messages, buf, L); break;
-					case option::alert_on_message_delivery:
-						buf = parse(r.alert_on_message_delivery, buf, L); break;
+					case option::number_of_msgs:
+						buf = parse(r.number_of_msgs, buf, L); break;
+					case option::alert_on_msg_delivery:
+						buf = parse(r.alert_on_msg_delivery, buf, L); break;
 					case option::language_indicator:
 						buf = parse(r.language_indicator, buf, L); break;
 					case option::its_reply_type:
@@ -1681,41 +1709,88 @@ namespace smpp {
 						buf = parse(r.its_session_info, buf, L); break;
 					case option::ussd_service_op:
 						buf = parse(r.ussd_service_op, buf, L); break;
-					default: return;
+					default: return NULL;
 				}
-
 				/* may be optional parameter wasn't writed corretly */
-				RETURN_NULL_IF(buf + sizeof (optid) > bend);
-				buf = p::cp_u16(asbuf(optid), buf);
+				/* RETURN_NULL_IF(buf + sizeof (tlv) > bend);
+				 */
+				p::cp_u16(asbuf(optid), buf);
 			}
+			return buf;
 		}
 
 		template <class LogT>
-		void write(proto::u8_t * buf, const submit_sm & r, LogT & L) {
+		proto::u8_t * write(proto::u8_t * buf
+				, proto::u8_t * bend, const submit_sm & r, LogT & L) {
 			using namespace utl;
-			buf = write(buf, r.command, L);
-			buf = w::scpy(buf, r.service_type, 6);
-			/* Writing address of ESME */
-			buf = w::cp_u8(buf, r.src_addr_ton);
-			buf = w::cp_u8(buf, r.src_addr_npi);
-			buf = w::scpy(buf, r.src_addr, 21);
-			/* Writing ME */
-			buf = w::cp_u8(buf, r.dst_addr_ton);
-			buf = w::cp_u8(buf, r.dst_addr_npi);
-			buf = w::scpy(buf, r.dst_addr, 21);
-			buf = w::cp_u8(buf, r.esm_class);
-			buf = w::cp_u8(buf, r.protocol_id);
-			buf = w::cp_u8(buf, r.priority_flag);
-			buf = w::scpy(buf, r.schedule_delivery_time, 17);
-			buf = w::scpy(buf, r.validity_period, 17);
-			buf = w::cp_u8(buf, r.registered_delivery);
-			buf = w::cp_u8(buf, r.replace_if_present_flag);
-			buf = w::cp_u8(buf, r.data_coding);
-			buf = w::cp_u8(buf, r.sm_default_msg_id);
-			buf = w::cp_u8(buf, r.sm_len);
-			buf = w::scpy(buf, r.short_message, 254);
 
-			if (r.user_message_reference.tag != 0)	buf = write(buf, r.user_message_reference, L);
+			buf = asbuf(buf);
+
+			/* length of var strings are stored
+			 * in additional field of struct */
+
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = write(buf, r.command, L);
+
+			RETURN_NULL_IF(buf + r.service_type_len >= bend);
+			buf = w::scpy(buf, r.service_type, r.service_type_len);
+
+			/* Writing address of ESME */
+			RETURN_NULL_IF(buf + sizeof (r.src_addr_ton) >= bend);
+			buf = w::cp_u8(buf, r.src_addr_ton);
+
+			RETURN_NULL_IF(buf + sizeof (r.src_addr_npi) >= bend);
+			buf = w::cp_u8(buf, r.src_addr_npi);
+
+			RETURN_NULL_IF(buf + r.src_addr_len >= bend);
+			buf = w::scpy(buf, r.src_addr, r.src_addr_len);
+
+			/* Writing ME */
+
+			RETURN_NULL_IF(buf + sizeof (r.dst_addr_ton) >= bend);
+			buf = w::cp_u8(buf, r.dst_addr_ton);
+
+			RETURN_NULL_IF(buf + sizeof (r.dst_addr_npi) >= bend);
+			buf = w::cp_u8(buf, r.dst_addr_npi);
+
+			RETURN_NULL_IF(buf + r.dst_addr_len >= bend);
+			buf = w::scpy(buf, r.dst_addr, r.dst_addr_len);
+
+			RETURN_NULL_IF(buf + sizeof (r.esm_class) >= bend);
+			buf = w::cp_u8(buf, r.esm_class);
+
+			RETURN_NULL_IF(buf + sizeof (r.protocol_id) >= bend);
+			buf = w::cp_u8(buf, r.protocol_id);
+
+			RETURN_NULL_IF(buf + sizeof (r.priority_flag) >= bend);
+			buf = w::cp_u8(buf, r.priority_flag);
+
+			RETURN_NULL_IF(buf + r.schedule_delivery_time_len >= bend);
+			buf = w::scpy(buf, r.schedule_delivery_time,
+					r.schedule_delivery_time_len);
+
+			RETURN_NULL_IF(buf + r.validity_period_len >= bend);
+			buf = w::scpy(buf, r.validity_period, r.validity_period_len);
+
+			RETURN_NULL_IF(buf + sizeof (r.registered_delivery_len) >= bend);
+			buf = w::cp_u8(buf, r.registered_delivery);
+
+			RETURN_NULL_IF(buf + sizeof (r.replace_if_present_flag) >= bend);
+			buf = w::cp_u8(buf, r.replace_if_present_flag);
+
+			RETURN_NULL_IF(buf + sizeof (r.data_coding) >= bend);
+			buf = w::cp_u8(buf, r.data_coding);
+
+			RETURN_NULL_IF(buf + sizeof (r.sm_default_msg_id) >= bend);
+			buf = w::cp_u8(buf, r.sm_default_msg_id);
+
+			RETURN_NULL_IF(buf + sizeof (r.sm_len) >= bend);
+			buf = w::cp_u8(buf, r.short_msg_len);
+
+			RETURN_NULL_IF(buf + r.short_msg_len > bend);
+			buf = w::scpy(buf, r.short_msg, r.short_msg_len);
+
+			if (r.user_msg_reference.tag != 0)	buf = write(buf, r.user_msg_reference, L);
 			if (r.source_port.tag != 0)				buf = write(buf, r.source_port, L);
 			if (r.src_addr_subunit.tag != 0)		buf = write(buf, r.src_addr_subunit, L);
 			if (r.dest_port.tag != 0)				buf = write(buf, r.dest_port.tag, L);
@@ -1723,9 +1798,9 @@ namespace smpp {
 			if (r.sar_msg_ref_num.tag != 0)			buf = write(buf, r.sar_msg_ref_num, L);
 			if (r.sar_total_segments.tag != 0)		buf = write(buf, r.sar_total_segments, L);
 			if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
-			if (r.more_messages_to_send.tag != 0)	buf = write(buf, r.more_messages_to_send, L);
+			if (r.more_msgs_to_send.tag != 0)	buf = write(buf, r.more_msgs_to_send, L);
 			if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
-			if (r.message_payload.tag != 0)			buf = write(buf, r.message_payload.tag, L);
+			if (r.msg_payload.tag != 0)			buf = write(buf, r.msg_payload.tag, L);
 			if (r.privacy_indicator.tag != 0)		buf = write(buf, r.privacy_indicator, L);
 			if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
 			if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
@@ -1736,12 +1811,14 @@ namespace smpp {
 			if (r.sms_signal.tag != 0)				buf = write(buf, r.sms_signal, L);
 			if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
 			if (r.ms_msg_wait_facilities.tag != 0)	buf = write(buf, r.ms_msg_wait_facilities, L);
-			if (r.number_of_messages.tag != 0)		buf =write(buf, r.number_of_messages, L);
-			if (r.alert_on_message_delivery.tag!=0)	buf = write(buf, r.alert_on_message_delivery, L);
+			if (r.number_of_msgs.tag != 0)		buf =write(buf, r.number_of_msgs, L);
+			if (r.alert_on_msg_delivery.tag!=0)	buf = write(buf, r.alert_on_msg_delivery, L);
 			if (r.language_indicator.tag != 0)		buf = write(buf, r.language_indicator, L);
 			if (r.its_reply_type.tag != 0)			buf = write(buf, r.its_reply_type, L);
 			if (r.its_session_info.tag != 0)		buf = write(buf, r.its_session_info, L);
 			if (r.ussd_service_op.tag != 0)			buf = write(buf, r.ussd_service_op, L);
+
+			return buf;
 		}
 
 		template <class LogT>
@@ -1803,11 +1880,11 @@ namespace smpp {
 			buf = p::cp_u8(&r.priority_flag, buf);
 
 			RETURN_NULL_IF(buf + sizeof (r.schedule_delivery_time) >= bend);
-			buf = p::scpyf(r.schedule_delivery_time, buf
+			buf = p::scpyf(r.schedule_delivery_time, buf, bend
 					, sizeof (r.schedule_delivery_time));
 
 			RETURN_NULL_IF(buf + sizeof (r.validity_period) >= bend);
-			buf = p::scpyf(r.validity_period, buf
+			buf = p::scpyf(r.validity_period, buf, bend
 					, sizeof (r.validity_period));
 
 			RETURN_NULL_IF(buf + sizeof (r.registered_delivery) >= bend);
@@ -1825,9 +1902,9 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.sm_length) >= bend);
 			buf = p::cp_u8(&r.sm_length, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.short_message) >= bend);
-			buf = p::scpyl(r.short_message, buf, bend
-					, sizeof (r.short_message), r.short_message_len);
+			RETURN_NULL_IF(buf + sizeof (r.short_msg) >= bend);
+			buf = p::scpyl(r.short_msg, buf, bend
+					, sizeof (r.short_msg), r.short_msg_len);
 
 			buf = p::cp_u16(asbuf(optid), buf);
 			/*
@@ -1836,8 +1913,8 @@ namespace smpp {
 
 			while (buf < bend) {
 				switch (optid) {
-					case option::user_message_reference:
-						buf = parse(r.user_message_reference, buf, L); break;
+					case option::user_msg_reference:
+						buf = parse(r.user_msg_reference, buf, L); break;
 					case option::source_port:
 						buf = parse(r.source_port, buf, L); break;
 					case option::src_addr_subunit:
@@ -1854,10 +1931,10 @@ namespace smpp {
 						buf = parse(r.sar_segment_seqnum, buf, L); break;
 					case option::payload_type:
 						buf = parse(r.payload_type, buf, L); break;
-					/* TODO: Parse message_payload*/
+					/* TODO: Parse msg_payload*/
 					/*
-					case option::message_payload:
-						buf = parse(r.message_payload, buf, L);
+					case option::msg_payload:
+						buf = parse(r.msg_payload, buf, L);
 						break;
 					*/
 					case option::privacy_indicator:
@@ -1880,8 +1957,8 @@ namespace smpp {
 						buf = parse(r.ms_validity, buf, L); break;
 					case option::ms_msg_wait_facilities:
 						buf = parse(r.ms_msg_wait_facilities, buf, L); break;
-					case option::alert_on_message_delivery:
-						buf = parse(r.alert_on_message_delivery, buf, L); break;
+					case option::alert_on_msg_delivery:
+						buf = parse(r.alert_on_msg_delivery, buf, L); break;
 					case option::language_indicator:
 						buf = parse(r.language_indicator, buf, L); break;
 					default: return;
@@ -1914,9 +1991,9 @@ namespace smpp {
 			buf = w::cp_u8(buf, r.data_coding);
 			buf = w::cp_u8(buf, r.sm_default_msg_id);
 			buf = w::cp_u8(buf, r.sm_length);
-			buf = w::scpy(buf, r.short_message, 254);
+			buf = w::scpy(buf, r.short_msg, 254);
 
-			if (r.user_message_reference.tag != 0)	buf = write(buf, r.user_message_reference, L);
+			if (r.user_msg_reference.tag != 0)	buf = write(buf, r.user_msg_reference, L);
 			if (r.source_port.tag != 0)				buf = write(buf, r.source_port, L);
 			if (r.src_addr_subunit.tag != 0)		buf = write(buf, r.src_addr_subunit, L);
 			if (r.dest_port.tag != 0)				buf = write(buf, r.dest_port.tag, L);
@@ -1925,7 +2002,7 @@ namespace smpp {
 			if (r.sar_total_segments.tag != 0)		buf = write(buf, r.sar_total_segments, L);
 			if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
 			if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
-			if (r.message_payload.tag != 0)			buf = write(buf, r.message_payload.tag, L);
+			if (r.msg_payload.tag != 0)			buf = write(buf, r.msg_payload.tag, L);
 			if (r.privacy_indicator.tag != 0)		buf = write(buf, r.privacy_indicator, L);
 			if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
 			if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
@@ -1936,7 +2013,7 @@ namespace smpp {
 			if (r.sms_signal.tag != 0)				buf = write(buf, r.sms_signal, L);
 			if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
 			if (r.ms_msg_wait_facilities.tag != 0)	buf = write(buf, r.ms_msg_wait_facilities, L);
-			if (r.alert_on_message_delivery.tag!=0)	buf = write(buf, r.alert_on_message_delivery, L);
+			if (r.alert_on_msg_delivery.tag!=0)	buf = write(buf, r.alert_on_msg_delivery, L);
 			if (r.language_indicator.tag != 0)		buf = write(buf, r.language_indicator, L);
 		}
 
@@ -1968,7 +2045,7 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.dest_addr_npi) >= bend);
 			buf = p::cp_u8(&r.dest_addr_npi, buf);
 			RETURN_NULL_IF(buf + sizeof (r.dest_addr) > bend);
-			buf = p::scpyf(r.dest_addr, buf, sizeof (r.dest_addr));
+			buf = p::scpyf(r.dest_addr, buf, bend, sizeof (r.dest_addr));
 		}
 
 		template <class LogT>
@@ -1986,13 +2063,13 @@ namespace smpp {
 			using namespace utl;
 			RETURN_NULL_IF((buf + sizeof (r.dl_name) > bend)
 					&& (buf+1 != bend));
-			buf = p::scpyf(r.dl_name, buf, sizeof (r.dl_name));
+			buf = p::scpyf(r.dl_name, buf, bend, sizeof (r.dl_name));
 		}
 
 		template <class LogT>
 		void write(proto::u8_t * buf, const DL_name & r, LogT & L) {
 			using namespace utl;
-			buf = p::scpyf(buf, r.dl_name, sizeof (r.dl_name));
+			buf = w::scpyf(buf, r.dl_name, sizeof (r.dl_name));
 		}
 
 		/* SUBMIT_MULTI_R P&W */
@@ -2005,8 +2082,10 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
 
-			RETURN_NULL_IF(!(buf = p::scpyl(r.msg_id, buf, bend
-						, sizeof (r.msg_id), r.msg_id_len)));
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.msg_id, buf, bend
+						, sizeof (r.msg_id), r.msg_id_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			RETURN_NULL_IF(buf + sizeof (r.no_unsuccess) >= bend);
 			buf = p::cp_u8(&r.no_unsuccess, buf);
@@ -2111,45 +2190,48 @@ namespace smpp {
 		std::basic_ostream< CharT, TraitsT >&
 		operator<<(std::basic_ostream< CharT, TraitsT >& L
 				, const submit_sm & r) {
-			L	<< "submit_sm: " << " [service_type:" << r.service_type << "]"
+			L	<< "submit_sm: " << std::endl
 
-				<< " [src_addr_ton:" << std::bitset<8>(r.src_addr_ton) << "]"
+				<< " [service_type:" << r.service_type << "]" << std::endl
 
-				<< " [src_addr_npi:" << std::bitset<8>(r.src_addr_npi) << "]"
+				<< " [src_addr_ton:" << std::bitset<8>(r.src_addr_ton) << "]" << std::endl
 
-				<< " [src_addr:" << r.src_addr << "]"
+				<< " [src_addr_npi:" << std::bitset<8>(r.src_addr_npi) << "]" << std::endl
 
-				<< " [dst_addr_ton:" << std::bitset<8>(r.dst_addr_ton) << "]"
+				<< " [src_addr:" << r.src_addr << "]" << std::endl
 
-				<< " [dst_addr_npi:" << std::bitset<8>(r.dst_addr_npi) << "]"
+				<< " [dst_addr_ton:" << std::bitset<8>(r.dst_addr_ton) << "]" << std::endl
 
-				<< " [dst_addr:" << r.dst_addr << "]"
+				<< " [dst_addr_npi:" << std::bitset<8>(r.dst_addr_npi) << "]" << std::endl
 
-				<< " [esm_class:" << std::bitset<8>(r.esm_class) << "]"
+				<< " [dst_addr:" << r.dst_addr << "]" << std::endl
 
-				<< " [protocol_id:" << static_cast<int>(r.protocol_id) << "]"
+				<< " [esm_class:" << std::bitset<8>(r.esm_class) << "]" << std::endl
 
-				<< " [priority_flag:" << static_cast<int>(r.priority_flag) << "]"
+				<< " [protocol_id:" << static_cast<int>(r.protocol_id) << "]" << std::endl
 
-				<< " [schedule_delivery_time:" << r.schedule_delivery_time << "]"
+				<< " [priority_flag:" << static_cast<int>(r.priority_flag) << "]" << std::endl
+ << std::endl
+ //TAG3
+				<< " [schedule_delivery_time:" << r.schedule_delivery_time << "]" << std::endl
 
-				<< " [validity_period:" << r.validity_period << "]"
+				<< " [validity_period:" << r.validity_period << "]" << std::endl
 
-				<< " [registered_delivery:" << static_cast<bool>(r.registered_delivery) << "]"
+				<< " [registered_delivery:" << static_cast<bool>(r.registered_delivery) << "]" << std::endl
 
-				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag) << "]"
+				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag) << "]" << std::endl
 
-				<< " [data_coding:" << std::bitset<8>(r.data_coding) << "]"
+				<< " [data_coding:" << std::bitset<8>(r.data_coding) << "]" << std::endl
 
-				<< " [sm_default_msg_id:" << static_cast<int>(r.sm_default_msg_id) << "]"
+				<< " [sm_default_msg_id:" << static_cast<int>(r.sm_default_msg_id) << "]" << std::endl
 
-				<< " [sm_len:" << r.sm_len << "]"
+				<< " [sm_len:" << static_cast<int>(r.sm_len) << "]" << std::endl
 
-				<< " [short_message:" << std::string(r.short_message, r.short_message + r.sm_len) << "]" ;
+				<< " [short_msg:" << std::string(r.short_msg, r.short_msg + r.sm_len) << "]" << std::endl;
 
-			if (r.user_message_reference.tag != 0) {
-				L << " [user_message_reference:"
-					<< r.user_message_reference
+			if (r.user_msg_reference.tag != 0) {
+				L << " [user_msg_reference:"
+					<< r.user_msg_reference
 					<< "]";
 			}
 
@@ -2195,9 +2277,9 @@ namespace smpp {
 					<< "]";
 			}
 
-			if (r.more_messages_to_send.tag != 0) {
-				L << " [more_messages_to_send:"
-					<< r.more_messages_to_send
+			if (r.more_msgs_to_send.tag != 0) {
+				L << " [more_msgs_to_send:"
+					<< r.more_msgs_to_send
 					<< "]";
 			}
 
@@ -2207,8 +2289,8 @@ namespace smpp {
 					<< "]";
 			}
 
-			if (r.message_payload.tag != 0) {
-				L << " [message_payload:"
+			if (r.msg_payload.tag != 0) {
+				L << " [msg_payload:"
 					<< r.payload_type
 					<< "]";
 			}
@@ -2279,15 +2361,15 @@ namespace smpp {
 					<< "]";
 			}
 
-			if (r.number_of_messages.tag != 0) {
-				L << " [number_of_messages:"
-					<< r.number_of_messages
+			if (r.number_of_msgs.tag != 0) {
+				L << " [number_of_msgs:"
+					<< r.number_of_msgs
 					<< "]";
 			}
 
-			if (r.alert_on_message_delivery.tag != 0) {
-				L << " [alert_on_message_delivery:"
-					<< r.alert_on_message_delivery
+			if (r.alert_on_msg_delivery.tag != 0) {
+				L << " [alert_on_msg_delivery:"
+					<< r.alert_on_msg_delivery
 					<< "]";
 			}
 
