@@ -300,7 +300,6 @@ BOOST_AUTO_TEST_CASE( submit_sm_2 )
 	std::cout << std::endl;
 	std::cout << r << std::endl;
 }
-#endif
 
 BOOST_AUTO_TEST_CASE( submit_sm_3 )
 {
@@ -319,17 +318,75 @@ BOOST_AUTO_TEST_CASE( submit_sm_3 )
 	for (i = 0; i < 4; ++i) oct[i] = *(raw_dat+3-i);
 
 	BOOST_CHECK(smpp::parse(r, raw_dat, raw_dat+len, std::cout));
-
-	std::cout << std::endl;
-	std::cout << r << std::endl;
-
 	BOOST_CHECK(smpp::write(hand_dat, hand_dat+r.command.len, r, std::cout));
 	BOOST_CHECK(smpp::parse(r, hand_dat, hand_dat+len, std::cout));
 
 	for (i = 0; i < len; ++i)
 		BOOST_CHECK(hand_dat[i] == raw_dat[i]);
+}
 
-	std::cout << std::endl;
+#endif
+
+BOOST_AUTO_TEST_CASE( submit_sm_4 )
+{
+	using namespace smpp;
+	using namespace utl;
+
+	submit_sm r;
+
+	{
+		r.command.id					= 0x00000004;
+		r.command.seqno					= 0x00000000;
+		r.command.status				= 0x00000000;
+		r.src_addr_ton					= 0x01;
+		r.src_addr_npi					= 0x00;
+		r.dst_addr_ton					= 0x00;
+		r.dst_addr_npi					= 0x00;
+		r.esm_class						= 0x00;
+		r.protocol_id					= 0x00;
+		r.priority_flag					= 0x00;
+		r.schedule_delivery_time[0]		= 0x00;
+		r.validity_period[0]			= 0x00;
+		r.registered_delivery			= 0x00;
+		r.replace_if_present_flag 		= 0x00;
+		r.data_coding					= 0x00;
+		r.sm_default_msg_id				= 0x00;
+		r.sm_len						= sizeof ("hello");
+
+		w::cpy(r.short_msg,	ascbuf("hello"), r.sm_len);
+
+		r.service_type_len = sizeof ("SMPP");
+		w::cpy(r.service_type, ascbuf("SMPP"), r.service_type_len);
+
+		r.src_addr_len = sizeof ("GOOGLE.RU");
+		w::cpy(r.src_addr, ascbuf("GOOGLE.RU"), r.src_addr_len);
+
+		r.dst_addr_len = sizeof ("GOOGLE.COM");
+		w::cpy(r.dst_addr, ascbuf("GOOGLE.COM"), r.dst_addr_len);
+
+		r.user_msg_reference.tag 	= option::user_msg_reference;
+		r.user_msg_reference.len 	= 2;
+		r.user_msg_reference.val	= 17;
+
+		r.command.len =	sizeof (pdu)
+						+12	/* 1 octet fields */
+						+2	/* fixed size string fields */
+						+r.sm_len
+						+r.service_type_len
+						+r.src_addr_len
+						+r.dst_addr_len
+						+sizeof (r.user_msg_reference);
+	}
+
+	smpp::proto::u8_t hand_dat[512];
+	BOOST_CHECK(smpp::write(hand_dat, hand_dat+r.command.len, r, std::cout));
+
+	submit_sm r2;
+
+	union { uint32_t len; uint8_t oct[4]; };
+	for (int i = 0; i < 4; ++i) oct[i] = *(hand_dat+3-i);
+
+	BOOST_CHECK(smpp::parse(r2, hand_dat, hand_dat+len, std::cout));
 	std::cout << r << std::endl;
 }
 

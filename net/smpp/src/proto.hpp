@@ -132,7 +132,7 @@ namespace smpp {
 		const proto::u16_t additional_status_info_text		= 0x0019;
 		const proto::u16_t receipted_msg_id				= 0x001E;
 		const proto::u16_t ms_msg_wait_facilities			= 0x0030;
-		const proto::u16_t privacy_indicator				= 0x0201;
+		const proto::u16_t privacy_ind				= 0x0201;
 		const proto::u16_t source_subaddress				= 0x0202;
 		const proto::u16_t dest_subaddress					= 0x0203;
 		const proto::u16_t user_msg_reference			= 0x0204;
@@ -140,7 +140,7 @@ namespace smpp {
 		const proto::u16_t source_port						= 0x020A;
 		const proto::u16_t dest_port						= 0x020B;
 		const proto::u16_t sar_msg_ref_num					= 0x020C;
-		const proto::u16_t language_indicator				= 0x020D;
+		const proto::u16_t lang_ind				= 0x020D;
 		const proto::u16_t sar_total_segments				= 0x020E;
 		const proto::u16_t sar_segment_seqnum				= 0x020F;
 		const proto::u16_t sc_interface_version				= 0x0210;
@@ -336,12 +336,12 @@ namespace smpp {
 		typedef tlv<proto::u8_t[256]>	tlv_additional_status_info_text;
 		typedef tlv<proto::u8_t[65]>	tlv_receipted_msg_id;
 		typedef tlv<proto::u8_t>		tlv_ms_msg_wait_facilities;
-		typedef tlv<proto::u8_t>		tlv_privacy_indicator;
+		typedef tlv<proto::u8_t>		tlv_privacy_ind;
 		typedef tlv<proto::u8_t[23]>	tlv_source_subaddress;
 		typedef tlv<proto::u8_t[23]> 	tlv_dest_subaddress;
 		typedef tlv<proto::u16_t> 		tlv_user_msg_reference;
 		typedef tlv<proto::u8_t>  		tlv_user_response_code;
-		typedef tlv<proto::u8_t>  		tlv_language_indicator;
+		typedef tlv<proto::u8_t>  		tlv_lang_ind;
 		typedef tlv<proto::u16_t> 		tlv_source_port;
 		typedef tlv<proto::u16_t> 		tlv_dest_port;
 		typedef tlv<proto::u16_t> 		tlv_sar_msg_ref_num;
@@ -521,7 +521,7 @@ namespace smpp {
 			proto::u8_t sm_len;
 			proto::u8_t short_msg[254];
 
-			tlv_user_msg_reference		user_msg_reference;
+			tlv_user_msg_reference			user_msg_reference;
 			tlv_source_port					source_port;
 			tlv_src_addr_subunit			src_addr_subunit;
 			tlv_dest_port					dest_port;
@@ -529,10 +529,10 @@ namespace smpp {
 			tlv_sar_msg_ref_num				sar_msg_ref_num;
 			tlv_sar_total_segments			sar_total_segments;
 			tlv_sar_segment_seqnum			sar_segment_seqnum;
-			tlv_more_msgs_to_send		more_msgs_to_send;
+			tlv_more_msgs_to_send			more_msgs_to_send;
 			tlv_payload_type				payload_type;
-			tlv_msg_payload				msg_payload;
-			tlv_privacy_indicator			privacy_indicator;
+			tlv_msg_payload					msg_payload;
+			tlv_privacy_ind					privacy_ind;
 			tlv_callback_num				callback_num;
 			tlv_callback_num_pres_ind		callback_num_pres_ind;
 			tlv_callback_num_atag			callback_num_atag;
@@ -543,14 +543,13 @@ namespace smpp {
 			tlv_sms_signal					sms_signal;
 			tlv_ms_validity					ms_validity;
 			tlv_ms_msg_wait_facilities		ms_msg_wait_facilities;
-			tlv_number_of_msgs			number_of_msgs;
-			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
-			tlv_language_indicator			language_indicator;
+			tlv_number_of_msgs				number_of_msgs;
+			tlv_alert_on_msg_delivery		alert_on_msg_delivery;
+			tlv_lang_ind					lang_ind;
 			tlv_its_reply_type				its_reply_type;
 			tlv_its_session_info			its_session_info;
 			tlv_ussd_service_op				ussd_service_op;
 
-			std::size_t short_msg_len;
 			std::size_t service_type_len;
 			std::size_t src_addr_len;
 			std::size_t dst_addr_len;
@@ -607,7 +606,7 @@ namespace smpp {
 			tlv_sar_segment_seqnum		sar_segment_seqnum;
 			tlv_payload_type			payload_type;
 			tlv_msg_payload			msg_payload;
-			tlv_privacy_indicator		privacy_indicator;
+			tlv_privacy_ind		privacy_ind;
 			tlv_callback_num			callback_num;
 			tlv_callback_num_pres_ind	callback_num_pres_ind;
 			tlv_callback_num_atag		callback_num_atag;
@@ -618,7 +617,7 @@ namespace smpp {
 			tlv_ms_validity				ms_validity;
 			tlv_ms_msg_wait_facilities	ms_msg_wait_facilities;
 			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
-			tlv_language_indicator		language_indicator;
+			tlv_lang_ind		lang_ind;
 
 			std::size_t service_type_len;
 			std::size_t src_addr_len;
@@ -697,12 +696,12 @@ namespace smpp {
 			tlv_sar_total_segments		sar_total_segments;
 			tlv_sar_segment_seqnum		sar_segment_seqnum;
 			tlv_user_response_code		user_response_code;
-			tlv_privacy_indicator		privacy_indicator;
+			tlv_privacy_ind		privacy_ind;
 			tlv_payload_type			payload_type;
 			tlv_callback_num			callback_num;
 			tlv_source_subaddress		source_subaddress;
 			tlv_dest_subaddress			dest_subaddress;
-			tlv_language_indicator		language_indicator;
+			tlv_lang_ind		lang_ind;
 			tlv_its_session_info		its_session_info;
 			tlv_network_error_code		network_error_code;
 			tlv_msg_state			msg_state;
@@ -762,7 +761,7 @@ namespace smpp {
 			tlv_msg_state				msg_state;
 			tlv_network_error_code			network_error_code;
 			tlv_user_msg_reference		user_msg_reference;
-			tlv_privacy_indicator			privacy_indicator;
+			tlv_privacy_ind			privacy_ind;
 			tlv_callback_num				callback_num;
 			tlv_callback_num_pres_ind		callback_num_pres_ind;
 			tlv_callback_num_atag			callback_num_atag;
@@ -775,7 +774,7 @@ namespace smpp {
 			tlv_ms_msg_wait_facilities		ms_msg_wait_facilities;
 			tlv_number_of_msgs			number_of_msgs;
 			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
-			tlv_language_indicator			language_indicator;
+			tlv_lang_ind			lang_ind;
 			tlv_its_reply_type				its_reply_type;
 			tlv_its_session_info			its_session_info;
 
@@ -1130,6 +1129,22 @@ namespace smpp {
 				RETURN_NULL_IF(l > len);
 				return src;
 			}
+
+			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
+					, const u8_t * srcend, sz_t len, uint8_t & l) {
+				if (src == srcend)
+					return NULL;
+
+				for (l = 0; (l < len) && (src < srcend); ++l) {
+					if (*src == 0) {
+						*dst++ = *src++;
+						return src;
+					}
+					*dst++ = *src++;
+				}
+				RETURN_NULL_IF(l > len);
+				return src;
+			}
 		}
 
 		/* Write from struct to buffer, move buffer pointer */
@@ -1198,16 +1213,9 @@ namespace smpp {
 			}
 
 			inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					if (*src == 0) {
-						*dst++ = *src++;
-						return dst;
-					}
+				while (len--) {
 					*dst++ = *src++;
-					--len;
 				}
-				*dst++ = 0;
-
 				return dst;
 			}
 		}
@@ -1654,11 +1662,10 @@ namespace smpp {
 
 			/* scpyl returns NULL if error has occurred */
 			buf = p::scpyl(r.short_msg, buf, bend
-					, sizeof(r.short_msg), r.short_msg_len);
+					, sizeof(r.short_msg), r.sm_len);
 			RETURN_NULL_IF(buf == NULL);
 
 			return buf;
-
 			/* RETURN_NULL_IF(buf + sizeof (tlv) > bend); */
 			p::cp_u16(asbuf(optid), buf);
 			/*
@@ -1692,8 +1699,8 @@ namespace smpp {
 						/*buf = parse(r.msg_payload, buf, L);*/
 						buf += sizeof (r.msg_payload);
 						break;
-					case option::privacy_indicator:
-						buf = parse(r.privacy_indicator, buf, L); break;
+					case option::privacy_ind:
+						buf = parse(r.privacy_ind, buf, L); break;
 					case option::callback_num:
 						buf = parse(r.callback_num, buf, L); break;
 					case option::callback_num_pres_ind:
@@ -1718,8 +1725,8 @@ namespace smpp {
 						buf = parse(r.number_of_msgs, buf, L); break;
 					case option::alert_on_msg_delivery:
 						buf = parse(r.alert_on_msg_delivery, buf, L); break;
-					case option::language_indicator:
-						buf = parse(r.language_indicator, buf, L); break;
+					case option::lang_ind:
+						buf = parse(r.lang_ind, buf, L); break;
 					case option::its_reply_type:
 						buf = parse(r.its_reply_type, buf, L); break;
 					case option::its_session_info:
@@ -1740,7 +1747,6 @@ namespace smpp {
 		proto::u8_t * write(proto::u8_t * buf
 				, proto::u8_t * bend, const submit_sm & r, LogT & L) {
 			using namespace utl;
-
 			/* length of var strings are stored
 			 * in additional field of struct */
 
@@ -1749,6 +1755,7 @@ namespace smpp {
 
 			RETURN_NULL_IF(buf + r.service_type_len >= bend);
 			buf = w::scpy(buf, r.service_type, r.service_type_len);
+			RETURN_NULL_IF(buf == NULL);
 
 			/* Writing address of ESME */
 			RETURN_NULL_IF(buf + sizeof (r.src_addr_ton) >= bend);
@@ -1804,38 +1811,118 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.sm_len) >= bend);
 			buf = w::cp_u8(buf, &r.sm_len);
 
-			RETURN_NULL_IF(buf + r.short_msg_len > bend);
-			buf = w::scpy(buf, r.short_msg, r.short_msg_len);
+			RETURN_NULL_IF(buf + r.sm_len > bend);
+			buf = w::scpy(buf, r.short_msg, r.sm_len);
+			RETURN_NULL_IF(buf == NULL);
 
-			return buf;
-			if (r.user_msg_reference.tag != 0)	buf = write(buf, r.user_msg_reference, L);
-			if (r.source_port.tag != 0)				buf = write(buf, r.source_port, L);
-			if (r.src_addr_subunit.tag != 0)		buf = write(buf, r.src_addr_subunit, L);
-			if (r.dest_port.tag != 0)				buf = write(buf, r.dest_port, L);
-			if (r.dest_addr_subunit.tag != 0)		buf = write(buf, r.dest_addr_subunit, L);
-			if (r.sar_msg_ref_num.tag != 0)			buf = write(buf, r.sar_msg_ref_num, L);
-			if (r.sar_total_segments.tag != 0)		buf = write(buf, r.sar_total_segments, L);
-			if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
-			if (r.more_msgs_to_send.tag != 0)	buf = write(buf, r.more_msgs_to_send, L);
-			if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
-			/*if (r.msg_payload.tag != 0)			buf = write(buf, r.msg_payload, L);
-			 */
-			if (r.privacy_indicator.tag != 0)		buf = write(buf, r.privacy_indicator, L);
-			if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
-			if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
-			if (r.callback_num_atag.tag != 0)		buf = write(buf, r.callback_num_atag, L);
-			if (r.source_subaddress.tag != 0)		buf = write(buf, r.source_subaddress, L);
-			if (r.user_response_code.tag != 0)		buf = write(buf, r.user_response_code, L);
-			if (r.display_time.tag != 0)			buf = write(buf, r.display_time, L);
-			if (r.sms_signal.tag != 0)				buf = write(buf, r.sms_signal, L);
-			if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
-			if (r.ms_msg_wait_facilities.tag != 0)	buf = write(buf, r.ms_msg_wait_facilities, L);
-			if (r.number_of_msgs.tag != 0)		buf =write(buf, r.number_of_msgs, L);
-			if (r.alert_on_msg_delivery.tag!=0)	buf = write(buf, r.alert_on_msg_delivery, L);
-			if (r.language_indicator.tag != 0)		buf = write(buf, r.language_indicator, L);
-			if (r.its_reply_type.tag != 0)			buf = write(buf, r.its_reply_type, L);
-			if (r.its_session_info.tag != 0)		buf = write(buf, r.its_session_info, L);
-			if (r.ussd_service_op.tag != 0)			buf = write(buf, r.ussd_service_op, L);
+			if (r.user_msg_reference.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.user_msg_reference) > bend);
+				buf = write(buf, r.user_msg_reference, L);
+			}
+			if (r.source_port.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.source_port) > bend);
+				buf = write(buf, r.source_port, L);
+			}
+			if (r.src_addr_subunit.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.src_addr_subunit) > bend);
+				buf = write(buf, r.src_addr_subunit, L);
+			}
+			if (r.dest_port.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.dest_port) > bend);
+				buf = write(buf, r.dest_port, L);
+			}
+			if (r.dest_addr_subunit.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.dest_addr_subunit) > bend);
+				buf = write(buf, r.dest_addr_subunit, L);
+			}
+			if (r.sar_msg_ref_num.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.sar_msg_ref_num) > bend);
+				buf = write(buf, r.sar_msg_ref_num, L);
+			}
+			if (r.sar_total_segments.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.sar_total_segments) > bend);
+				buf = write(buf, r.sar_total_segments, L);
+			}
+			if (r.sar_segment_seqnum.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.sar_segment_seqnum) > bend);
+				buf = write(buf, r.sar_segment_seqnum, L);
+			}
+			if (r.more_msgs_to_send.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.more_msgs_to_send) > bend);
+				buf = write(buf, r.more_msgs_to_send, L);
+			}
+			if (r.payload_type.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.payload_type) > bend);
+				buf = write(buf, r.payload_type, L);
+			}
+			/* if (r.msg_payload.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.msg_payload) > bend);
+				buf = write(buf, r.msg_payload, L);
+			} */
+			if (r.privacy_ind.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.privacy_ind) > bend);
+				buf = write(buf, r.privacy_ind, L);
+			}
+			if (r.callback_num.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.callback_num) > bend);
+				buf = write(buf, r.callback_num, L);
+			}
+			if (r.callback_num_pres_ind.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.callback_num_pres_ind) > bend);
+				buf = write(buf, r.callback_num_pres_ind, L);
+			}
+			if (r.callback_num_atag.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.callback_num_atag) > bend);
+				buf = write(buf, r.callback_num_atag, L);
+			}
+			if (r.source_subaddress.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.source_subaddress) > bend);
+				buf = write(buf, r.source_subaddress, L);
+			}
+			if (r.user_response_code.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.user_response_code) > bend);
+				buf = write(buf, r.user_response_code, L);
+			}
+			if (r.display_time.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.display_time) > bend);
+				buf = write(buf, r.display_time, L);
+			}
+			if (r.sms_signal.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.sms_signal) > bend);
+				buf = write(buf, r.sms_signal, L);
+			}
+			if (r.ms_validity.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.ms_validity) > bend);
+				buf = write(buf, r.ms_validity, L);
+			}
+			if (r.ms_msg_wait_facilities.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.ms_msg_wait_facilities) > bend);
+				buf = write(buf, r.ms_msg_wait_facilities, L);
+			}
+			if (r.number_of_msgs.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.number_of_msgs) > bend);
+				buf =write(buf, r.number_of_msgs, L);
+			}
+			if (r.alert_on_msg_delivery.tag!=0) {
+				RETURN_NULL_IF(buf + sizeof (r.alert_on_msg_delivery) > bend);
+				buf = write(buf, r.alert_on_msg_delivery, L);
+			}
+			if (r.lang_ind.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.lang_ind) > bend);
+				buf = write(buf, r.lang_ind, L);
+			}
+			if (r.its_reply_type.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.its_reply_type) > bend);
+				buf = write(buf, r.its_reply_type, L);
+			}
+			if (r.its_session_info.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.its_session_info) > bend);
+				buf = write(buf, r.its_session_info, L);
+			}
+			if (r.ussd_service_op.tag != 0) {
+				RETURN_NULL_IF(buf + sizeof (r.ussd_service_op) > bend);
+				buf = write(buf, r.ussd_service_op, L);
+			}
 			return buf;
 		}
 
@@ -1955,8 +2042,8 @@ namespace smpp {
 						buf = parse(r.msg_payload, buf, L);
 						break;
 					*/
-					case option::privacy_indicator:
-						buf = parse(r.privacy_indicator, buf, L); break;
+					case option::privacy_ind:
+						buf = parse(r.privacy_ind, buf, L); break;
 					case option::callback_num:
 						buf = parse(r.callback_num, buf, L); break;
 					case option::callback_num_pres_ind:
@@ -1977,8 +2064,8 @@ namespace smpp {
 						buf = parse(r.ms_msg_wait_facilities, buf, L); break;
 					case option::alert_on_msg_delivery:
 						buf = parse(r.alert_on_msg_delivery, buf, L); break;
-					case option::language_indicator:
-						buf = parse(r.language_indicator, buf, L); break;
+					case option::lang_ind:
+						buf = parse(r.lang_ind, buf, L); break;
 					default: return;
 				}
 				RETURN_NULL_IF(buf + sizeof (optid) > bend);
@@ -2021,7 +2108,7 @@ namespace smpp {
 			if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
 			if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
 			if (r.msg_payload.tag != 0)			buf = write(buf, r.msg_payload.tag, L);
-			if (r.privacy_indicator.tag != 0)		buf = write(buf, r.privacy_indicator, L);
+			if (r.privacy_ind.tag != 0)		buf = write(buf, r.privacy_ind, L);
 			if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
 			if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
 			if (r.callback_num_atag.tag != 0)		buf = write(buf, r.callback_num_atag, L);
@@ -2032,7 +2119,7 @@ namespace smpp {
 			if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
 			if (r.ms_msg_wait_facilities.tag != 0)	buf = write(buf, r.ms_msg_wait_facilities, L);
 			if (r.alert_on_msg_delivery.tag!=0)	buf = write(buf, r.alert_on_msg_delivery, L);
-			if (r.language_indicator.tag != 0)		buf = write(buf, r.language_indicator, L);
+			if (r.lang_ind.tag != 0)		buf = write(buf, r.lang_ind, L);
 		}
 
 		/* DEST_ADDRESS P&W */
@@ -2207,215 +2294,54 @@ namespace smpp {
 
 		template< typename CharT, typename TraitsT >
 		std::basic_ostream< CharT, TraitsT >&
-		operator<<(std::basic_ostream< CharT, TraitsT >& L
-				, const submit_sm & r) {
-			L	<< "submit_sm: " << std::endl
-
-				<< " [service_type:" << r.service_type << "]" << std::endl
-
-				<< " [src_addr_ton:" << std::bitset<8>(r.src_addr_ton) << "]" << std::endl
-
-				<< " [src_addr_npi:" << std::bitset<8>(r.src_addr_npi) << "]" << std::endl
-
-				<< " [src_addr:" << r.src_addr << "]" << std::endl
-
-				<< " [dst_addr_ton:" << std::bitset<8>(r.dst_addr_ton) << "]" << std::endl
-
-				<< " [dst_addr_npi:" << std::bitset<8>(r.dst_addr_npi) << "]" << std::endl
-
-				<< " [dst_addr:" << r.dst_addr << "]" << std::endl
-
-				<< " [esm_class:" << std::bitset<8>(r.esm_class) << "]" << std::endl
-
-				<< " [protocol_id:" << static_cast<int>(r.protocol_id) << "]" << std::endl
-
-				<< " [priority_flag:" << static_cast<int>(r.priority_flag) << "]" << std::endl
- << std::endl
- //TAG3
-				<< " [schedule_delivery_time:" << r.schedule_delivery_time << "]" << std::endl
-
-				<< " [validity_period:" << r.validity_period << "]" << std::endl
-
-				<< " [registered_delivery:" << static_cast<bool>(r.registered_delivery) << "]" << std::endl
-
-				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag) << "]" << std::endl
-
-				<< " [data_coding:" << std::bitset<8>(r.data_coding) << "]" << std::endl
-
-				<< " [sm_default_msg_id:" << static_cast<int>(r.sm_default_msg_id) << "]" << std::endl
-
-				<< " [sm_len:" << static_cast<int>(r.sm_len) << "]" << std::endl
-
-				<< " [short_msg:" << std::string(r.short_msg, r.short_msg + r.sm_len) << "]" << std::endl;
-
-			if (r.user_msg_reference.tag != 0) {
-				L << " [user_msg_reference:"
-					<< r.user_msg_reference
-					<< "]";
-			}
-
-			if (r.source_port.tag != 0) {
-				L << " [source_port:"
-					<< r.source_port
-					<< "]";
-			}
-
-			if (r.src_addr_subunit.tag != 0) {
-				L << " [src_addr_subunit:"
-					<< r.src_addr_subunit
-					<< "]";
-			}
-
-			if (r.dest_port.tag != 0) {
-				L << " [dest_port:"
-					<< r.dest_port
-					<< "]";
-			}
-
-			if (r.dest_addr_subunit.tag != 0) {
-				L << " [dest_addr_subunit:"
-					<< r.dest_addr_subunit
-					<< "]";
-			}
-
-			if (r.sar_msg_ref_num.tag != 0) {
-				L << " [sar_msg_ref_num:"
-					<< r.sar_msg_ref_num
-					<< "]";
-			}
-
-			if (r.sar_total_segments.tag != 0) {
-				L << " [sar_total_segments:"
-					<< r.sar_total_segments
-					<< "]";
-			}
-
-			if (r.sar_segment_seqnum.tag != 0) {
-				L << " [sar_segment_seqnum:"
-					<< r.sar_segment_seqnum
-					<< "]";
-			}
-
-			if (r.more_msgs_to_send.tag != 0) {
-				L << " [more_msgs_to_send:"
-					<< r.more_msgs_to_send
-					<< "]";
-			}
-
-			if (r.payload_type.tag != 0) {
-				L << " [payload_type:"
-					<< r.payload_type
-					<< "]";
-			}
-
-			if (r.msg_payload.tag != 0) {
-				L << " [msg_payload:"
-					<< r.payload_type
-					<< "]";
-			}
-
-			if (r.privacy_indicator.tag != 0) {
-				L << " [privacy_indicator:"
-					<< r.privacy_indicator
-					<< "]";
-			}
-
-			if (r.callback_num.tag != 0) {
-				L << " [callback_num:"
-					<< r.callback_num
-					<< "]";
-			}
-
-			if (r.callback_num_pres_ind.tag != 0) {
-				L << " [callback_num_pres_ind:"
-					<< r.callback_num_pres_ind
-					<< "]";
-			}
-
-			if (r.callback_num_atag.tag != 0) {
-				L << " [callback_num_atag:"
-					<< r.callback_num_atag
-					<< "]";
-			}
-
-			if (r.source_subaddress.tag != 0) {
-				L << " [source_subaddress:"
-					<< r.source_subaddress
-					<< "]";
-			}
-
-			if (r.dest_subaddress.tag != 0) {
-				L << " [dest_subaddress:"
-					<< r.dest_subaddress
-					<< "]";
-			}
-
-			if (r.user_response_code.tag != 0) {
-				L << " [user_response_code:"
-					<< r.user_response_code
-					<< "]";
-			}
-
-			if (r.display_time.tag != 0) {
-				L << " [display_time:"
-					<< r.display_time
-					<< "]";
-			}
-
-			if (r.sms_signal.tag != 0) {
-				L << " [sms_signal:"
-					<< r.sms_signal
-					<< "]";
-			}
-
-			if (r.ms_validity.tag != 0) {
-				L << " [ms_validity:"
-					<< r.ms_validity
-					<< "]";
-			}
-
-			if (r.ms_msg_wait_facilities.tag != 0) {
-				L << " [ms_msg_wait_facilities:"
-					<< r.ms_msg_wait_facilities
-					<< "]";
-			}
-
-			if (r.number_of_msgs.tag != 0) {
-				L << " [number_of_msgs:"
-					<< r.number_of_msgs
-					<< "]";
-			}
-
-			if (r.alert_on_msg_delivery.tag != 0) {
-				L << " [alert_on_msg_delivery:"
-					<< r.alert_on_msg_delivery
-					<< "]";
-			}
-
-			if (r.language_indicator.tag != 0) {
-				L << " [language_indicator:"
-					<< r.language_indicator
-					<< "]";
-			}
-
-			if (r.its_reply_type.tag != 0) {
-				L << " [its_reply_type:"
-					<< r.its_reply_type
-					<< "]";
-			}
-
-			if (r.its_session_info.tag != 0) {
-				L << " [its_session_info:"
-					<< r.its_session_info
-					<< "]";
-			}
-
-			if (r.ussd_service_op.tag != 0) {
-				L << " [ussd_service_op:"
-					<< r.ussd_service_op
-					<< "]";
-			}
-
+		operator<<(std::basic_ostream< CharT, TraitsT >& L , const submit_sm & r) {
+			L	<< "submit_sm: "
+				<< " [service_type:"			<< r.service_type								<< "]"
+				<< " [src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)				<< "]"
+				<< " [src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)				<< "]"
+				<< " [src_addr:"				<< r.src_addr									<< "]"
+				<< " [dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)				<< "]"
+				<< " [dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)				<< "]"
+				<< " [dst_addr:"				<< r.dst_addr									<< "]"
+				<< " [esm_class:"				<< std::bitset<8>(r.esm_class)					<< "]"
+				<< " [protocol_id:"				<< static_cast<int>(r.protocol_id)				<< "]"
+				<< " [priority_flag:"			<< static_cast<int>(r.priority_flag)			<< "]"
+				<< " [schedule_delivery_time:"	<< r.schedule_delivery_time						<< "]"
+				<< " [validity_period:"			<< r.validity_period							<< "]"
+				<< " [registered_delivery:"		<< static_cast<bool>(r.registered_delivery)		<< "]"
+				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag)	<< "]"
+				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)				<< "]"
+				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)		<< "]"
+				<< " [sm_len:"					<< static_cast<int>(r.sm_len)					<< "]"
+				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.sm_len)	<< "]";
+			if (r.user_msg_reference.tag != 0)	{ L << " [user_msg_reference:"	<< r.user_msg_reference		<< "]";	}
+			if (r.source_port.tag != 0)			{ L << " [source_port:"			<< r.source_port			<< "]"; }
+			if (r.src_addr_subunit.tag != 0)	{ L << " [src_addr_subunit:"	<< r.src_addr_subunit		<< "]"; }
+			if (r.dest_port.tag != 0)			{ L << " [dest_port:"			<< r.dest_port				<< "]"; }
+			if (r.dest_addr_subunit.tag != 0)	{ L << " [dest_addr_subunit:"	<< r.dest_addr_subunit		<< "]";	}
+			if (r.sar_msg_ref_num.tag != 0)		{ L << " [sar_msg_ref_num:"		<< r.sar_msg_ref_num		<< "]";	}
+			if (r.sar_total_segments.tag != 0)	{ L << " [sar_total_segments:"	<< r.sar_total_segments		<< "]";	}
+			if (r.sar_segment_seqnum.tag != 0)	{ L << " [sar_segment_seqnum:"	<< r.sar_segment_seqnum		<< "]";	}
+			if (r.more_msgs_to_send.tag != 0)	{ L << " [more_msgs_to_send:"	<< r.more_msgs_to_send		<< "]"; }
+			if (r.payload_type.tag != 0)		{ L << " [payload_type:"		<< r.payload_type			<< "]"; }
+			if (r.msg_payload.tag != 0)			{ L << " [msg_payload:"			<< r.payload_type			<< "]"; }
+			if (r.privacy_ind.tag != 0)			{ L << " [privacy_ind:"			<< r.privacy_ind			<< "]"; }
+			if (r.callback_num.tag != 0)		{ L << " [callback_num:"		<< r.callback_num			<< "]";	}
+			if (r.callback_num_pres_ind.tag!=0) { L << " [callback_num_pres_ind:" << r.callback_num_pres_ind << "]";}
+			if (r.callback_num_atag.tag != 0)	{ L << " [callback_num_atag:"	<< r.callback_num_atag		<< "]";	}
+			if (r.source_subaddress.tag != 0)	{ L << " [source_subaddress:"	<< r.source_subaddress		<< "]";	}
+			if (r.dest_subaddress.tag != 0)		{ L << " [dest_subaddress:"		<< r.dest_subaddress		<< "]";	}
+			if (r.user_response_code.tag != 0)	{ L << " [user_response_code:"	<< r.user_response_code		<< "]";	}
+			if (r.display_time.tag != 0)		{ L << " [display_time:"		<< r.display_time			<< "]"; }
+			if (r.sms_signal.tag != 0)			{ L << " [sms_signal:"			<< r.sms_signal				<< "]";	}
+			if (r.ms_validity.tag != 0)			{ L << " [ms_validity:"			<< r.ms_validity			<< "]"; }
+			if (r.ms_msg_wait_facilities.tag!=0){ L << " [ms_msg_wait_facilities:" << r.ms_msg_wait_facilities << "]"; }
+			if (r.number_of_msgs.tag != 0)		{ L << " [number_of_msgs:"		<< r.number_of_msgs			<< "]";	}
+			if (r.alert_on_msg_delivery.tag!=0) { L << " [alert_on_msg_delivery:" << r.alert_on_msg_delivery << "]";}
+			if (r.lang_ind.tag != 0)			{ L << " [lang_ind:"			<< r.lang_ind				<< "]"; }
+			if (r.its_reply_type.tag != 0)		{ L << " [its_reply_type:"		<< r.its_reply_type			<< "]"; }
+			if (r.its_session_info.tag != 0)	{ L << " [its_session_info:"	<< r.its_session_info		<< "]"; }
+			if (r.ussd_service_op.tag != 0)		{ L << " [ussd_service_op:"		<< r.ussd_service_op		<< "]"; }
 			return L;
 		}
 	}
