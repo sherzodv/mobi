@@ -7,214 +7,20 @@
 #include <iomanip>
 #include <bitset>
 
-namespace ss7 { namespace sccp {
+#include <toolbox/bin.hpp>
 
-	namespace proto {
-		typedef std::uint8_t	u8_t;
-		typedef std::uint16_t	u16_t;
-		typedef std::uint32_t	u32_t;
+namespace mobi { namespace net { namespace ss7 { namespace sccp {
 
-		typedef const std::uint8_t	cu8_t;
-		typedef const std::uint16_t	cu16_t;
-		typedef const std::uint32_t	cu32_t;
-
-		typedef std::uint8_t	*	u8p_t;
-		typedef std::uint16_t	*	u16p_t;
-		typedef std::uint32_t	*	u32p_t;
-
-		typedef const std::uint8_t	*	cu8p_t;
-		typedef const std::uint16_t	*	cu16p_t;
-		typedef const std::uint32_t	*	cu32p_t;
-	}
-
-	/* MEMORY MANIPULATION UTILITIES */
-
-	void bcd_decode_z(char * dst, const proto::u8_t * src
-			, std::size_t len, bool odd = false) {
-		while (len) {
-			*dst++ = (*src & 0x0F) + 0x30;
-			if (odd && len == 1)
-				break;
-			*dst++ = ((*src & 0xF0) >> 4) + 0x30;
-			src++;
-			len--;
-		}
-		*dst = 0;
-	}
-
-	namespace utl {
-		using namespace proto;
-		typedef std::size_t sz_t;
-
-		template <typename T>
-		inline const u8_t * ascbuf(T & src) {
-			return reinterpret_cast<const u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T * src) {
-			return reinterpret_cast<const u8_t *>(src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T & src) {
-			return reinterpret_cast<u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T * src) {
-			return reinterpret_cast<u8_t *>(src);
-		}
-
-		/* Parse from buffer to struct , move buffer pointer */
-		namespace p {
-
-			inline const u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 1;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 3;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 7;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return src;
-			}
-
-			/* Parse fixed size string. It will contain either exactly
-			 * len-1 characters and a terminating zero, or only and only
-			 * terminating zero, see SMPP 3.4 spec for details */
-			inline const u8_t * scpyf(u8_t * dst, const u8_t * src, sz_t len) {
-				if (*src == 0) {
-					*dst++ = *src++;
-					return src;
-				}
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return src;
-			}
-
-			/* Parse zero terminated string with specified max length.
-			 * l will contain number of characters parsed not counting the
-			 * terminating zero. */
-			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
-					, sz_t len, sz_t & l) {
-				l = 0;
-				while (len) {
-					if (*src == 0) {
-						*dst++ = *src++;
-						return src;
-					}
-					*dst++ = *src++;
-					--len;
-					++l;
-				}
-				return src;
-			}
-		}
-
-		/* Write from struct to buffer, move buffer pointer */
-		namespace w {
-
-			inline u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				src += 1;
-				*dst++ = *src--;
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				src += 3;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				src += 7;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return dst;
-			}
-
-			inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					if (*src == 0) {
-						*dst++ = *src++;
-						return dst;
-					}
-					*dst++ = *src++;
-					--len;
-				}
-				return dst;
-			}
-		}
-	}
+	using namespace toolbox;
 
 	/* Generic SCCP message */
 	struct message {
-		proto::u8_t type;
+		bin::u8_t type;
 	};
 
 	/* Generic SCCP parameter */
 	struct parameter {
-		proto::u8_t len;
+		bin::u8_t len;
 	};
 
 	/* ITU-T REC Q.713, 2.1, Table 1 */
@@ -301,7 +107,7 @@ namespace ss7 { namespace sccp {
 
 	/* 3.4.2.2: The subsystem number (SSN) identifies an SCCP user function
 	 * and, when provided, consists of 1 octed */
-	enum subsystem: proto::u8_t {
+	enum subsystem: bin::u8_t {
 		ssn_unknown		= 0x00,
 		ssn_mgmt		= 0x01,
 		ssn_reserveditu	= 0x02,
@@ -352,7 +158,7 @@ namespace ss7 { namespace sccp {
 	};
 
 	/* TODO: determine correct max len for GT data */
-	const std::size_t max_gt_len = 50;
+	const bin::sz_t max_gt_len = 50;
 
 	/* ITU-T REC Q.713, 3.4.1: Address indicator */
 	struct address_indicator {
@@ -360,7 +166,7 @@ namespace ss7 { namespace sccp {
 		bool ssni				: 1;	/* Subsystem number indicator */
 		gt_indicator gti		: 4;	/* Global title indicator */
 		routing_indicator ri	: 1;	/* Routing indicator */
-		proto::u8_t reserved	: 1;
+		bin::u8_t reserved	: 1;
 	};
 
 	/* The various elements when provided, occur in the order: point code
@@ -370,33 +176,33 @@ namespace ss7 { namespace sccp {
 	struct address {
 		address_indicator	indicator;
 		subsystem			ssn;		/* Subsystem number */
-		proto::u16_t		point_code;	/* Signalling point code */
-		proto::u8_t			gt_len;		/* Length of GT for unitdata */
+		bin::u16_t		point_code;	/* Signalling point code */
+		bin::u8_t			gt_len;		/* Length of GT for unitdata */
 		union {
 			/* These structs has 1 to 1 packing so we can
 			 * read them from binary stream directly by copying */
 			struct {
 				nature_of_address	nai: 7;	/* Nature of address indicator */
-				proto::u8_t			odd: 1;	/* Odd = 0x01, Even = 0x00 */
-				proto::u8_t			data[max_gt_len];
+				bin::u8_t			odd: 1;	/* Odd = 0x01, Even = 0x00 */
+				bin::u8_t			data[max_gt_len];
 			} x01;
 			struct {
-				proto::u8_t			tt; /* Translation type */
-				proto::u8_t			data[max_gt_len];
+				bin::u8_t			tt; /* Translation type */
+				bin::u8_t			data[max_gt_len];
 			} x02;
 			struct {
-				proto::u8_t			tt; /* Translation type */
+				bin::u8_t			tt; /* Translation type */
 				encoding_scheme		es: 4; /* Encoding scheme */
 				numbering_plan		np: 4; /* Numbering plan */
-				proto::u8_t			data[max_gt_len];
+				bin::u8_t			data[max_gt_len];
 			} x03;
 			struct {
-				proto::u8_t			tt; /* Translation type */
+				bin::u8_t			tt; /* Translation type */
 				encoding_scheme		es: 4; /* Encoding scheme */
 				numbering_plan		np: 4; /* Numbering plan */
 				nature_of_address	nai: 7;	/* Nature of address indicator */
-				proto::u8_t			gap: 1;	/* Should be 0 */
-				proto::u8_t			data[max_gt_len];
+				bin::u8_t			gap: 1;	/* Should be 0 */
+				bin::u8_t			data[max_gt_len];
 			} x04;
 		} gt;
 	};
@@ -405,8 +211,8 @@ namespace ss7 { namespace sccp {
 		protocol_class pclass;
 		address dst_addr;
 		address src_addr;
-		proto::u8_t data_len;
-		proto::u8_t data[255];
+		bin::u8_t data_len;
+		bin::u8_t data[255];
 	};
 
 	/* Generic type trait */
@@ -416,7 +222,7 @@ namespace ss7 { namespace sccp {
 	template <>
 	struct the<address> {
 		typedef address type;
-		static std::size_t length(const type & addr) {
+		static bin::sz_t length(const type & addr) {
 			return 1 /* Address indicator */
 				/* Size of point code, if included */
 				+ (addr.indicator.pci ? 2 : 0)
@@ -428,11 +234,11 @@ namespace ss7 { namespace sccp {
 	};
 
 	template <class LogT>
-	const proto::u8_t * parse(unitdata & msg
-			, const proto::u8_t * buf, LogT & L) {
-		using namespace utl;
+	const bin::u8_t * parse(unitdata & msg
+			, const bin::u8_t * buf, LogT & L) {
+		using namespace bin;
 
-		proto::u8_t dst_addr_ofs, src_addr_ofs, data_ofs;
+		bin::u8_t dst_addr_ofs, src_addr_ofs, data_ofs;
 
 		/* Read protocol class */
 		buf = p::cp_u8(asbuf(msg.pclass), buf);
@@ -449,17 +255,17 @@ namespace ss7 { namespace sccp {
 		buf = p::cp_u8(asbuf(data_ofs), buf);
 		buf = p::cp_u8(asbuf(msg.data_len), buf + data_ofs - 1);
 
-		buf = p::cpy(msg.data, buf, static_cast<std::size_t>(msg.data_len));
+		buf = p::cpy(msg.data, buf, static_cast<bin::sz_t>(msg.data_len));
 
 		return buf;
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
+	bin::u8_t * write(bin::u8_t * buf
 			, const unitdata & msg, LogT & L) {
-		using namespace utl;
+		using namespace bin;
 
-		proto::u8_t dst_addr_ofs, src_addr_ofs, data_ofs;
+		bin::u8_t dst_addr_ofs, src_addr_ofs, data_ofs;
 
 		/* Calling party address goes immediately after all pointers:
 		 * 1 octet pointer to dst address
@@ -491,17 +297,17 @@ namespace ss7 { namespace sccp {
 
 		/* Write data */
 		buf = w::cp_u8(buf, ascbuf(msg.data_len));
-		buf = w::cpy(buf, msg.data, static_cast<std::size_t>(msg.data_len));
+		buf = w::cpy(buf, msg.data, static_cast<bin::sz_t>(msg.data_len));
 
 		return buf;
 	}
 
 	/* Parse address for unitdata (not long unit data) */
 	template <class LogT>
-	const proto::u8_t * parse(address & addr
-			, const proto::u8_t * buf, LogT & L) {
+	const bin::u8_t * parse(address & addr
+			, const bin::u8_t * buf, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
 		/* TODO: check length before parsing next element */
 
@@ -533,27 +339,27 @@ namespace ss7 { namespace sccp {
 			/* GT includes nature of address indicator only, gti == 0x1 */
 			case gt_has_nai_only: {
 				buf = p::cpy(asbuf(addr.gt.x01), buf
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			/* GT includes translation type only, gti == 0x2 */
 			case gt_has_tt_only: {
 				buf = p::cpy(asbuf(addr.gt.x02), buf
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			/* GT includes translation type, numbering plan, encoding scheme
 			 * , gti == 0x3 */
 			case gt_has_tt_np_es: {
 				buf = p::cpy(asbuf(addr.gt.x03), buf
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			/* GT includes translation type, numbering plan, encoding scheme,
 			 * nature of address indicator, gti == 0x4 */
 			case gt_has_tt_np_es_nai: {
 				buf = p::cpy(asbuf(addr.gt.x04), buf
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			default: /* TODO: handle reserved value for GTI */ return buf;
@@ -562,12 +368,12 @@ namespace ss7 { namespace sccp {
 
 	/* Write address for unit data (not long unit data) */
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
+	bin::u8_t * write(bin::u8_t * buf
 			, const address & addr , LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
-		proto::u8_t len = the<address>::length(addr);
+		bin::u8_t len = the<address>::length(addr);
 
 		/* Write address's overall length */
 		buf = w::cp_u8(buf, ascbuf(len));
@@ -594,44 +400,31 @@ namespace ss7 { namespace sccp {
 			/* GT includes nature of address indicator only, gti == 0x01 */
 			case gt_has_nai_only: {
 				buf = w::cpy(buf, ascbuf(addr.gt.x01)
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			/* GT includes translation type only, gti == 0x02 */
 			case gt_has_tt_only: {
 				buf = w::cpy(buf, ascbuf(addr.gt.x02)
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			/* GT includes translation type, numbering plan, encoding scheme
 			 * , gti == 0x03 */
 			case gt_has_tt_np_es: {
 				buf = w::cpy(buf, ascbuf(addr.gt.x03)
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			/* GT includes translation type, numbering plan, encoding scheme,
 			 * nature of address indicator, gti == 0x04 */
 			case gt_has_tt_np_es_nai: {
 				buf = w::cpy(buf, ascbuf(addr.gt.x04)
-						, static_cast<std::size_t>(addr.gt_len));
+						, static_cast<bin::sz_t>(addr.gt_len));
 				return buf;
 			}
 			default: /* TODO: handle reserved value for GTI */ return buf;
 		}
-	}
-
-	template< typename CharT, typename TraitsT >
-	void dump(std::basic_ostream< CharT, TraitsT >& L, const proto::u8_t * buf, std::size_t len) {
-		L << std::hex;
-		while (len) {
-			L << "0x" << static_cast<unsigned>(*buf);
-			if (len != 1)
-				L << " ";
-			len--;
-			buf++;
-		}
-		L << std::endl;
 	}
 
 	template< typename CharT, typename TraitsT >
@@ -761,8 +554,8 @@ namespace ss7 { namespace sccp {
 				;
 				break;
 			case gt_has_tt_np_es:
-				bcd_decode_z(number, r.gt.x03.data
-					, static_cast<std::size_t>(r.gt_len - 2), true);
+				bin::bcd_decode_z(number, r.gt.x03.data
+					, static_cast<bin::sz_t>(r.gt_len - 2), true);
 				L << "[GT:"
 					<< "[tt: " << static_cast<unsigned>(r.gt.x03.tt) << "]"
 					<< r.gt.x03.np
@@ -772,8 +565,8 @@ namespace ss7 { namespace sccp {
 				;
 				break;
 			case gt_has_tt_np_es_nai:
-				bcd_decode_z(number, r.gt.x04.data
-					, static_cast<std::size_t>(r.gt_len - 3), true);
+				bin::bcd_decode_z(number, r.gt.x04.data
+					, static_cast<bin::sz_t>(r.gt_len - 3), true);
 				L << "[GT:"
 					<< r.gt.x04.nai
 					<< "[tt:" << static_cast<unsigned>(r.gt.x04.tt) << "]"
@@ -804,6 +597,6 @@ namespace ss7 { namespace sccp {
 		return L;
 	}
 
-} }
+} } } }
 
 #endif

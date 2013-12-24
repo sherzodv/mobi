@@ -8,202 +8,11 @@
 #include <ostream>
 #include <arpa/inet.h>
 
-namespace ss7 { namespace m3ua {
+namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 
-	namespace proto {
-		typedef std::uint8_t	u8_t;
-		typedef std::uint16_t	u16_t;
-		typedef std::uint32_t	u32_t;
+	using namespace toolbox;
 
-		typedef const std::uint8_t	cu8_t;
-		typedef const std::uint16_t	cu16_t;
-		typedef const std::uint32_t	cu32_t;
-
-		typedef std::uint8_t	*	u8p_t;
-		typedef std::uint16_t	*	u16p_t;
-		typedef std::uint32_t	*	u32p_t;
-
-		typedef const std::uint8_t	*	cu8p_t;
-		typedef const std::uint16_t	*	cu16p_t;
-		typedef const std::uint32_t	*	cu32p_t;
-	}
-
-	/* MEMORY MANIPULATION UTILITIES */
-
-	namespace utl {
-		using namespace proto;
-		typedef std::size_t sz_t;
-
-		/* Byte order handling routines */
-		namespace bo {
-			inline u16_t tohost(u16_t v) { return ntohs(v); }
-			inline u32_t tohost(u32_t v) { return ntohl(v); }
-			inline u16_t tonet(u16_t v) { return htons(v); }
-			inline u32_t tonet(u32_t v) { return htonl(v); }
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T & src) {
-			return reinterpret_cast<const u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T * src) {
-			return reinterpret_cast<const u8_t *>(src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T & src) {
-			return reinterpret_cast<u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T * src) {
-			return reinterpret_cast<u8_t *>(src);
-		}
-
-		/* Parse from buffer to struct , move buffer pointer */
-		namespace p {
-
-			inline const u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 1;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 3;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 7;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return src;
-			}
-
-			/* Parse fixed size string. It will contain either exactly
-			 * len-1 characters and a terminating zero, or only and only
-			 * terminating zero, see SMPP 3.4 spec for details */
-			inline const u8_t * scpyf(u8_t * dst, const u8_t * src, sz_t len) {
-				if (*src == 0) {
-					*dst++ = *src++;
-					return src;
-				}
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return src;
-			}
-
-			/* Parse zero terminated string with specified max length.
-			 * l will contain number of characters parsed not counting the
-			 * terminating zero. */
-			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
-					, sz_t len, sz_t & l) {
-				l = 0;
-				while (len) {
-					if (*src == 0) {
-						*dst++ = *src++;
-						return src;
-					}
-					*dst++ = *src++;
-					--len;
-					++l;
-				}
-				return src;
-			}
-		}
-
-		/* Write from struct to buffer, move buffer pointer */
-		namespace w {
-
-			inline u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				src += 1;
-				*dst++ = *src--;
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				src += 3;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				src += 7;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return dst;
-			}
-
-			inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					if (*src == 0) {
-						*dst++ = *src++;
-						return dst;
-					}
-					*dst++ = *src++;
-					--len;
-				}
-				return dst;
-			}
-		}
-	}
-
-	enum message_class: proto::u8_t {
+	enum message_class: bin::u8_t {
 		mclass_mgmt			= 0x00,
 		mclass_transfer		= 0x01,
 		mclass_ss7_mgmt		= 0x02,
@@ -216,7 +25,7 @@ namespace ss7 { namespace m3ua {
 		mclass_route_mgmt	= 0x05,
 	};
 
-	enum parameter_tag: proto::u16_t {
+	enum parameter_tag: bin::u16_t {
 		/* Common across adaptation layers */
 		tag_reserved		= 0x0000,
 		tag_info_string		= 0x0004,
@@ -270,17 +79,17 @@ namespace ss7 { namespace m3ua {
 
 	namespace mtype {
 
-		enum mgmt: proto::u8_t {
+		enum mgmt: bin::u8_t {
 			mgmt_error	= 0x0,
 			mgmt_notify	= 0x1,
 		};
 
-		enum transfer: proto::u8_t {
+		enum transfer: bin::u8_t {
 			trans_reserved	= 0x0,
 			trans_data		= 0x1,	/* Payload Data */
 		};
 
-		enum ss7_mgmt: proto::u8_t {
+		enum ss7_mgmt: bin::u8_t {
 			ss7_mgmt_reserved	= 0x0,
 			ss7_mgmt_duna		= 0x1,	/* Destination unavailable */
 			ss7_mgmt_dava		= 0x2,	/* Destination available */
@@ -290,7 +99,7 @@ namespace ss7 { namespace m3ua {
 			ss7_mgmt_drst		= 0x6,	/* Destination restricted */
 		};
 
-		enum asp_state: proto::u8_t {
+		enum asp_state: bin::u8_t {
 			asp_state_reserved	= 0x0,
 			asp_state_up		= 0x1,	/* ASP up */
 			asp_state_down		= 0x2,	/* ASP down */
@@ -300,7 +109,7 @@ namespace ss7 { namespace m3ua {
 			asp_state_hb_ack	= 0x6,	/* Heartbeat acknowledgement */
 		};
 
-		enum asp_traf: proto::u8_t {
+		enum asp_traf: bin::u8_t {
 			asp_traf_reserved		= 0x0,
 			asp_traf_active			= 0x1,	/* ASP active */
 			asp_traf_inactive		= 0x2,	/* ASP inactive */
@@ -308,7 +117,7 @@ namespace ss7 { namespace m3ua {
 			asp_traf_inactive_ack	= 0x4,	/* ASP inactive acknowledgement */
 		};
 
-		enum asp_route: proto::u8_t {
+		enum asp_route: bin::u8_t {
 			asp_route_reserved	= 0x0,
 			asp_route_reg_req	= 0x1,	/* ASP registration request */
 			asp_route_reg_rsp	= 0x2,	/* ASP registration response */
@@ -319,8 +128,8 @@ namespace ss7 { namespace m3ua {
 	}
 
 	struct pdu {
-		proto::u8_t version;
-		proto::u8_t reserved;
+		bin::u8_t version;
+		bin::u8_t reserved;
 		message_class mclass: 8;
 		union {
 			mtype::mgmt			mgmt: 8;
@@ -330,13 +139,13 @@ namespace ss7 { namespace m3ua {
 			mtype::asp_traf		asptraf: 8;
 			mtype::asp_traf		asproute: 8;
 		} type;
-		proto::u32_t len;
+		bin::u32_t len;
 	};
 
 	template <typename ValueT>
 	struct tlv {
 		parameter_tag tag;
-		proto::u16_t len;
+		bin::u16_t len;
 		ValueT val;
 		tlv(): tag(tag_reserved), len(0) {}
 	};
@@ -344,33 +153,33 @@ namespace ss7 { namespace m3ua {
 	namespace message {
 
 		struct mtp3 {
-			proto::u32_t		opc;	/* Originating point code */
-			proto::u32_t		dpc;	/* Destination point code */
+			bin::u32_t		opc;	/* Originating point code */
+			bin::u32_t		dpc;	/* Destination point code */
 			service_indicator	si:8;	/* Service indicator */
-			proto::u8_t			ni;		/* Network indicator */
-			proto::u8_t			mp;		/* Message priority */
-			proto::u8_t			sls;	/* Signalling link selection code */
+			bin::u8_t			ni;		/* Network indicator */
+			bin::u8_t			mp;		/* Message priority */
+			bin::u8_t			sls;	/* Signalling link selection code */
 
 			/* TODO: define max len for user part data */
-			std::size_t data_len;
-			proto::u8_t data[255]; /* User Part data */
+			bin::sz_t data_len;
+			bin::u8_t data[255]; /* User Part data */
 		};
 
 		struct data {
 			pdu					header;
-			tlv<proto::u32_t>	network_appearance;
-			tlv<proto::u32_t>	routing_ctxt;
+			tlv<bin::u32_t>	network_appearance;
+			tlv<bin::u32_t>	routing_ctxt;
 			tlv<mtp3>			protocol_data;
-			tlv<proto::u32_t>	correlation_id;
+			tlv<bin::u32_t>	correlation_id;
 		};
 
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(tlv<proto::u8_t> & t
-			, const proto::u8_t * buf, LogT & L) {
+	const bin::u8_t * parse(tlv<bin::u8_t> & t
+			, const bin::u8_t * buf, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = p::cp_u16(asbuf(t.tag), buf);
 		buf = p::cp_u16(asbuf(t.len), buf);
 		buf = p::cp_u8(asbuf(t.val), buf);
@@ -378,10 +187,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
-			, const tlv<proto::u8_t> & t, LogT & L) {
+	bin::u8_t * write(bin::u8_t * buf
+			, const tlv<bin::u8_t> & t, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = w::cp_u16(buf, ascbuf(t.tag));
 		buf = w::cp_u16(buf, ascbuf(t.len));
 		buf = w::cp_u8(buf, ascbuf(t.val));
@@ -389,10 +198,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(tlv<proto::u16_t> & t
-			, const proto::u8_t * buf, LogT & L) {
+	const bin::u8_t * parse(tlv<bin::u16_t> & t
+			, const bin::u8_t * buf, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = p::cp_u16(asbuf(t.tag), buf);
 		buf = p::cp_u16(asbuf(t.len), buf);
 		buf = p::cp_u16(asbuf(t.val), buf);
@@ -400,10 +209,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
-			, const tlv<proto::u16_t> & t, LogT & L) {
+	bin::u8_t * write(bin::u8_t * buf
+			, const tlv<bin::u16_t> & t, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = w::cp_u16(buf, ascbuf(t.tag));
 		buf = w::cp_u16(buf, ascbuf(t.len));
 		buf = w::cp_u16(buf, ascbuf(t.val));
@@ -411,10 +220,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(tlv<proto::u32_t> & t
-			, const proto::u8_t * buf, LogT & L) {
+	const bin::u8_t * parse(tlv<bin::u32_t> & t
+			, const bin::u8_t * buf, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = p::cp_u16(asbuf(t.tag), buf);
 		buf = p::cp_u16(asbuf(t.len), buf);
 		buf = p::cp_u32(asbuf(t.val), buf);
@@ -422,10 +231,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
-			, const tlv<proto::u32_t> & t, LogT & L) {
+	bin::u8_t * write(bin::u8_t * buf
+			, const tlv<bin::u32_t> & t, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = w::cp_u16(buf, ascbuf(t.tag));
 		buf = w::cp_u16(buf, ascbuf(t.len));
 		buf = w::cp_u32(buf, ascbuf(t.val));
@@ -433,30 +242,30 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(pdu & r
-			, const proto::u8_t * buf, LogT & L) {
+	const bin::u8_t * parse(pdu & r
+			, const bin::u8_t * buf, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = p::cpy(asbuf(r), buf, 4);
 		buf = p::cp_u32(asbuf(r.len), buf);
 		return buf;
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
+	bin::u8_t * write(bin::u8_t * buf
 			, const pdu & r, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = w::cpy(buf, ascbuf(r), 4);
 		buf = w::cp_u32(buf, ascbuf(r.len));
 		return buf;
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(message::mtp3 & r
-			, const proto::u8_t * buf, std::size_t len, LogT & L) {
+	const bin::u8_t * parse(message::mtp3 & r
+			, const bin::u8_t * buf, bin::sz_t len, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = p::cp_u32(asbuf(r.opc), buf);
 		buf = p::cp_u32(asbuf(r.dpc), buf);
 		/* Copy si, ni, mp, sls at once */
@@ -468,10 +277,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
+	bin::u8_t * write(bin::u8_t * buf
 			, const message::mtp3 & r, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = w::cp_u32(buf, ascbuf(r.opc));
 		buf = w::cp_u32(buf, ascbuf(r.dpc));
 		/* Copy si, ni, mp, sls at once */
@@ -481,10 +290,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(tlv<message::mtp3> & t
-			, const proto::u8_t * buf, LogT & L) {
+	const bin::u8_t * parse(tlv<message::mtp3> & t
+			, const bin::u8_t * buf, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = p::cp_u16(asbuf(t.tag), buf);
 		buf = p::cp_u16(asbuf(t.len), buf);
 		buf = parse(t.val, buf, t.len - 4, L);
@@ -492,10 +301,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
+	bin::u8_t * write(bin::u8_t * buf
 			, const tlv<message::mtp3> & t, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 		buf = w::cp_u16(buf, ascbuf(t.tag));
 		buf = w::cp_u16(buf, ascbuf(t.len));
 		buf = write(buf, t.val, L);
@@ -503,13 +312,13 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse(message::data & r
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend, LogT & L) {
+	const bin::u8_t * parse(message::data & r
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
-		proto::u16_t tag;
+		bin::u16_t tag;
 
 		buf = parse(r.header, buf, L);
 
@@ -542,10 +351,10 @@ namespace ss7 { namespace m3ua {
 	}
 
 	template <class LogT>
-	proto::u8_t * write(proto::u8_t * buf
+	bin::u8_t * write(bin::u8_t * buf
 			, const message::data & r, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
 		buf = write(buf, r.header, L);
 
@@ -765,19 +574,6 @@ namespace ss7 { namespace m3ua {
 		return L;
 	}
 
-	template< typename CharT, typename TraitsT >
-	void dump(std::basic_ostream< CharT, TraitsT >& L, const proto::u8_t * buf, std::size_t len) {
-		L << std::hex;
-		while (len) {
-			L << "0x" << static_cast<unsigned>(*buf);
-			if (len != 1)
-				L << " ";
-			len--;
-			buf++;
-		}
-		L << std::endl;
-	}
-
-} }
+} } } }
 
 #endif

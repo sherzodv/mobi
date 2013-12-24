@@ -11,37 +11,19 @@
 #include <ss7/sccp.hpp>
 #include <ss7/tcap.hpp>
 
-namespace ss7 { namespace map {
+namespace mobi { namespace net { namespace ss7 { namespace map {
 
-	namespace proto {
-		typedef std::uint8_t	u8_t;
-		typedef std::uint16_t	u16_t;
-		typedef std::uint32_t	u32_t;
-		typedef std::uint32_t	u64_t;
-	}
+	using namespace toolbox;
 
-	const std::size_t max_address_string_len = 20;
-	const std::size_t max_isdn_address_string_len = 9;
+	const bin::sz_t max_address_string_len = 20;
+	const bin::sz_t max_isdn_address_string_len = 9;
 
-	typedef proto::u8_t address_string[max_address_string_len];
-	typedef proto::u8_t isdn_address_string[max_isdn_address_string_len];
-
-	void bcd_decode_z(char * dst, const proto::u8_t * src
-			, std::size_t len, bool odd = false) {
-		while (len) {
-			*dst++ = (*src & 0x0F) + 0x30;
-			if (odd && len == 1)
-				break;
-			*dst++ = ((*src & 0xF0) >> 4) + 0x30;
-			src++;
-			len--;
-		}
-		*dst = 0;
-	}
+	typedef bin::u8_t address_string[max_address_string_len];
+	typedef bin::u8_t isdn_address_string[max_isdn_address_string_len];
 
 	struct ms_isdn {
-		proto::u8_t data[20];
-		std::size_t len;
+		bin::u8_t data[20];
+		bin::sz_t len;
 	};
 
 	enum sm_rp_mti {
@@ -51,7 +33,7 @@ namespace ss7 { namespace map {
 
 	namespace operation {
 
-		const proto::u32_t send_routing_info_for_sm	= 0x0000002D;
+		const bin::u32_t send_routing_info_for_sm	= 0x0000002D;
 
 		struct routing_info_for_sm_arg {
 			ms_isdn		msisdn;
@@ -63,6 +45,9 @@ namespace ss7 { namespace map {
 		};
 
 	}
+
+	/* MAP parser is based on tcap::parser, it overrides needed virtual
+	 * functions and adds new ones for MAP events */
 
 	template <class LogT>
 	class parser: public tcap::parser<LogT> {
@@ -114,7 +99,7 @@ namespace ss7 { namespace map {
 				using namespace asn::ber;
 				using tcap::operator<<;
 
-				const proto::u8_t * buf, * bend;
+				const bin::u8_t * buf, * bend;
 
 				L << inv << std::endl;
 
@@ -141,13 +126,13 @@ namespace ss7 { namespace map {
 				return resume;
 			}
 
-			action on_primitive(asn::ber::tag el, const tcap::proto::u8_t * data) {
+			action on_primitive(asn::ber::tag el, const tcap::bin::u8_t * data) {
 				(void)(data);
 				L << el << std::endl;
 				return resume;
 			}
 
-			action on_constructor_start(asn::ber::tag el, const tcap::proto::u8_t * data) {
+			action on_constructor_start(asn::ber::tag el, const tcap::bin::u8_t * data) {
 				(void)(data);
 				L << el << std::endl;
 				return resume;
@@ -157,8 +142,8 @@ namespace ss7 { namespace map {
 				return resume;
 			}
 
-			const proto::u8_t * parse_routing_info_for_sm_arg(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_routing_info_for_sm_arg(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				/* RoutingInfoForSM-Arg SEQUENCE {
@@ -208,7 +193,7 @@ namespace ss7 { namespace map {
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const ms_isdn & n) {
 		char num[50];
-		bcd_decode_z(num, n.data, n.len);
+		bin::bcd_decode_z(num, n.data, n.len);
 		L << "[msisdn:" << num << "]";
 		return L;
 	}
@@ -221,6 +206,6 @@ namespace ss7 { namespace map {
 		return L;
 	}
 
-} }
+} } } }
 
 #endif

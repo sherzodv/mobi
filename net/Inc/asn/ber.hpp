@@ -8,6 +8,8 @@
 #include <ostream>
 #include <arpa/inet.h>
 
+#include <toolbox/bin.hpp>
+
 #define RETURN_NULL_IF(expr) if (expr) return nullptr
 
 /* ITU-T Rec Q.773, TCAP */
@@ -113,172 +115,11 @@
 	+---+---+---+---+---+---+---+---+
 */
 
-namespace asn { namespace ber {
+namespace mobi { namespace net { namespace asn { namespace ber {
 
-	namespace proto {
-		typedef std::uint8_t	u8_t;
-		typedef std::uint16_t	u16_t;
-		typedef std::uint32_t	u32_t;
-		typedef std::uint32_t	u64_t;
+	using namespace toolbox;
 
-		typedef std::int8_t		s8_t;
-		typedef std::int16_t	s16_t;
-		typedef std::int32_t	s32_t;
-		typedef std::int32_t	s64_t;
-	}
-
-	/* MEMORY MANIPULATION UTILITIES */
-
-	namespace utl {
-		using namespace proto;
-		typedef std::size_t sz_t;
-
-		/* Byte order handling routines */
-		namespace bo {
-			inline u16_t tohost(u16_t v) { return ntohs(v); }
-			inline u32_t tohost(u32_t v) { return ntohl(v); }
-			inline u16_t tonet(u16_t v) { return htons(v); }
-			inline u32_t tonet(u32_t v) { return htonl(v); }
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T & src) {
-			return reinterpret_cast<const u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T * src) {
-			return reinterpret_cast<const u8_t *>(src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T & src) {
-			return reinterpret_cast<u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T * src) {
-			return reinterpret_cast<u8_t *>(src);
-		}
-
-		/* Parse from buffer to struct , move buffer pointer */
-		namespace p {
-
-			inline const u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 1;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 3;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 7;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return src;
-			}
-
-			/* Reverse copy */
-			inline const u8_t * ypc(u8_t * dst, const u8_t * src, sz_t len) {
-				std::size_t templ = len;
-				src += len - 1;
-				while (len) {
-					*dst++ = *src--;
-					--len;
-				}
-				return src + templ + 1;
-			}
-		}
-
-		/* Write from struct to buffer, move buffer pointer */
-		namespace w {
-
-			inline u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				src += 1;
-				*dst++ = *src--;
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				src += 3;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				src += 7;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return dst;
-			}
-
-			/* Reverse copy */
-			inline u8_t * ypc(u8_t * dst, const u8_t * src, sz_t len) {
-				src += len - 1;
-				while (len) {
-					*dst++ = *src--;
-					--len;
-				}
-				return dst;
-			}
-		}
-	}
-
-	const proto::u8_t tag_code_ext = 0x1F;
+	const bin::u8_t tag_code_ext = 0x1F;
 
 	enum len_type { len_short, len_long, len_infinite };
 
@@ -315,16 +156,16 @@ namespace asn { namespace ber {
 	};
 
 	struct raw_tag {
-		proto::u8_t code	: 5;
+		bin::u8_t code		: 5;
 		tag_form	form	: 1;
 		tag_class	klass	: 2;
 	};
 
 	struct tag {
-		tag_class		klass;
-		tag_form		form;
-		proto::u64_t	code;
-		proto::u64_t	len;
+		tag_class	klass;
+		tag_form	form;
+		bin::u64_t	code;
+		bin::u64_t	len;
 	};
 
 	namespace type {
@@ -348,7 +189,7 @@ namespace asn { namespace ber {
 		return !(l == r);
 	}
 
-	len_type get_len_type(proto::u8_t first) {
+	len_type get_len_type(bin::u8_t first) {
 		/* 0x80 0b10000000 */
 		/* 0x7F 0b01111111 */
 		if (first <= 0x7F) {
@@ -360,19 +201,19 @@ namespace asn { namespace ber {
 		}
 	}
 
-	proto::u8_t get_tag_code(const proto::u8_t * buf) {
-		using namespace utl;
+	bin::u8_t get_tag_code(const bin::u8_t * buf) {
+		using namespace bin;
 		raw_tag rt;
 		buf = p::cp_u8(asbuf(rt), buf);
 		return rt.code;
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse_integer(proto::s8_t & val
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend, LogT & L) {
+	const bin::u8_t * parse_integer(bin::s8_t & val
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
 		if (buf + 1 >= bend) {
 			return nullptr;
@@ -382,15 +223,15 @@ namespace asn { namespace ber {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse_integer(proto::u64_t & val
-			, proto::u64_t len
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend, LogT & L) {
+	const bin::u8_t * parse_integer(bin::u64_t & val
+			, bin::u64_t len
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
 		/* Assume we parsed tag-len already */
-		if (len < 1 || len > sizeof(proto::u64_t)) {
+		if (len < 1 || len > sizeof(bin::u64_t)) {
 			return nullptr;
 		}
 
@@ -402,26 +243,46 @@ namespace asn { namespace ber {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse_len(proto::u64_t & len
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend, LogT & L) {
+	const bin::u8_t * parse_integer(bin::u32_t & val
+			, bin::u64_t len
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
+
+		/* Assume we parsed tag-len already */
+		if (len < 1 || len > sizeof(bin::u64_t)) {
+			return nullptr;
+		}
+
+		if (buf + len >= bend) {
+			return nullptr;
+		}
+
+		return p::ypc(asbuf(val), buf, len);
+	}
+
+	template <class LogT>
+	const bin::u8_t * parse_len(bin::u64_t & len
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
+		(void)(L);
+		using namespace bin;
 
 		if (buf >= bend)
 			return nullptr;
 
 		switch (get_len_type(*buf)) {
 			case len_short: {
-				len = static_cast<proto::u64_t>(*buf & 0x7F);
+				len = static_cast<bin::u64_t>(*buf & 0x7F);
 				return buf + 1;
 			}
 			case len_long: {
-				proto::u8_t lenlen;
+				bin::u8_t lenlen;
 				if (++buf >= bend)
 					return nullptr;
 				lenlen = *buf & 0x7F;
-				if (buf + lenlen >= bend || lenlen > sizeof(proto::u64_t))
+				if (buf + lenlen >= bend || lenlen > sizeof(bin::u64_t))
 					return nullptr;
 				len = 0L;
 				while (lenlen) {
@@ -441,14 +302,14 @@ namespace asn { namespace ber {
 	}
 
 	template <class LogT>
-	const proto::u8_t * parse_tag(tag & t
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend
+	const bin::u8_t * parse_tag(tag & t
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend
 			, LogT & L) {
-		using namespace utl;
+		using namespace bin;
 
 		raw_tag rt;
-		std::size_t count;
+		bin::sz_t count;
 
 		/* At least 1 octet needed */
 		if (buf + 1 >= bend)
@@ -467,8 +328,8 @@ namespace asn { namespace ber {
 
 		/* Extended tag code */
 		for (count = 1, rt.code = 0; buf < bend; ++count, ++buf) {
-			if (count > sizeof(proto::u64_t)) {
-				/* Code octet count > sizeof(proto::u64_t) is not supported */
+			if (count > sizeof(bin::u64_t)) {
+				/* Code octet count > sizeof(bin::u64_t) is not supported */
 				return nullptr;
 			}
 			rt.code <<= 8;
@@ -485,11 +346,11 @@ namespace asn { namespace ber {
 	}
 
 	template <class ValT, class LogT>
-	const proto::u8_t * parse_el_boolean(ValT & val
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend, LogT & L) {
+	const bin::u8_t * parse_el_boolean(ValT & val
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
 		tag t;
 
@@ -502,11 +363,11 @@ namespace asn { namespace ber {
 	}
 
 	template <class StringT, class LogT>
-	const proto::u8_t * parse_el_octstring(StringT & val
-			, const proto::u8_t * buf
-			, const proto::u8_t * bend, LogT & L) {
+	const bin::u8_t * parse_el_octstring(StringT & val
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
 		(void)(L);
-		using namespace utl;
+		using namespace bin;
 
 		tag t;
 
@@ -557,6 +418,6 @@ namespace asn { namespace ber {
 		return L;
 	}
 
-} }
+} } } }
 
 #endif

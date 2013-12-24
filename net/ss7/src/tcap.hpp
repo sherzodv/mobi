@@ -9,40 +9,31 @@
 #include <arpa/inet.h>
 
 #include <asn/ber.hpp>
+#include <toolbox/bin.hpp>
 
-namespace ss7 { namespace tcap {
+namespace mobi { namespace net { namespace ss7 { namespace tcap {
 
-	namespace proto {
-		typedef std::uint8_t	u8_t;
-		typedef std::uint16_t	u16_t;
-		typedef std::uint32_t	u32_t;
-		typedef std::uint32_t	u64_t;
-
-		typedef std::int8_t		s8_t;
-		typedef std::int16_t	s16_t;
-		typedef std::int32_t	s32_t;
-		typedef std::int32_t	s64_t;
-	}
+	using namespace toolbox;
 
 	namespace message_type {
-		const proto::u8_t uni		= 0x01;
-		const proto::u8_t begin		= 0x02;
-		const proto::u8_t end		= 0x04;
-		const proto::u8_t resume	= 0x05;
-		const proto::u8_t abort		= 0x06;
+		const bin::u8_t uni		= 0x01;
+		const bin::u8_t begin	= 0x02;
+		const bin::u8_t end		= 0x04;
+		const bin::u8_t resume	= 0x05;
+		const bin::u8_t abort	= 0x06;
 	}
 
 	namespace portion_type {
-		const proto::u8_t dialog	= 0x0B;
-		const proto::u8_t component	= 0x0C;
+		const bin::u8_t dialog		= 0x0B;
+		const bin::u8_t component	= 0x0C;
 	}
 
 	namespace component_type {
-		const proto::u8_t invoke		= 0x01;
-		const proto::u8_t result_last	= 0x02;
-		const proto::u8_t return_error	= 0x03;
-		const proto::u8_t reject		= 0x04;
-		const proto::u8_t return_result	= 0x07;
+		const bin::u8_t invoke			= 0x01;
+		const bin::u8_t result_last		= 0x02;
+		const bin::u8_t return_error	= 0x03;
+		const bin::u8_t reject			= 0x04;
+		const bin::u8_t return_result	= 0x07;
 	}
 
 	namespace element {
@@ -51,11 +42,11 @@ namespace ss7 { namespace tcap {
 		};
 
 		struct begin {
-			proto::u64_t otid;
+			bin::u64_t otid;
 		};
 
 		struct end {
-			proto::u64_t dtid;
+			bin::u64_t dtid;
 		};
 
 		struct resume {
@@ -65,22 +56,22 @@ namespace ss7 { namespace tcap {
 		};
 
 		struct invoke {
-			proto::s8_t id;
-			proto::s8_t linked_id;
-			proto::u32_t op_code;
-			const proto::u8_t *data;
-			const proto::u8_t *dend;
+			bin::s8_t id;
+			bin::s8_t linked_id;
+			bin::u32_t op_code;
+			const bin::u8_t *data;
+			const bin::u8_t *dend;
 		};
 
 		struct return_result {
-			proto::s8_t invokeId;
-			proto::u32_t op_code;
+			bin::s8_t invokeId;
+			bin::u32_t op_code;
 		};
 
 	}
 
 	template< typename CharT, typename TraitsT >
-	void dump(std::basic_ostream< CharT, TraitsT >& L, const proto::u8_t * buf, std::size_t len);
+	void dump(std::basic_ostream< CharT, TraitsT >& L, const bin::u8_t * buf, bin::sz_t len);
 
 	template <class LogT>
 	class parser {
@@ -89,8 +80,8 @@ namespace ss7 { namespace tcap {
 			parser(LogT & l): L(l) {}
 			virtual ~parser() {}
 
-			const proto::u8_t * parse(const proto::u8_t * buf
-				, const proto::u8_t * bend) {
+			const bin::u8_t * parse(const bin::u8_t * buf
+				, const bin::u8_t * bend) {
 				using namespace asn::ber;
 				buf = parse_message_type(buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
@@ -118,16 +109,16 @@ namespace ss7 { namespace tcap {
 			virtual action on_invoke(const element::invoke & el) = 0;
 			virtual action on_return_result_last(const element::return_result & el) = 0;
 
-			virtual action on_primitive(asn::ber::tag tag, const proto::u8_t * data) = 0;
+			virtual action on_primitive(asn::ber::tag tag, const bin::u8_t * data) = 0;
 
-			virtual action on_constructor_start(asn::ber::tag tag, const proto::u8_t * data) = 0;
+			virtual action on_constructor_start(asn::ber::tag tag, const bin::u8_t * data) = 0;
 			virtual action on_constructor_end() = 0;
 
 		private:
 			asn::ber::tag m_mtag; /* Message type tag */
 
-			const proto::u8_t * parse_message_type(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_message_type(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				/* Parse TCAP Message type tag with len */
@@ -159,8 +150,8 @@ namespace ss7 { namespace tcap {
 				}
 			}
 
-			const proto::u8_t * parse_begin(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_begin(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				tag t;
@@ -196,8 +187,8 @@ namespace ss7 { namespace tcap {
 				}
 			}
 
-			const proto::u8_t * parse_end(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_end(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				tag t;
@@ -233,8 +224,8 @@ namespace ss7 { namespace tcap {
 				}
 			}
 
-			const proto::u8_t * parse_component_portion(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_component_portion(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				tag t;
@@ -269,8 +260,8 @@ namespace ss7 { namespace tcap {
 				return buf;
 			}
 
-			const proto::u8_t * parse_invoke(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_invoke(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				/*
@@ -325,10 +316,10 @@ namespace ss7 { namespace tcap {
 				}
 			}
 
-			const proto::u8_t * parse_return_result(
+			const bin::u8_t * parse_return_result(
 					element::return_result & rres
-					, const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				/* ReturnResult ::=
@@ -372,9 +363,9 @@ namespace ss7 { namespace tcap {
 				return buf;
 			}
 
-			const proto::u8_t * parse_return_result_last(
-					const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_return_result_last(
+					const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				element::return_result rres;
@@ -386,8 +377,8 @@ namespace ss7 { namespace tcap {
 				return parse_elements(buf, bend);
 			}
 
-			const proto::u8_t * parse_elements(const proto::u8_t * buf
-					, const proto::u8_t * bend) {
+			const bin::u8_t * parse_elements(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 				tag t;
 				while (buf < bend) {
@@ -447,19 +438,6 @@ namespace ss7 { namespace tcap {
 		return L;
 	}
 
-	template< typename CharT, typename TraitsT >
-	void dump(std::basic_ostream< CharT, TraitsT >& L, const proto::u8_t * buf, std::size_t len) {
-		L << std::hex;
-		while (len) {
-			L << "0x" << static_cast<unsigned>(*buf);
-			if (len != 1)
-				L << " ";
-			len--;
-			buf++;
-		}
-		L << std::endl;
-	}
-
-} }
+} } } }
 
 #endif
