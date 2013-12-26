@@ -66,6 +66,8 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 		struct return_result {
 			bin::s8_t invokeId;
 			bin::u32_t op_code;
+			const bin::u8_t *data;
+			const bin::u8_t *dend;
 		};
 
 	}
@@ -366,15 +368,22 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 			const bin::u8_t * parse_return_result_last(
 					const bin::u8_t * buf
 					, const bin::u8_t * bend) {
+
 				using namespace asn::ber;
 
 				element::return_result rres;
 
 				buf = parse_return_result(rres, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
-				RETURN_NULL_IF(on_return_result_last(rres) == stop);
 
-				return parse_elements(buf, bend);
+				rres.data = buf;
+				rres.dend = bend;
+
+				switch (on_return_result_last(rres)) {
+					case stop: return nullptr;
+					case skip: return bend;
+					default: return parse_elements(buf, bend);
+				}
 			}
 
 			const bin::u8_t * parse_elements(const bin::u8_t * buf

@@ -255,12 +255,12 @@ void test_map() {
 			virtual ~parser() {}
 
 		protected:
-			virtual action on_message(const map::operation::empty & msg) {
-				(void)(msg);
+			virtual action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
+				using map::operator<<;
+				L << msg << std::endl;
 				return resume;
 			}
-
-			virtual action send_routing_info_for_sm(const map::operation::routing_info_for_sm_arg & msg) {
+			virtual action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
 				using map::operator<<;
 				L << msg << std::endl;
 				return resume;
@@ -271,12 +271,18 @@ void test_map() {
 	cur = p.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
 	if (cur == nullptr) {
 		std::cout << "parse error" << std::endl;
+	} else {
+		std::cout << static_cast<const void *>(tcap_raw1 + sizeof(tcap_raw1) - 1) << std::endl;
+		std::cout << static_cast<const void *>(cur) << std::endl;
 	}
 
 	std::cout << "----------------------------------------" << std::endl;
 	cur = p.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
 	if (cur == nullptr) {
 		std::cout << "parse error" << std::endl;
+	} else {
+		std::cout << static_cast<const void *>(tcap_raw2 + sizeof(tcap_raw2) - 1) << std::endl;
+		std::cout << static_cast<const void *>(cur) << std::endl;
 	}
 }
 
@@ -286,9 +292,9 @@ int main() {
 	(void)(test_m3ua);
 	(void)(test_tcap);
 
-	test_sccp();
-	test_m3ua();
-	test_tcap();
+	//test_sccp();
+	//test_m3ua();
+	//test_tcap();
 	test_map();
 
 	return 0;

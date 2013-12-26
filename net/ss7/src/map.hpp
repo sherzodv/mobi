@@ -21,29 +21,65 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	typedef bin::u8_t address_string[max_address_string_len];
 	typedef bin::u8_t isdn_address_string[max_isdn_address_string_len];
 
-	struct ms_isdn {
-		bin::u8_t data[20];
-		bin::sz_t len;
-	};
+	namespace {
 
-	enum sm_rp_mti {
-		sms_deliver			= 0x00,
-		sms_status_report	= 0x01
-	};
+		struct isdn_address_string_t {
+			bin::sz_t len;
+			/* TODO: determine needed capacity */
+			bin::u8_t data[20];
+		};
+
+		struct address_string_t {
+			bin::sz_t len;
+			/* TODO: determine needed capacity */
+			bin::u8_t data[20];
+		};
+
+		struct imsi_t {
+			bin::sz_t len;
+			/* TODO: determine needed capacity */
+			bin::u8_t data[20];
+		};
+
+		struct tmsi_t {
+			bin::sz_t len;
+			/* TODO: determine needed capacity */
+			bin::u8_t data[4];
+		};
+
+		struct lmsi_t {
+			/* LMSI ::= OCTET STRING (SIZE (4)) */
+			/* len = 0 indicates that lmsi is not set */
+			bin::sz_t len;
+			bin::u8_t data[4];
+		};
+
+		enum sm_rp_mti_t {
+			sms_deliver			= 0x00,
+			sms_status_report	= 0x01
+		};
+
+		struct location_info_with_lmsi_t {
+			isdn_address_string_t	network_node_number;
+			lmsi_t					lmsi;
+		};
+
+		struct routing_info_for_sm_arg_t {
+			isdn_address_string_t	msisdn;
+			bool					sm_rp_pri;
+			address_string_t		sc_address;
+		};
+
+		struct routing_info_for_sm_res_t {
+			imsi_t						imsi;
+			bool						has_location_info_with_lmsi;
+			location_info_with_lmsi_t	location_info_with_lmsi;
+		};
+
+	}
 
 	namespace operation {
-
 		const bin::u32_t send_routing_info_for_sm	= 0x0000002D;
-
-		struct routing_info_for_sm_arg {
-			ms_isdn		msisdn;
-			bool		sm_rp_pri;
-			ms_isdn		sc_address;
-		};
-
-		struct empty {
-		};
-
 	}
 
 	/* MAP parser is based on tcap::parser, it overrides needed virtual
@@ -63,8 +99,8 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			using tcap::parser<LogT>::resume;
 			using tcap::parser<LogT>::skip;
 
-			virtual action on_message(const operation::empty & msg) = 0;
-			virtual action send_routing_info_for_sm(const operation::routing_info_for_sm_arg & msg) = 0;
+			virtual action on_routing_info_for_sm_arg(const routing_info_for_sm_arg_t & msg) = 0;
+			virtual action on_routing_info_for_sm_res(const routing_info_for_sm_res_t & msg) = 0;
 
 		private:
 
@@ -101,8 +137,6 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 				const bin::u8_t * buf, * bend;
 
-				L << inv << std::endl;
-
 				buf = inv.data;
 				bend = inv.dend;
 
@@ -112,18 +146,32 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 						if (buf == nullptr) {
 							return stop;
 						}
-						return resume;
+						/* Skip payload of an invoke, as we parsed it already */
+						return skip;
 					default: return stop; /* not supported */
 				}
-
-				/* Skip payload of an invoke, as we parsed it already */
-				return skip;
 			}
 
-			action on_return_result_last(const tcap::element::return_result & el) {
+			action on_return_result_last(const tcap::element::return_result & rres) {
+				using namespace asn::ber;
 				using tcap::operator<<;
-				L << el << std::endl;
-				return resume;
+
+				const bin::u8_t * buf, * bend;
+
+				buf = rres.data;
+				bend = rres.dend;
+
+				switch (rres.op_code) {
+					case operation::send_routing_info_for_sm:
+						buf = parse_routing_info_for_sm_res(buf, bend);
+						if (buf == nullptr) {
+							return stop;
+						}
+						/* Skip payload of an return_result_last,
+						 * as we parsed it already */
+						return skip;
+					default: return stop; /* not supported */
+				}
 			}
 
 			action on_primitive(asn::ber::tag el, const tcap::bin::u8_t * data) {
@@ -165,7 +213,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}*/
 
 				tag t;
-				operation::routing_info_for_sm_arg ri;
+				routing_info_for_sm_arg_t ri;
 
 				/* Parse SEQUENCE tag */
 				buf = parse_tag(t, buf, bend, L);
@@ -175,7 +223,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				buf = parse_el_octstring(ri.msisdn, buf, bend, L);
 				RETURN_NULL_IF(buf == nullptr);
 
-				/* Parse sm-RP-PRI tag */
+				/* Parse sm-RP-PRI */
 				buf = parse_el_boolean(ri.sm_rp_pri, buf, bend, L);
 				RETURN_NULL_IF(buf == nullptr);
 
@@ -183,25 +231,143 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				buf = parse_el_octstring(ri.sc_address, buf, bend, L);
 				RETURN_NULL_IF(buf == nullptr);
 
-				switch (send_routing_info_for_sm(ri)) {
-					case resume: return buf;
+				switch (on_routing_info_for_sm_arg(ri)) {
+					/* We should return bend, as there maybe unparsed optional
+					 * elements */
+					case resume: return bend;
 					default: return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_routing_info_for_sm_res(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace asn::ber;
+
+				/* RoutingInfoForSM-Res :: = SEQUENCE {
+					imsi					IMSI
+					, locationInfoWithLMSI	[0] LocationInfoWithLMSI
+					, extensionContainer	[4] ExtensionContainer OPTIONAL
+					, ...
+					, ip-sm-gwGuidance		[5] IP-SM-GW-Guidance OPTIONAL
+				}*/
+
+				tag t;
+				const bin::u8_t * tmpbuf;
+				routing_info_for_sm_res_t ri;
+
+				/* Parse SEQUENCE tag */
+				buf = parse_tag(t, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
+
+				/* Parse imsi */
+				buf = parse_el_octstring(ri.imsi, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr);
+
+				/* Parse locationInfoWithLMSI */
+				tmpbuf = parse_location_info_with_lmsi(ri.location_info_with_lmsi
+						, buf, bend);
+				if (tmpbuf == nullptr) {
+					ri.has_location_info_with_lmsi = false;
+				} else {
+					buf = tmpbuf;
+					ri.has_location_info_with_lmsi = true;
+				}
+
+				switch (on_routing_info_for_sm_res(ri)) {
+					/* We should return bend, as there maybe unparsed optional
+					 * elements */
+					case resume: return bend;
+					default: return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_location_info_with_lmsi(
+					location_info_with_lmsi_t & linfo
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace asn::ber;
+
+				/* LocationInfoWithLMSI :: = SEQUENCE {
+					networkNodeNumber		[1] isdn_address_string_t
+					, lmsi					LMSI OPTIONAL
+					, extensionContainer	ExtensionContainer OPTIONAL
+					, ...
+					, gprsNodeIndicator		[5] NULL OPTIONAL
+					-- gprsNodeIndicator is set only if the SGSN number is sent as the
+					-- Network Node Number
+					, additional-Number		[6] Additional-Number OPTIONAL
+					, networkNodeDiameterAddress
+											[7] NetworkNodeDiameterAddress OPTIONAL
+					, additionalNetworkNodeDiameterAddress
+											[8] NetworkNodeDiameterAddress OPTIONAL
+					, thirdNumber			[9] Additional-Number OPTIONAL
+					, thirdNetworkNodeDiameterAddress
+											[10] NetworkNodeDiameterAddress OPTIONAL
+					, imsNodeIndicator		[11] NULL OPTIONAL
+					-- gprsNodeIndicator and imsNodeIndicator shall not both be present.
+					-- additionalNumber and thirdNumber shall not both contain the same type of number.
+				}*/
+
+				tag t;
+				const bin::u8_t * tmpbuf;
+
+				/* Parse SEQUENCE tag, context-spec, 0 */
+				buf = parse_tag(t, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr
+						|| t.code != 0 || t.klass != tagclass_contextspec);
+
+				/* Parse networkNodeNumber */
+				buf = parse_el_octstring(linfo.network_node_number, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr);
+
+				tmpbuf = parse_el_octstring(linfo.lmsi, buf, bend, L);
+				if (tmpbuf == nullptr) {
+					linfo.lmsi.len = 0;
+					return buf;
+				} else {
+					return tmpbuf;
 				}
 			}
 	};
 
 	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const ms_isdn & n) {
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const isdn_address_string_t & n) {
 		char num[50];
-		bin::bcd_decode_z(num, n.data, n.len);
-		L << "[msisdn:" << num << "]";
+		bin::bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		L << bin::hex_str_ref(n.data, n.len).prefix("").delimit("") << ":" << num;
 		return L;
 	}
 
 	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const operation::routing_info_for_sm_arg & op) {
-		L << "[routing info for sm arg:"
-			<< op.msisdn
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const address_string_t & n) {
+		char num[50];
+		bin::bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		L << num;
+		return L;
+	}
+
+	template< typename CharT, typename TraitsT >
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const imsi_t & n) {
+		char num[50];
+		bin::bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		L << num;
+		return L;
+	}
+
+	template< typename CharT, typename TraitsT >
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_arg_t & el) {
+		L << "[RoutingInfoForSM-Arg:"
+			<< "[msisdn:" << el.msisdn << "]"
+			<< "[sm_rp_pri:" << el.sm_rp_pri << "]"
+			<< "[sc_address:" << el.sc_address << "]"
+		<< "]";
+		return L;
+	}
+
+	template< typename CharT, typename TraitsT >
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_res_t & el) {
+		L << "[RoutingInfoForSM-Res:"
+			<< "[imsi:" << el.imsi << "]"
 		<< "]";
 		return L;
 	}

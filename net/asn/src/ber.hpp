@@ -215,7 +215,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		(void)(L);
 		using namespace bin;
 
-		if (buf + 1 >= bend) {
+		if (buf + 1 > bend) {
 			return nullptr;
 		}
 
@@ -235,7 +235,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 			return nullptr;
 		}
 
-		if (buf + len >= bend) {
+		if (buf + len > bend) {
 			return nullptr;
 		}
 
@@ -255,7 +255,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 			return nullptr;
 		}
 
-		if (buf + len >= bend) {
+		if (buf + len > bend) {
 			return nullptr;
 		}
 
@@ -282,7 +282,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 				if (++buf >= bend)
 					return nullptr;
 				lenlen = *buf & 0x7F;
-				if (buf + lenlen >= bend || lenlen > sizeof(bin::u64_t))
+				if (buf + lenlen > bend || lenlen > sizeof(bin::u64_t))
 					return nullptr;
 				len = 0L;
 				while (lenlen) {
@@ -312,7 +312,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		bin::sz_t count;
 
 		/* At least 1 octet needed */
-		if (buf + 1 >= bend)
+		if (buf + 1 > bend)
 			return nullptr;
 
 		buf = p::cp_u8(asbuf(rt), buf);
@@ -356,8 +356,8 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 
 		buf = parse_tag(t, buf, bend, L);
 
-		RETURN_NULL_IF(buf == nullptr || t != type::boolean);
-		RETURN_NULL_IF(buf + 1 >= bend);
+		RETURN_NULL_IF(buf == nullptr);
+		RETURN_NULL_IF(buf + 1 > bend);
 
 		return p::cp_u8(asbuf(val), buf);
 	}
@@ -376,7 +376,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		val.len = t.len;
 
 		RETURN_NULL_IF(buf == nullptr);
-		RETURN_NULL_IF(buf + val.len >= bend);
+		RETURN_NULL_IF(buf + val.len > bend);
 
 		return p::cpy(asbuf(val.data), buf, val.len);
 	}
