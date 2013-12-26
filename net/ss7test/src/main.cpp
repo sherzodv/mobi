@@ -236,18 +236,30 @@ void test_map() {
 
 	const bin::u8_t * cur;
 
+	/* Invoke RoutingInfoForSM-Arg */
 	const bin::u8_t tcap_raw1[] =
 		"\x62\x27\x48\x04\x29\x00\x32\xce\x6c\x1f\xa1\x1d\x02\x01\x01\x02"
 		"\x01\x2d\x30\x15\x80\x07\x91\x99\x63\x65\x52\x57\xf8\x81\x01\x01"
 		"\x82\x07\x91\x99\x63\x95\x99\x99\xf1";
 
+	/* ReturnResultLast RoutingInfoForSM-Res */
 	const bin::u8_t tcap_raw2[] =
 		"\x64\x29\x49\x04\x2b\x00\xec\x98\x6c\x21\xa2\x1f\x02\x01\x01\x30"
 		"\x1a\x02\x01\x2d\x30\x15\x04\x08\x34\x08\x32\x00\x60\x95\x10\xf9"
 		"\xa0\x09\x81\x07\x91\x99\x63\x95\x99\x99\xf9";
 
+	/* Invoke MO-ForwardSM */
+	const bin::u8_t tcap_raw3[] =
+		"\x62\x56\x48\x04\x2e\x00\x1f\x16\x6c\x4e\xa1\x4c\x02\x01\x01\x02"
+		"\x01\x2e\x30\x44\x80\x08\x34\x08\x22\x00\x40\x85\x54\xf0\x84\x07"
+		"\x91\x99\x63\x95\x99\x99\xf1\x04\x2f\x04\x04\x81\x80\x08\x00\x00"
+		"\x31\x40\x03\x21\x14\x85\x02\x24\xab\x5c\x6e\x66\xa3\xcd\x68\x38"
+		"\xd8\xac\x06\x12\x97\xd9\xe7\x34\x3b\x0d\x6a\xd7\xe7\xe4\xb2\x3c"
+		"\x0d\xaa\xb3\xcf\xe1\x36\x39\x0c";
+
 	(void)(tcap_raw1);
 	(void)(tcap_raw2);
+	(void)(tcap_raw3);
 
 	class parser: public map::parser<std::ostream> {
 		public:
@@ -261,6 +273,11 @@ void test_map() {
 				return resume;
 			}
 			virtual action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
+				using map::operator<<;
+				L << msg << std::endl;
+				return resume;
+			}
+			virtual action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
 				using map::operator<<;
 				L << msg << std::endl;
 				return resume;
@@ -282,6 +299,15 @@ void test_map() {
 		std::cout << "parse error" << std::endl;
 	} else {
 		std::cout << static_cast<const void *>(tcap_raw2 + sizeof(tcap_raw2) - 1) << std::endl;
+		std::cout << static_cast<const void *>(cur) << std::endl;
+	}
+
+	std::cout << "----------------------------------------" << std::endl;
+	cur = p.parse(tcap_raw3, tcap_raw3 + sizeof(tcap_raw3) - 1);
+	if (cur == nullptr) {
+		std::cout << "parse error" << std::endl;
+	} else {
+		std::cout << static_cast<const void *>(tcap_raw3 + sizeof(tcap_raw3) - 1) << std::endl;
 		std::cout << static_cast<const void *>(cur) << std::endl;
 	}
 }

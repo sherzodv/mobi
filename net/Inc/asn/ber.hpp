@@ -345,6 +345,8 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		return nullptr;
 	}
 
+	/* Parse BOOLEAN with tag. Don't check for tag
+	 * class as it may be context specific. */
 	template <class ValT, class LogT>
 	const bin::u8_t * parse_el_boolean(ValT & val
 			, const bin::u8_t * buf
@@ -358,10 +360,13 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 
 		RETURN_NULL_IF(buf == nullptr);
 		RETURN_NULL_IF(buf + 1 > bend);
+		RETURN_NULL_IF(t.form != tagform_primitive);
 
 		return p::cp_u8(asbuf(val), buf);
 	}
 
+	/* Parse OCTET STRING with tag. Don't check for tag
+	 * class as it may be context specific. */
 	template <class StringT, class LogT>
 	const bin::u8_t * parse_el_octstring(StringT & val
 			, const bin::u8_t * buf
@@ -372,6 +377,26 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		tag t;
 
 		buf = parse_tag(t, buf, bend, L);
+
+		RETURN_NULL_IF(t.form != tagform_primitive);
+
+		val.len = t.len;
+
+		RETURN_NULL_IF(buf == nullptr);
+		RETURN_NULL_IF(buf + val.len > bend);
+
+		return p::cpy(asbuf(val.data), buf, val.len);
+	}
+
+	/* Parse OCTET STRING using already parsed tag. Intended for use
+	 * in parsing CHOICE fields. */
+	template <class StringT, class LogT>
+	const bin::u8_t * parse_el_octstring(StringT & val
+			, const tag & t
+			, const bin::u8_t * buf
+			, const bin::u8_t * bend, LogT & L) {
+		(void)(L);
+		using namespace bin;
 
 		val.len = t.len;
 
