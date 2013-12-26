@@ -282,6 +282,11 @@ void test_map() {
 				L << msg << std::endl;
 				return resume;
 			}
+			virtual action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
+				using map::operator<<;
+				L << msg << std::endl;
+				return resume;
+			}
 	} p(std::cout);
 
 	std::cout << "----------------------------------------" << std::endl;

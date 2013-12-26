@@ -108,6 +108,10 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			imsi_t			imsi;
 		};
 
+		struct mo_forward_sm_res_t {
+			signal_info_t	sm_rp_ui;
+		};
+
 	}
 
 	namespace operation {
@@ -135,6 +139,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			virtual action on_routing_info_for_sm_arg(const routing_info_for_sm_arg_t & msg) = 0;
 			virtual action on_routing_info_for_sm_res(const routing_info_for_sm_res_t & msg) = 0;
 			virtual action on_mo_forward_sm_arg(const mo_forward_sm_arg_t & msg) = 0;
+			virtual action on_mo_forward_sm_res(const mo_forward_sm_res_t & msg) = 0;
 
 		private:
 
@@ -201,14 +206,19 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				buf = rres.data;
 				bend = rres.dend;
 
+				/* Skip payload of an return_result_last, as we parsed it already */
 				switch (rres.op_code) {
 					case operation::send_routing_info_for_sm:
 						buf = parse_routing_info_for_sm_res(buf, bend);
 						if (buf == nullptr) {
 							return stop;
 						}
-						/* Skip payload of an return_result_last,
-						 * as we parsed it already */
+						return skip;
+					case operation::mo_forward_sm:
+						buf = parse_mo_forward_sm_res(buf, bend);
+						if (buf == nullptr) {
+							return stop;
+						}
 						return skip;
 					default: return stop; /* not supported */
 				}
@@ -321,6 +331,80 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}
 			}
 
+			const bin::u8_t * parse_mo_forward_sm_arg(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace asn::ber;
+
+				/* MO-ForwardSM-Arg ::= SEQUENCE {
+					sm-RP-DA				SM-RP-DA
+					, sm-RP-OA				SM-RP-OA
+					, sm-RP-UI				SignalInfo
+					, extensionContainer	ExtensionContainer OPTIONAL
+					, ...
+					, imsi					IMSI OPTIONAL
+				}*/
+
+				tag t;
+				const bin::u8_t * tmpbuf;
+				mo_forward_sm_arg_t ri;
+
+				/* Parse SEQUENCE tag */
+				buf = parse_tag(t, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
+
+				buf = parse_sm_rp_da(ri.sm_rp_da, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = parse_sm_rp_oa(ri.sm_rp_oa, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = parse_el_octstring(ri.sm_rp_ui, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr);
+
+				tmpbuf = parse_el_octstring(ri.imsi, buf, bend, L);
+				if (tmpbuf != nullptr) {
+					buf = tmpbuf;
+					ri.has_imsi = true;
+				} else {
+					ri.has_imsi = false;
+				}
+
+				switch (on_mo_forward_sm_arg(ri)) {
+					/* We should return bend, as there maybe unparsed optional
+					 * elements */
+					case resume: return bend;
+					default: return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_mo_forward_sm_res(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace asn::ber;
+
+				/* MO-ForwardSM-Res ::= SEQUENCE {
+					sm-RP-UI				SignalInfo
+					, extensionContainer	ExtensionContainer OPTIONAL
+					, ...
+				}*/
+
+				tag t;
+				mo_forward_sm_res_t ri;
+
+				/* Parse SEQUENCE tag */
+				buf = parse_tag(t, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
+
+				buf = parse_el_octstring(ri.sm_rp_ui, buf, bend, L);
+				RETURN_NULL_IF(buf == nullptr);
+
+				switch (on_mo_forward_sm_res(ri)) {
+					/* We should return bend, as there maybe unparsed optional
+					 * elements */
+					case resume: return bend;
+					default: return nullptr;
+				}
+			}
+
 			const bin::u8_t * parse_location_info_with_lmsi(
 					location_info_with_lmsi_t & linfo
 					, const bin::u8_t * buf
@@ -366,52 +450,6 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 					return buf;
 				} else {
 					return tmpbuf;
-				}
-			}
-
-			const bin::u8_t * parse_mo_forward_sm_arg(const bin::u8_t * buf
-					, const bin::u8_t * bend) {
-				using namespace asn::ber;
-
-				/* MO-Forward-SM-Arg ::= SEQUENCE {
-					sm-RP-DA				SM-RP-DA
-					, sm-RP-OA				SM-RP-OA
-					, sm-RP-UI				SignalInfo
-					, extensionContainer	ExtensionContainer OPTIONAL
-					, ...
-					, imsi					IMSI OPTIONAL
-				}*/
-
-				tag t;
-				const bin::u8_t * tmpbuf;
-				mo_forward_sm_arg_t ri;
-
-				/* Parse SEQUENCE tag */
-				buf = parse_tag(t, buf, bend, L);
-				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
-
-				buf = parse_sm_rp_da(ri.sm_rp_da, buf, bend);
-				RETURN_NULL_IF(buf == nullptr);
-
-				buf = parse_sm_rp_oa(ri.sm_rp_oa, buf, bend);
-				RETURN_NULL_IF(buf == nullptr);
-
-				buf = parse_el_octstring(ri.sm_rp_ui, buf, bend, L);
-				RETURN_NULL_IF(buf == nullptr);
-
-				tmpbuf = parse_el_octstring(ri.imsi, buf, bend, L);
-				if (tmpbuf != nullptr) {
-					buf = tmpbuf;
-					ri.has_imsi = true;
-				} else {
-					ri.has_imsi = false;
-				}
-
-				switch (on_mo_forward_sm_arg(ri)) {
-					/* We should return bend, as there maybe unparsed optional
-					 * elements */
-					case resume: return bend;
-					default: return nullptr;
 				}
 			}
 
@@ -576,6 +614,14 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		L << "[MO-ForwardSM-Arg:" << el.sm_rp_da << el.sm_rp_oa;
 			if (el.has_imsi)
 				L << "[imsi:" << el.imsi << "]";
+			L << "[sm_rp_ui:" << bin::hex_str_ref(el.sm_rp_ui.data, el.sm_rp_ui.len).delimit("").prefix("") << "]";
+		L << "]";
+		return L;
+	}
+
+	template< typename CharT, typename TraitsT >
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const mo_forward_sm_res_t & el) {
+		L << "[MO-ForwardSM-Res:";
 			L << "[sm_rp_ui:" << bin::hex_str_ref(el.sm_rp_ui.data, el.sm_rp_ui.len).delimit("").prefix("") << "]";
 		L << "]";
 		return L;
