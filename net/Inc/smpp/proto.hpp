@@ -1192,9 +1192,9 @@ namespace smpp {
 				return dst;
 			}
 
-			inline u8_t * scpyf(u8_t * dst, const u8_t * src
-					, const u8_t * srcend, sz_t len) {
-				if (src == srcend)
+			inline u8_t * scpyf(u8_t * dst, const u8_t * const dend
+					, const u8_t * src, sz_t len) {
+				if (dst == dend)
 					return NULL;
 
 				if (*src == 0) {
@@ -1204,7 +1204,7 @@ namespace smpp {
 
 				while (len) {
 					*dst++ = *src++;
-					if (src >= srcend)
+					if (dst >= dend)
 						return NULL;
 					--len;
 				}
@@ -1458,6 +1458,126 @@ namespace smpp {
 
 	namespace {
 
+		/* BIND_TRANSMITTER */
+		template <class LogT>
+		const proto::u8_t * parse(bind_transmitter & r, const proto::u8_t * buf
+				, const proto::u8_t * bend, LogT & L) {
+			using namespace utl;
+
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = parse(r.command, buf, L);
+
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.sys_id, buf, bend
+					, sizeof (r.sys_id), r.sys_id_len);
+			RETURN_NULL_IF(buf == NULL);
+
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.password, buf, bend
+					, sizeof (r.password), r.password_len);
+			RETURN_NULL_IF(buf == NULL);
+			
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.sys_type, buf, bend
+						, sizeof(r.sys_type), r.sys_type_len);
+
+			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
+			buf = p::cp_u8(&r.interface_version, buf);
+
+			RETURN_NULL_IF(buf + sizeof (r.addr_ton) >= bend);
+			buf = p::cp_u8(&r.addr_ton, buf);
+
+			RETURN_NULL_IF(buf + sizeof (r.addr_npi) >= bend);
+			buf = p::cp_u8(&r.addr_npi, buf);
+
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.addr_range, buf, bend
+					, sizeof(r.addr_range), r.addr_range_len);
+			RETURN_NULL_IF(buf == NULL);
+
+			return buf;
+		}
+
+		template <class LogT>
+		proto::u8_t * write(proto::u8_t * buf, proto::u8_t * bend
+				, const bind_transmitter & r, LogT & L) {
+			using namespace utl;
+
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = write(buf, r.command, L);
+
+			RETURN_NULL_IF(buf + r.sys_id_len >= bend);
+			buf = w::scpyf(buf, bend, r.sys_id, r.sys_id_len);
+
+			RETURN_NULL_IF(buf + r.password_len >= bend);
+			buf = w::scpyf(buf, bend, r.password, r.password_len);
+
+			RETURN_NULL_IF(buf + r.sys_type_len >= bend);
+			buf = w::scpyf(buf, bend, r.sys_type, r.sys_type_len);
+
+			RETURN_NULL_IF(buf + sizeof (r.interface_version) >= bend);
+			buf = w::cp_u8(buf, &r.interface_version);
+
+			RETURN_NULL_IF(buf + sizeof (r.addr_ton) >= bend);
+			buf = w::cp_u8(buf, &r.addr_ton);
+
+			RETURN_NULL_IF(buf + sizeof (r.addr_npi) >= bend);
+			buf = w::cp_u8(buf, &r.addr_npi);
+
+			RETURN_NULL_IF(buf + r.addr_range_len > bend);
+			buf = w::scpyf(buf, bend, r.addr_range, r.addr_range_len+1);
+
+			return buf;
+		}
+
+		/* BIND_TRANSMITTER_R */
+
+		template <class LogT>
+		const proto::u8_t * parse(bind_transmitter_r & r
+				, const proto::u8_t * buf, const proto::u8_t * bend, LogT & L) {
+			using namespace utl;
+
+			proto::u16_t optid;
+
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = parse(r.command, buf, L);
+
+			/* scpyl returns NULL if error has occurred */
+			buf = p::scpyl(r.sys_id, buf, bend
+					, sizeof (r.sys_id), r.sys_id_len);
+			RETURN_NULL_IF(buf == NULL);
+
+			if (buf == bend) /* there is no optional parameter */
+				return bend;
+
+			p::cp_u16(asbuf(optid), buf);
+			RETURN_NULL_IF(optid != option::sc_interface_version);
+			buf = parse(r.sc_interface_version, buf, L);
+
+			return buf;
+		}
+
+		template <class LogT>
+		const proto::u8_t * write(proto::u8_t * buf, proto::u8_t * bend
+				, const bind_transmitter_r & r, LogT & L) {
+			using namespace utl;
+
+			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
+			buf = write(buf, r.command, L);
+
+			buf = w::scpyf(buf, bend, r.sys_id, r.sys_id_len);
+			RETURN_NULL_IF(buf == NULL);
+
+			if (r.sc_interface_version.tag == option::sc_interface_version) {
+				RETURN_NULL_IF(buf + sizeof(r.sc_interface_version) > bend);
+				buf = write(buf, r.sc_interface_version, L);
+			} else if (r.sc_interface_version.tag != 0) {
+				return NULL; /* tag's value is incorrect */
+			}
+
+			return buf;
+		}
+
 		/* GENERIC BIND P&W */
 
 		template <class BindT, class LogT>
@@ -1665,7 +1785,6 @@ namespace smpp {
 					, sizeof(r.short_msg), r.sm_len);
 			RETURN_NULL_IF(buf == NULL);
 
-			return buf;
 			/* RETURN_NULL_IF(buf + sizeof (tlv) > bend); */
 			p::cp_u16(asbuf(optid), buf);
 			/*
@@ -1787,13 +1906,13 @@ namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.priority_flag) >= bend);
 			buf = w::cp_u8(buf, &r.priority_flag);
 
-			buf = w::scpyf(buf, r.schedule_delivery_time
-					, bend, sizeof (r.schedule_delivery_time));
+			buf = w::scpyf(buf, bend, r.schedule_delivery_time
+					, sizeof (r.schedule_delivery_time));
 			RETURN_NULL_IF(buf == NULL);
 
 			/* scpyf return NULL if error has occured */
-			buf = w::scpyf(buf, r.validity_period
-					, bend, sizeof (r.validity_period));
+			buf = w::scpyf(buf, bend, r.validity_period
+					, sizeof (r.validity_period));
 			RETURN_NULL_IF(buf == NULL);
 
 			RETURN_NULL_IF(buf + sizeof (r.registered_delivery_len) >= bend);
