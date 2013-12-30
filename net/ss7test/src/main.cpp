@@ -6,6 +6,7 @@
 #include <ss7/m3ua.hpp>
 #include <ss7/tcap.hpp>
 #include <ss7/map.hpp>
+#include <ss7/sms.hpp>
 
 #include <iostream>
 #include <cstring>
@@ -317,6 +318,69 @@ void test_map() {
 	}
 }
 
+void test_sms() {
+
+	using namespace mobi::net;
+	using namespace mobi::net::asn;
+	using namespace mobi::net::ss7;
+	using namespace mobi::net::toolbox;
+
+	const bin::u8_t * cur;
+
+	/* SMS-SUBMIT */
+	const bin::u8_t tcap_raw1[] =
+		"\x31\x12\x0b\x91\x99\x63\x93\x68\x11\xf6\x00\x08\xff\x08\x04\x22"
+		"\x04\x35\x04\x41\x04\x42";
+
+	class sms_parser: public sms::parser<std::ostream> {
+		public:
+			sms_parser(std::ostream & out): sms::parser<std::ostream>(out) {}
+			virtual ~sms_parser() {}
+
+		protected:
+			virtual action on_sms_deliver(const sms::deliver_t & msg) {
+				using map::operator<<;
+				L << msg << std::endl;
+				return resume;
+			}
+
+			virtual action on_sms_deliver_report(const sms::deliver_report_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_submit(const sms::submit_t & msg) {
+				using map::operator<<;
+				L << msg << std::endl;
+				return resume;
+			}
+
+			virtual action on_sms_submit_report(const sms::submit_report_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_command(const sms::command_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_status_report(const sms::status_report_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+	} p(std::cout);
+
+	cur = p.parse_in(tcap_raw1
+		, tcap_raw1 + sizeof(tcap_raw1)-1);
+	if (cur == nullptr) {
+		std::cout << "parse error" << std::endl;
+	} else {
+		std::cout << "sms parsed" << std::endl;
+	}
+}
+
 int main() {
 
 	(void)(test_sccp);
@@ -326,7 +390,8 @@ int main() {
 	//test_sccp();
 	//test_m3ua();
 	//test_tcap();
-	test_map();
+	//test_map();
+	test_sms();
 
 	return 0;
 }

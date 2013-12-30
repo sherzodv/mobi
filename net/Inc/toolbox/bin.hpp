@@ -1,6 +1,7 @@
 #ifndef mobi_net_toolbox_hpp
 #define mobi_net_toolbox_hpp
 
+#include <bitset>
 #include <signal.h>
 #include <boost/asio.hpp>
 
@@ -268,6 +269,61 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 					buf++;
 				}
 				out.flags(flags);
+				return out;
+			}
+	};
+
+	class bin_str_ref {
+
+		/* Hexadecimal string, used as a temporary object
+		 * for displaying octect string in hex form */
+
+		const u8_t * m_buf;
+		sz_t m_len;
+		const char * m_delimiter;
+		const char * m_prefix;
+
+		public:
+			bin_str_ref(const u8_t * buf, sz_t len)
+				: m_buf(reinterpret_cast<const u8_t *>(buf))
+				, m_len(len)
+				, m_delimiter("")
+				, m_prefix("0b")
+			{}
+
+			bin_str_ref(const char * buf, sz_t len)
+				: m_buf(reinterpret_cast<const u8_t *>(buf))
+				, m_len(len)
+				, m_delimiter("")
+				, m_prefix("0b")
+			{}
+
+			bin_str_ref & delimit(const char * delimiter) {
+				m_delimiter = delimiter;
+				return *this;
+			}
+
+			bin_str_ref & prefix(const char * p) {
+				m_prefix = p;
+				return *this;
+			}
+
+			template<typename CharT, typename TraitsT> friend
+			std::basic_ostream<CharT, TraitsT> &
+			operator<<(std::basic_ostream<CharT, TraitsT> & out, const bin_str_ref & str) {
+				const u8_t * buf = str.m_buf;
+				sz_t len = str.m_len;
+				if (str.m_prefix != nullptr) {
+					out << str.m_prefix;
+				}
+				while (len) {
+					out << std::bitset<8>(*buf);
+					if (len != 1 && str.m_delimiter != nullptr) {
+						out << str.m_delimiter;
+					}
+					len--;
+					buf++;
+				}
 				return out;
 			}
 	};
