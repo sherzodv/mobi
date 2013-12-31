@@ -344,20 +344,10 @@ void test_sms() {
 				return resume;
 			}
 
-			virtual action on_sms_deliver_report(const sms::deliver_report_t & msg) {
-				(void)(msg);
-				return stop;
-			}
-
 			virtual action on_sms_submit(const sms::submit_t & msg) {
 				using map::operator<<;
 				L << msg << std::endl;
 				return resume;
-			}
-
-			virtual action on_sms_submit_report(const sms::submit_report_t & msg) {
-				(void)(msg);
-				return stop;
 			}
 
 			virtual action on_sms_command(const sms::command_t & msg) {
@@ -370,14 +360,31 @@ void test_sms() {
 				return stop;
 			}
 
+			virtual action on_sms_deliver_report_neg(const sms::deliver_report_neg_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_deliver_report_pos(const sms::deliver_report_pos_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_submit_report_neg(const sms::submit_report_neg_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_submit_report_pos(const sms::submit_report_pos_t & msg) {
+				(void)(msg);
+				return stop;
+			}
 	} p(std::cout);
 
 	cur = p.parse_in(tcap_raw1
 		, tcap_raw1 + sizeof(tcap_raw1)-1);
 	if (cur == nullptr) {
 		std::cout << "parse error" << std::endl;
-	} else {
-		std::cout << "sms parsed" << std::endl;
 	}
 }
 
