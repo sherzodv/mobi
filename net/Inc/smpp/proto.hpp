@@ -181,8 +181,8 @@ namespace mobi { namespace net { namespace smpp {
 
 	namespace serv_types {
 		const bin::u8_t *	default_				= NULL;
-		const bin::u8_t		cell_msging[]				= "CMT";
-		const bin::u8_t		cell_paging[]				= "CPT";
+		const bin::u8_t		cell_msging[]			= "CMT";
+		const bin::u8_t		cell_paging[]			= "CPT";
 		const bin::u8_t		voice_mail_notif[]		= "VMN";
 		const bin::u8_t		voice_mail_alert[]		= "VMA";
 		const bin::u8_t		wireless_app_protocol[]	= "WAP";
@@ -518,7 +518,7 @@ namespace mobi { namespace net { namespace smpp {
 
 			bin::u8_t sm_default_msg_id;
 
-			bin::u8_t sm_len;
+			bin::u8_t short_msg_len;
 			bin::u8_t short_msg[254];
 
 			tlv_user_msg_reference			user_msg_reference;
@@ -591,7 +591,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t replace_if_present_flag;
 			bin::u8_t data_coding;
 			bin::u8_t sm_default_msg_id;
-			bin::u8_t sm_length;
+			bin::u8_t short_msg_length;
 			bin::u8_t short_msg[254];
 
 			tlv_user_msg_reference	user_msg_reference;
@@ -683,7 +683,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	replace_if_present_flag;
 			bin::u8_t	data_coding;
 			bin::u8_t	sm_default_msg_id;
-			bin::u8_t	sm_length;
+			bin::u8_t	short_msg_length;
 			bin::u8_t short_msg[254];
 
 			/* OPTIONAL PARAMETERS for DELIVER_SM */
@@ -866,7 +866,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t validity_period[17];
 			bin::u8_t registered_delivery;
 			bin::u8_t sm_default_msg_id;
-			bin::u8_t sm_length;
+			bin::u8_t short_msg_length;
 			bin::u8_t short_msg[254];
 
 			replace_sm()
@@ -1486,12 +1486,12 @@ namespace mobi { namespace net { namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.sm_default_msg_id) >= bend);
 			buf = p::cp_u8(&r.sm_default_msg_id, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.sm_len) >= bend)
-			buf = p::cp_u8(&r.sm_len, buf);
+			RETURN_NULL_IF(buf + sizeof (r.short_msg_len) >= bend)
+			buf = p::cp_u8(&r.short_msg_len, buf);
 
 			/* scpyl returns NULL if error has occurred */
 			buf = p::scpyl(r.short_msg, buf, bend
-					, sizeof(r.short_msg), r.sm_len);
+					, sizeof(r.short_msg), r.short_msg_len);
 			RETURN_NULL_IF(buf == NULL);
 
 			/* RETURN_NULL_IF(buf + sizeof (tlv) > bend); */
@@ -1636,11 +1636,11 @@ namespace mobi { namespace net { namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.sm_default_msg_id) >= bend);
 			buf = w::cp_u8(buf, &r.sm_default_msg_id);
 
-			RETURN_NULL_IF(buf + sizeof (r.sm_len) >= bend);
-			buf = w::cp_u8(buf, &r.sm_len);
+			RETURN_NULL_IF(buf + sizeof (r.short_msg_len) >= bend);
+			buf = w::cp_u8(buf, &r.short_msg_len);
 
-			RETURN_NULL_IF(buf + r.sm_len > bend);
-			buf = w::scpy(buf, r.short_msg, r.sm_len);
+			RETURN_NULL_IF(buf + r.short_msg_len > bend);
+			buf = w::scpy(buf, r.short_msg, r.short_msg_len);
 			RETURN_NULL_IF(buf == NULL);
 
 			if (r.user_msg_reference.tag != 0) {
@@ -1833,8 +1833,8 @@ namespace mobi { namespace net { namespace smpp {
 			RETURN_NULL_IF(buf + sizeof (r.sm_default_msg_id) >= bend);
 			buf = p::cp_u8(&r.sm_default_msg_id, buf);
 
-			RETURN_NULL_IF(buf + sizeof (r.sm_length) >= bend);
-			buf = p::cp_u8(&r.sm_length, buf);
+			RETURN_NULL_IF(buf + sizeof (r.short_msg_length) >= bend);
+			buf = p::cp_u8(&r.short_msg_length, buf);
 
 			RETURN_NULL_IF(buf + sizeof (r.short_msg) >= bend);
 			buf = p::scpyl(r.short_msg, buf, bend
@@ -1924,7 +1924,7 @@ namespace mobi { namespace net { namespace smpp {
 			buf = w::cp_u8(buf, r.replace_if_present_flag);
 			buf = w::cp_u8(buf, r.data_coding);
 			buf = w::cp_u8(buf, r.sm_default_msg_id);
-			buf = w::cp_u8(buf, r.sm_length);
+			buf = w::cp_u8(buf, r.short_msg_length);
 			buf = w::scpy(buf, r.short_msg, 254);
 
 			if (r.user_msg_reference.tag != 0)	buf = write(buf, r.user_msg_reference, L);
@@ -2141,8 +2141,8 @@ namespace mobi { namespace net { namespace smpp {
 				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag)	<< "]"
 				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)				<< "]"
 				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)		<< "]"
-				<< " [sm_len:"					<< static_cast<int>(r.sm_len)					<< "]"
-				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.sm_len)	<< "]";
+				<< " [short_msg_len:"					<< static_cast<int>(r.short_msg_len)					<< "]"
+				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)	<< "]";
 			if (r.user_msg_reference.tag != 0)	{ L << " [user_msg_reference:"	<< r.user_msg_reference		<< "]";	}
 			if (r.src_port.tag != 0)			{ L << " [src_port:"			<< r.src_port			<< "]"; }
 			if (r.src_addr_subunit.tag != 0)	{ L << " [src_addr_subunit:"	<< r.src_addr_subunit		<< "]"; }
