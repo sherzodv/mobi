@@ -13,7 +13,7 @@
 namespace mobi { namespace net { namespace smpp {
 
 void fix_pdu_bo(pdu * p) {
-	using namespace utl::bo;
+	using namespace bin::bo;
 	p->len		= tohost(p->len);
 	p->id		= tohost(p->id);
 	p->status	= tohost(p->status);
@@ -71,7 +71,7 @@ class channel: public session {
 
 		virtual void send(pdu * msg) {
 			if (out.ready) {
-				using namespace utl;
+				using namespace bin;
 				/* Caller is responsible for destroying message. */
 				out.msg = msg;
 				out.ready = false;
@@ -149,7 +149,7 @@ class channel: public session {
 
 		void send_message(pdu * msg, cb_t cb)
 		{
-			using namespace utl;
+			using namespace bin;
 			/* Caller is responsible for destroying message. */
 			out.msg = msg;
 			out.ready = false;
@@ -188,7 +188,7 @@ class channel: public session {
 
 		void recv_header()
 		{
-			using namespace utl;
+			using namespace bin;
 			if (!in.ready) {
 				lerror(S.L) << "channel::recv_header: in buffer is busy";
 				return;
@@ -246,7 +246,7 @@ class channel: public session {
 
 		void recv_body()
 		{
-			using namespace utl;
+			using namespace bin;
 			ltrace(S.L) << "channel::recv_body: bytes: "
 				<< in.msg->len - sizeof(pdu);
 			/* Read the remaining body of a messsage, beyond msg header */
@@ -276,7 +276,7 @@ class channel: public session {
 
 		void recv_bind_header()
 		{
-			using namespace utl;
+			using namespace bin;
 			if (!in.ready) {
 				lerror(S.L) << "channel::recv_header: in buffer is busy";
 				return;
@@ -342,7 +342,7 @@ class channel: public session {
 
 		void recv_bind_body()
 		{
-			using namespace utl;
+			using namespace bin;
 			ltrace(S.L) << "channel::recv_bind_body: bytes: "
 				<< in.msg->len - sizeof(pdu);
 			/* Read the remaining body of a messsage, beyond msg header */

@@ -83,7 +83,7 @@ class server_base {
 			r.msg_id_len = msg_id.size() + 1;
 			r.command.len = the<submit_sm>::r_size(r);
 			msg = P.create_message(r.command.len);
-			write(utl::asbuf(msg), r, L);
+			write(bin::asbuf(msg), r, L);
 			ch->send(msg);
 		}
 
@@ -103,14 +103,14 @@ class server_base {
 			ltrace(L) << "server_base::send_bind_r: bytes: " << r.command.len;
 
 			msg = P.create_message(r.command.len);
-			write_bind_r(utl::asbuf(msg), r, L);
+			write_bind_r(bin::asbuf(msg), r, L);
 			ch->send_bind_r(msg);
 		}
 
 		template <class BindT>
 		void bind_session(channel_t * ch, pdu * msg) {
 			BindT b;
-			parse_bind(b, utl::ascbuf(msg), L);
+			parse_bind(b, bin::ascbuf(msg), L);
 			ch->set_properties(b);
 			if (open(ch)) {
 				send_bind_r<BindT>(ch, msg);

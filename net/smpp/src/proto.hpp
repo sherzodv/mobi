@@ -9,199 +9,184 @@
 #include <algorithm>
 #include <ostream>
 #include <arpa/inet.h>
+#include <toolbox/bin.hpp>
 
 namespace mobi { namespace net { namespace smpp {
 
 	/* INTEGER & RELATED POINTERS TYPEDEFS */
 
-	namespace proto {
-		typedef std::uint8_t	u8_t;
-		typedef std::uint16_t	u16_t;
-		typedef std::uint32_t	u32_t;
-
-		typedef const std::uint8_t	cu8_t;
-		typedef const std::uint16_t	cu16_t;
-		typedef const std::uint32_t	cu32_t;
-
-		typedef std::uint8_t	*	u8p_t;
-		typedef std::uint16_t	*	u16p_t;
-		typedef std::uint32_t	*	u32p_t;
-
-		typedef const std::uint8_t	*	cu8p_t;
-		typedef const std::uint16_t	*	cu16p_t;
-		typedef const std::uint32_t	*	cu32p_t;
-	}
+	using namespace toolbox;
 
 	/* SMPP 3.4 COMMAND IDS */
 
 	namespace command {
-		const proto::u32_t generic_nack			= 0x80000000;
-		const proto::u32_t bind_receiver		= 0x00000001;
-		const proto::u32_t bind_receiver_r		= 0x80000001;
-		const proto::u32_t bind_transmitter		= 0x00000002;
-		const proto::u32_t bind_transmitter_r	= 0x80000002;
-		const proto::u32_t query_sm				= 0x00000003;
-		const proto::u32_t query_sm_r			= 0x80000003;
-		const proto::u32_t submit_sm			= 0x00000004;
-		const proto::u32_t submit_sm_r			= 0x80000004;
-		const proto::u32_t deliver_sm			= 0x00000005;
-		const proto::u32_t deliver_sm_r			= 0x80000005;
-		const proto::u32_t unbind				= 0x00000006;
-		const proto::u32_t unbind_r				= 0x80000006;
-		const proto::u32_t replace_sm			= 0x00000007;
-		const proto::u32_t replace_sm_r			= 0x80000007;
-		const proto::u32_t cancel_sm			= 0x00000008;
-		const proto::u32_t cancel_sm_r			= 0x80000008;
-		const proto::u32_t bind_transceiver		= 0x00000009;
-		const proto::u32_t bind_transceiver_r	= 0x80000009;
-		const proto::u32_t outbind				= 0x0000000B;
-		const proto::u32_t enquire_link			= 0x00000015;
-		const proto::u32_t enquire_link_r		= 0x80000015;
-		const proto::u32_t submit_multi_sm		= 0x00000021;
-		const proto::u32_t submit_multi_sm_r	= 0x80000021;
-		const proto::u32_t alert_notification	= 0x00000102;
-		const proto::u32_t data_sm				= 0x00000103;
-		const proto::u32_t data_sm_r			= 0x80000103;
+		const bin::u32_t generic_nack			= 0x80000000;
+		const bin::u32_t bind_receiver		= 0x00000001;
+		const bin::u32_t bind_receiver_r		= 0x80000001;
+		const bin::u32_t bind_transmitter		= 0x00000002;
+		const bin::u32_t bind_transmitter_r	= 0x80000002;
+		const bin::u32_t query_sm				= 0x00000003;
+		const bin::u32_t query_sm_r			= 0x80000003;
+		const bin::u32_t submit_sm			= 0x00000004;
+		const bin::u32_t submit_sm_r			= 0x80000004;
+		const bin::u32_t deliver_sm			= 0x00000005;
+		const bin::u32_t deliver_sm_r			= 0x80000005;
+		const bin::u32_t unbind				= 0x00000006;
+		const bin::u32_t unbind_r				= 0x80000006;
+		const bin::u32_t replace_sm			= 0x00000007;
+		const bin::u32_t replace_sm_r			= 0x80000007;
+		const bin::u32_t cancel_sm			= 0x00000008;
+		const bin::u32_t cancel_sm_r			= 0x80000008;
+		const bin::u32_t bind_transceiver		= 0x00000009;
+		const bin::u32_t bind_transceiver_r	= 0x80000009;
+		const bin::u32_t outbind				= 0x0000000B;
+		const bin::u32_t enquire_link			= 0x00000015;
+		const bin::u32_t enquire_link_r		= 0x80000015;
+		const bin::u32_t submit_multi_sm		= 0x00000021;
+		const bin::u32_t submit_multi_sm_r	= 0x80000021;
+		const bin::u32_t alert_notification	= 0x00000102;
+		const bin::u32_t data_sm				= 0x00000103;
+		const bin::u32_t data_sm_r			= 0x80000103;
 	}
 
 	/* SMPP 3.4 COMMAND STATUS/ERROR CODES */
 	namespace command_status {
-		const proto::u32_t esme_rok				= 0x00000000;
-		const proto::u32_t esme_rinvmsglen		= 0x00000001;
-		const proto::u32_t esme_rinvcmdlen		= 0x00000002;
-		const proto::u32_t esme_rinvcmdid		= 0x00000003;
-		const proto::u32_t esme_rinvbndsts		= 0x00000004;
-		const proto::u32_t esme_ralybnd			= 0x00000005;
-		const proto::u32_t esme_rinvprtflg		= 0x00000006;
-		const proto::u32_t esme_rinvregdlvflg	= 0x00000007;
-		const proto::u32_t esme_rsyserr			= 0x00000008;
-		const proto::u32_t esme_rinvsrcadr		= 0x0000000A;
-		const proto::u32_t esme_rinvdstadr		= 0x0000000B;
-		const proto::u32_t esme_rinvmsgid		= 0x0000000C;
-		const proto::u32_t esme_rbindfail		= 0x0000000D;
-		const proto::u32_t esme_rinvpaswd		= 0x0000000E;
-		const proto::u32_t esme_rinvsysid		= 0x0000000F;
-		const proto::u32_t esme_rcancelfail		= 0x00000011;
-		const proto::u32_t esme_rreplacefail	= 0x00000013;
-		const proto::u32_t esme_rmsgqful		= 0x00000014;
-		const proto::u32_t esme_rinvsertyp		= 0x00000015;
-		const proto::u32_t esme_rinvnumdests	= 0x00000033;
-		const proto::u32_t esme_rinvdlname		= 0x00000034;
-		const proto::u32_t esme_rinvdestflag	= 0x00000040;
-		const proto::u32_t esme_rinvsubrep		= 0x00000042;
-		const proto::u32_t esme_rinvesmclass	= 0x00000043;
-		const proto::u32_t esme_rcntsubdl		= 0x00000044;
-		const proto::u32_t esme_rsubmitfail		= 0x00000045;
-		const proto::u32_t esme_rinvsrcton		= 0x00000048;
-		const proto::u32_t esme_rinvsrcnpi		= 0x00000049;
-		const proto::u32_t esme_rinvdstton		= 0x00000050;
-		const proto::u32_t esme_rinvdstnpi		= 0x00000051;
-		const proto::u32_t esme_rinvsystyp		= 0x00000053;
-		const proto::u32_t esme_rinvrepflag		= 0x00000054;
-		const proto::u32_t esme_rinvnummsgs		= 0x00000055;
-		const proto::u32_t esme_rthrottled		= 0x00000058;
-		const proto::u32_t esme_rinvsched		= 0x00000061;
-		const proto::u32_t esme_rinvexpiry		= 0x00000062;
-		const proto::u32_t esme_rinvdftmsgid	= 0x00000063;
-		const proto::u32_t esme_rx_t_appn		= 0x00000064;
-		const proto::u32_t esme_rx_p_appn		= 0x00000065;
-		const proto::u32_t esme_rx_r_appn		= 0x00000066;
-		const proto::u32_t esme_rqueryfail		= 0x00000067;
-		const proto::u32_t esme_rinvoptparstream= 0x000000C0;
-		const proto::u32_t esme_roptparnotallwd	= 0x000000C1;
-		const proto::u32_t esme_rinvparlen		= 0x000000C2;
-		const proto::u32_t esme_rmissingoptparam= 0x000000C3;
-		const proto::u32_t esme_rinvoptparamval	= 0x000000C4;
-		const proto::u32_t esme_rdeliveryfailure= 0x000000FE;
-		const proto::u32_t esme_runknownerr		= 0x000000FF;
+		const bin::u32_t esme_rok				= 0x00000000;
+		const bin::u32_t esme_rinvmsglen		= 0x00000001;
+		const bin::u32_t esme_rinvcmdlen		= 0x00000002;
+		const bin::u32_t esme_rinvcmdid		= 0x00000003;
+		const bin::u32_t esme_rinvbndsts		= 0x00000004;
+		const bin::u32_t esme_ralybnd			= 0x00000005;
+		const bin::u32_t esme_rinvprtflg		= 0x00000006;
+		const bin::u32_t esme_rinvregdlvflg	= 0x00000007;
+		const bin::u32_t esme_rsyserr			= 0x00000008;
+		const bin::u32_t esme_rinvsrcadr		= 0x0000000A;
+		const bin::u32_t esme_rinvdstadr		= 0x0000000B;
+		const bin::u32_t esme_rinvmsgid		= 0x0000000C;
+		const bin::u32_t esme_rbindfail		= 0x0000000D;
+		const bin::u32_t esme_rinvpaswd		= 0x0000000E;
+		const bin::u32_t esme_rinvsysid		= 0x0000000F;
+		const bin::u32_t esme_rcancelfail		= 0x00000011;
+		const bin::u32_t esme_rreplacefail	= 0x00000013;
+		const bin::u32_t esme_rmsgqful		= 0x00000014;
+		const bin::u32_t esme_rinvsertyp		= 0x00000015;
+		const bin::u32_t esme_rinvnumdests	= 0x00000033;
+		const bin::u32_t esme_rinvdlname		= 0x00000034;
+		const bin::u32_t esme_rinvdestflag	= 0x00000040;
+		const bin::u32_t esme_rinvsubrep		= 0x00000042;
+		const bin::u32_t esme_rinvesmclass	= 0x00000043;
+		const bin::u32_t esme_rcntsubdl		= 0x00000044;
+		const bin::u32_t esme_rsubmitfail		= 0x00000045;
+		const bin::u32_t esme_rinvsrcton		= 0x00000048;
+		const bin::u32_t esme_rinvsrcnpi		= 0x00000049;
+		const bin::u32_t esme_rinvdstton		= 0x00000050;
+		const bin::u32_t esme_rinvdstnpi		= 0x00000051;
+		const bin::u32_t esme_rinvsystyp		= 0x00000053;
+		const bin::u32_t esme_rinvrepflag		= 0x00000054;
+		const bin::u32_t esme_rinvnummsgs		= 0x00000055;
+		const bin::u32_t esme_rthrottled		= 0x00000058;
+		const bin::u32_t esme_rinvsched		= 0x00000061;
+		const bin::u32_t esme_rinvexpiry		= 0x00000062;
+		const bin::u32_t esme_rinvdftmsgid	= 0x00000063;
+		const bin::u32_t esme_rx_t_appn		= 0x00000064;
+		const bin::u32_t esme_rx_p_appn		= 0x00000065;
+		const bin::u32_t esme_rx_r_appn		= 0x00000066;
+		const bin::u32_t esme_rqueryfail		= 0x00000067;
+		const bin::u32_t esme_rinvoptparstream= 0x000000C0;
+		const bin::u32_t esme_roptparnotallwd	= 0x000000C1;
+		const bin::u32_t esme_rinvparlen		= 0x000000C2;
+		const bin::u32_t esme_rmissingoptparam= 0x000000C3;
+		const bin::u32_t esme_rinvoptparamval	= 0x000000C4;
+		const bin::u32_t esme_rdeliveryfailure= 0x000000FE;
+		const bin::u32_t esme_runknownerr		= 0x000000FF;
 	}
 
 	/* SMPP 3.4 TLV IDS */
 
 	namespace option {
-		const proto::u16_t dest_addr_subunit				= 0x0005;
-		const proto::u16_t dest_networ_type					= 0x0006;
-		const proto::u16_t dest_bearer_type					= 0x0007;
-		const proto::u16_t dest_telematics_id				= 0x0008;
-		const proto::u16_t src_addr_subunit					= 0x000D;
-		const proto::u16_t src_networ_type				= 0x000E;
-		const proto::u16_t src_bearer_type				= 0x000F;
-		const proto::u16_t src_telematics_id				= 0x0010;
-		const proto::u16_t qos_time_to_live					= 0x0017;
-		const proto::u16_t payload_type						= 0x0019;
-		const proto::u16_t additional_status_info_text		= 0x0019;
-		const proto::u16_t receipted_msg_id				= 0x001E;
-		const proto::u16_t ms_msg_wait_fclts			= 0x0030;
-		const proto::u16_t privacy_ind				= 0x0201;
-		const proto::u16_t src_subaddr				= 0x0202;
-		const proto::u16_t dest_subaddr					= 0x0203;
-		const proto::u16_t user_msg_reference			= 0x0204;
-		const proto::u16_t user_resp_code				= 0x0205;
-		const proto::u16_t src_port						= 0x020A;
-		const proto::u16_t dest_port						= 0x020B;
-		const proto::u16_t sar_msg_ref_num					= 0x020C;
-		const proto::u16_t lang_ind				= 0x020D;
-		const proto::u16_t sar_total_segments				= 0x020E;
-		const proto::u16_t sar_segment_seqnum				= 0x020F;
-		const proto::u16_t sc_interface_version				= 0x0210;
-		const proto::u16_t callback_num_pres_ind			= 0x0302;
-		const proto::u16_t callback_num_atag				= 0x0303;
-		const proto::u16_t number_of_msgs				= 0x0304;
-		const proto::u16_t callback_num						= 0x0381;
-		const proto::u16_t dpf_result						= 0x0420;
-		const proto::u16_t set_dpf							= 0x0421;
-		const proto::u16_t ms_availability_status			= 0x0422;
-		const proto::u16_t network_error_code				= 0x0423;
-		const proto::u16_t msg_payload					= 0x0424;
-		const proto::u16_t delivery_failure_reason			= 0x0425;
-		const proto::u16_t more_msgs_to_send			= 0x0426;
-		const proto::u16_t msg_state					= 0x0427;
-		const proto::u16_t ussd_serv_op					= 0x0501;
-		const proto::u16_t display_time						= 0x1201;
-		const proto::u16_t sms_signal						= 0x1203;
-		const proto::u16_t ms_validity						= 0x1204;
-		const proto::u16_t alert_on_msg_delivery		= 0x130C;
-		const proto::u16_t its_reply_type					= 0x1380;
-		const proto::u16_t its_session_info					= 0x1383;
+		const bin::u16_t dest_addr_subunit				= 0x0005;
+		const bin::u16_t dest_networ_type					= 0x0006;
+		const bin::u16_t dest_bearer_type					= 0x0007;
+		const bin::u16_t dest_telematics_id				= 0x0008;
+		const bin::u16_t src_addr_subunit					= 0x000D;
+		const bin::u16_t src_networ_type				= 0x000E;
+		const bin::u16_t src_bearer_type				= 0x000F;
+		const bin::u16_t src_telematics_id				= 0x0010;
+		const bin::u16_t qos_time_to_live					= 0x0017;
+		const bin::u16_t payload_type						= 0x0019;
+		const bin::u16_t additional_status_info_text		= 0x0019;
+		const bin::u16_t receipted_msg_id				= 0x001E;
+		const bin::u16_t ms_msg_wait_fclts			= 0x0030;
+		const bin::u16_t privacy_ind				= 0x0201;
+		const bin::u16_t src_subaddr				= 0x0202;
+		const bin::u16_t dest_subaddr					= 0x0203;
+		const bin::u16_t user_msg_reference			= 0x0204;
+		const bin::u16_t user_resp_code				= 0x0205;
+		const bin::u16_t src_port						= 0x020A;
+		const bin::u16_t dest_port						= 0x020B;
+		const bin::u16_t sar_msg_ref_num					= 0x020C;
+		const bin::u16_t lang_ind				= 0x020D;
+		const bin::u16_t sar_total_segments				= 0x020E;
+		const bin::u16_t sar_segment_seqnum				= 0x020F;
+		const bin::u16_t sc_interface_version				= 0x0210;
+		const bin::u16_t callback_num_pres_ind			= 0x0302;
+		const bin::u16_t callback_num_atag				= 0x0303;
+		const bin::u16_t number_of_msgs				= 0x0304;
+		const bin::u16_t callback_num						= 0x0381;
+		const bin::u16_t dpf_result						= 0x0420;
+		const bin::u16_t set_dpf							= 0x0421;
+		const bin::u16_t ms_availability_status			= 0x0422;
+		const bin::u16_t network_error_code				= 0x0423;
+		const bin::u16_t msg_payload					= 0x0424;
+		const bin::u16_t delivery_failure_reason			= 0x0425;
+		const bin::u16_t more_msgs_to_send			= 0x0426;
+		const bin::u16_t msg_state					= 0x0427;
+		const bin::u16_t ussd_serv_op					= 0x0501;
+		const bin::u16_t display_time						= 0x1201;
+		const bin::u16_t sms_signal						= 0x1203;
+		const bin::u16_t ms_validity						= 0x1204;
+		const bin::u16_t alert_on_msg_delivery		= 0x130C;
+		const bin::u16_t its_reply_type					= 0x1380;
+		const bin::u16_t its_session_info					= 0x1383;
 	}
 
 	/* SMPP 3.4 TON VALUES */
 
 	namespace ton {
-		proto::u32_t unknown			= 0x00000000;
-		proto::u32_t international		= 0x00000001;
-		proto::u32_t national			= 0x00000010;
-		proto::u32_t network_specific	= 0x00000011;
-		proto::u32_t subscriber_number	= 0x00000100;
-		proto::u32_t alphanumeric		= 0x00000101;
-		proto::u32_t abbreviated		= 0x00000110;
+		bin::u32_t unknown			= 0x00000000;
+		bin::u32_t international		= 0x00000001;
+		bin::u32_t national			= 0x00000010;
+		bin::u32_t network_specific	= 0x00000011;
+		bin::u32_t subscriber_number	= 0x00000100;
+		bin::u32_t alphanumeric		= 0x00000101;
+		bin::u32_t abbreviated		= 0x00000110;
 	}
 
 	/* SMPP 3.4 NPI VALUES */
 
 	namespace npi {
-		proto::u32_t unknown			= 0x00000000;
-		proto::u32_t isdn				= 0x00000001;
-		proto::u32_t data				= 0x00000011;
-		proto::u32_t telex				= 0x00000100;
-		proto::u32_t land_mobile		= 0x00000110;
-		proto::u32_t national			= 0x00001000;
-		proto::u32_t private_			= 0x00001001;
-		proto::u32_t ermes				= 0x00001010;
-		proto::u32_t internet			= 0x00001110;
-		proto::u32_t wap_client_id		= 0x00010010;
+		bin::u32_t unknown			= 0x00000000;
+		bin::u32_t isdn				= 0x00000001;
+		bin::u32_t data				= 0x00000011;
+		bin::u32_t telex				= 0x00000100;
+		bin::u32_t land_mobile		= 0x00000110;
+		bin::u32_t national			= 0x00001000;
+		bin::u32_t private_			= 0x00001001;
+		bin::u32_t ermes				= 0x00001010;
+		bin::u32_t internet			= 0x00001110;
+		bin::u32_t wap_client_id		= 0x00010010;
 	}
 
 	/* SMPP 3.4 SERVICE TYPES */
 
 	namespace serv_types {
-		const proto::u8p_t	default_				= NULL;
-		const proto::u8_t cell_msging[]				= "CMT";
-		const proto::u8_t cell_paging[]				= "CPT";
-		const proto::u8_t voice_mail_notif[]		= "VMN";
-		const proto::u8_t voice_mail_alert[]		= "VMA";
-		const proto::u8_t wireless_app_protocol[]	= "WAP";
-		const proto::u8_t unstruct_sup_serv_dat[]	= "USSD";
+		const bin::u8_t *	default_				= NULL;
+		const bin::u8_t		cell_msging[]				= "CMT";
+		const bin::u8_t		cell_paging[]				= "CPT";
+		const bin::u8_t		voice_mail_notif[]		= "VMN";
+		const bin::u8_t		voice_mail_alert[]		= "VMA";
+		const bin::u8_t		wireless_app_protocol[]	= "WAP";
+		const bin::u8_t		unstruct_sup_serv_dat[]	= "USSD";
 	}
 
 	/* SMPP 3.4 esm class consts */
@@ -210,92 +195,92 @@ namespace mobi { namespace net { namespace smpp {
 
 		namespace submit_sm {
 			/* messaging mode, you should use switch (var&0x03) */
-			const proto::u8_t default_sms_mode		= 0x00;
-			const proto::u8_t datagram_mode			= 0x01;
-			const proto::u8_t forward_mode			= 0x02;
-			const proto::u8_t store_n_forward_mode	= 0x03;
+			const bin::u8_t default_sms_mode		= 0x00;
+			const bin::u8_t datagram_mode			= 0x01;
+			const bin::u8_t forward_mode			= 0x02;
+			const bin::u8_t store_n_forward_mode	= 0x03;
 
 			/* msg type, you should use switch (var&0x3C) */
-			const proto::u8_t default_msg_type		= 0x00;
-			const proto::u8_t esme_delivery_ack		= 0x08;
-			const proto::u8_t esme_manual_ack		= 0x10;
+			const bin::u8_t default_msg_type		= 0x00;
+			const bin::u8_t esme_delivery_ack		= 0x08;
+			const bin::u8_t esme_manual_ack		= 0x10;
 
 			/* gsm network specific features, your should use switch (var&0xC0)*/
-			const proto::u8_t no_spec_features_sel	= 0x00;
-			const proto::u8_t udhi_ind				= 0x40;
-			const proto::u8_t set_reply_path		= 0x80;
-			const proto::u8_t set_udhi_reply_path	= 0xC0;
+			const bin::u8_t no_spec_features_sel	= 0x00;
+			const bin::u8_t udhi_ind				= 0x40;
+			const bin::u8_t set_reply_path		= 0x80;
+			const bin::u8_t set_udhi_reply_path	= 0xC0;
 		}
 
 		namespace submit_multi {
 			/* messaging mode, you should use switch (var&0x03) */
-			const proto::u8_t default_sms_mode		= 0x00;
-			const proto::u8_t datagram_mode			= 0x01;
-			const proto::u8_t forward_mode			= 0x02;
-			const proto::u8_t store_n_forward_mode	= 0x03;
+			const bin::u8_t default_sms_mode		= 0x00;
+			const bin::u8_t datagram_mode			= 0x01;
+			const bin::u8_t forward_mode			= 0x02;
+			const bin::u8_t store_n_forward_mode	= 0x03;
 
 			/* msg type, you should use switch (var&0x3C) */
-			const proto::u8_t default_msg_type		= 0x00;
-			const proto::u8_t esme_delivery_ack		= 0x08;
-			const proto::u8_t esme_manual_ack		= 0x10;
+			const bin::u8_t default_msg_type		= 0x00;
+			const bin::u8_t esme_delivery_ack		= 0x08;
+			const bin::u8_t esme_manual_ack		= 0x10;
 
 			/* gsm network specific features, your should use switch (var&0xC0)*/
-			const proto::u8_t no_spec_features_sel	= 0x00;
-			const proto::u8_t udhi_ind				= 0x40;
-			const proto::u8_t set_reply_path		= 0x80;
-			const proto::u8_t set_udhi_reply_path	= 0xC0;
+			const bin::u8_t no_spec_features_sel	= 0x00;
+			const bin::u8_t udhi_ind				= 0x40;
+			const bin::u8_t set_reply_path		= 0x80;
+			const bin::u8_t set_udhi_reply_path	= 0xC0;
 		}
 
 		namespace data_sm {
-			const proto::u8_t not_applicable		= 0x00;
+			const bin::u8_t not_applicable		= 0x00;
 
 			/* msg type, you should use switch (var & 0x3C) */
-			const proto::u8_t default_msg_typ		= 0x00;
-			const proto::u8_t smsc_delivery_rec		= 0x04;
-			const proto::u8_t sme_delivery_ack		= 0x08;
-			const proto::u8_t sme_manual_ack		= 0x10;
-			const proto::u8_t conv_abort			= 0x18;
-			const proto::u8_t inter_delivery_notf	= 0x20;
+			const bin::u8_t default_msg_typ		= 0x00;
+			const bin::u8_t smsc_delivery_rec		= 0x04;
+			const bin::u8_t sme_delivery_ack		= 0x08;
+			const bin::u8_t sme_manual_ack		= 0x10;
+			const bin::u8_t conv_abort			= 0x18;
+			const bin::u8_t inter_delivery_notf	= 0x20;
 
 			/* gsm network specific features, 0xC0 */
-			const proto::u8_t no_spec_select		= 0x00;
-			const proto::u8_t udhi_ind_set			= 0x40;
-			const proto::u8_t reply_path			= 0x80;
-			const proto::u8_t udhi_n_reply_path		= 0xC0;
+			const bin::u8_t no_spec_select		= 0x00;
+			const bin::u8_t udhi_ind_set			= 0x40;
+			const bin::u8_t reply_path			= 0x80;
+			const bin::u8_t udhi_n_reply_path		= 0xC0;
 			/* messaging mode, you should use switch (var&0x03) */
-			const proto::u8_t default_sms_mode		= 0x00;
-			const proto::u8_t datagram_mode			= 0x01;
-			const proto::u8_t forward_mode			= 0x02;
-			const proto::u8_t store_n_forward_mode	= 0x03;
+			const bin::u8_t default_sms_mode		= 0x00;
+			const bin::u8_t datagram_mode			= 0x01;
+			const bin::u8_t forward_mode			= 0x02;
+			const bin::u8_t store_n_forward_mode	= 0x03;
 
 			/* msg type, you should use switch (var&0x3C) */
-			const proto::u8_t default_msg_type		= 0x00;
-			const proto::u8_t esme_delivery_ack		= 0x08;
-			const proto::u8_t esme_manual_ack		= 0x10;
+			const bin::u8_t default_msg_type		= 0x00;
+			const bin::u8_t esme_delivery_ack		= 0x08;
+			const bin::u8_t esme_manual_ack		= 0x10;
 
 			/* gsm network specific features, your should use switch (var&0xC0)*/
-			const proto::u8_t no_spec_features_sel	= 0x00;
-			const proto::u8_t udhi_ind				= 0x40;
-			const proto::u8_t set_reply_path		= 0x80;
-			const proto::u8_t set_udhi_reply_path	= 0xC0;
+			const bin::u8_t no_spec_features_sel	= 0x00;
+			const bin::u8_t udhi_ind				= 0x40;
+			const bin::u8_t set_reply_path		= 0x80;
+			const bin::u8_t set_udhi_reply_path	= 0xC0;
 		}
 
 		namespace deliver_sm {
-			const proto::u8_t not_applicable		= 0x00;
+			const bin::u8_t not_applicable		= 0x00;
 
 			/* msg type, you should use switch (var & 0x3C) */
-			const proto::u8_t default_msg_typ		= 0x00;
-			const proto::u8_t smsc_delivery_rec		= 0x04;
-			const proto::u8_t sme_delivery_ack		= 0x08;
-			const proto::u8_t sme_manual_ack		= 0x10;
-			const proto::u8_t conv_abort			= 0x18;
-			const proto::u8_t inter_delivery_notf	= 0x20;
+			const bin::u8_t default_msg_typ		= 0x00;
+			const bin::u8_t smsc_delivery_rec		= 0x04;
+			const bin::u8_t sme_delivery_ack		= 0x08;
+			const bin::u8_t sme_manual_ack		= 0x10;
+			const bin::u8_t conv_abort			= 0x18;
+			const bin::u8_t inter_delivery_notf	= 0x20;
 
 			/* gsm network specific features, 0xC0 */
-			const proto::u8_t no_spec_select		= 0x00;
-			const proto::u8_t udhi_ind_set			= 0x40;
-			const proto::u8_t reply_path			= 0x80;
-			const proto::u8_t udhi_n_reply_path		= 0xC0;
+			const bin::u8_t no_spec_select		= 0x00;
+			const bin::u8_t udhi_ind_set			= 0x40;
+			const bin::u8_t reply_path			= 0x80;
+			const bin::u8_t udhi_n_reply_path		= 0xC0;
 		}
 	}
 
@@ -303,18 +288,18 @@ namespace mobi { namespace net { namespace smpp {
 	/* SMPP 3.4 PDU header */
 
 	struct pdu {
-		proto::u32_t len;
-		proto::u32_t id;
-		proto::u32_t status;
-		proto::u32_t seqno;
+		bin::u32_t len;
+		bin::u32_t id;
+		bin::u32_t status;
+		bin::u32_t seqno;
 	};
 
 	/* SMPP 3.4 generic tag-length-value type */
 
 	template <typename ValueT>
 	struct tlv {
-		proto::u16_t tag;
-		proto::u16_t len;
+		bin::u16_t tag;
+		bin::u16_t len;
 		ValueT val;
 		tlv(): tag(0), len(0) {}
 	};
@@ -323,53 +308,53 @@ namespace mobi { namespace net { namespace smpp {
 
 	namespace {
 
-		typedef tlv<proto::u8_t>		tlv_dest_addr_subunit;
-		typedef tlv<proto::u8_t>		tlv_src_addr_subunit;
-		typedef tlv<proto::u8_t>		tlv_dest_network_type;
-		typedef tlv<proto::u8_t>		tlv_src_network_type;
-		typedef tlv<proto::u8_t>		tlv_dest_bearer_type;
-		typedef tlv<proto::u8_t>		tlv_src_bearer_type;
-		typedef tlv<proto::u16_t>		tlv_dest_telematics_id;
-		typedef tlv<proto::u8_t>		tlv_src_telematics_id;
-		typedef tlv<proto::u32_t>		tlv_qos_time_to_live;
-		typedef tlv<proto::u8_t>		tlv_payload_type;
-		typedef tlv<proto::u8_t[256]>	tlv_additional_status_info_text;
-		typedef tlv<proto::u8_t[65]>	tlv_receipted_msg_id;
-		typedef tlv<proto::u8_t>		tlv_ms_msg_wait_fclts;
-		typedef tlv<proto::u8_t>		tlv_privacy_ind;
-		typedef tlv<proto::u8_t[23]>	tlv_src_subaddr;
-		typedef tlv<proto::u8_t[23]> 	tlv_dest_subaddr;
-		typedef tlv<proto::u16_t> 		tlv_user_msg_reference;
-		typedef tlv<proto::u8_t>  		tlv_user_resp_code;
-		typedef tlv<proto::u8_t>  		tlv_lang_ind;
-		typedef tlv<proto::u16_t> 		tlv_src_port;
-		typedef tlv<proto::u16_t> 		tlv_dest_port;
-		typedef tlv<proto::u16_t> 		tlv_sar_msg_ref_num;
-		typedef tlv<proto::u8_t>  		tlv_sar_total_segments;
-		typedef tlv<proto::u8_t>  		tlv_sar_segment_seqnum;
-		typedef tlv<proto::u8_t>  		tlv_sc_interface_version;
-		typedef tlv<proto::u8_t>  		tlv_display_time;
-		typedef tlv<proto::u8_t>  		tlv_ms_validity;
-		typedef tlv<proto::u8_t>  		tlv_dpf_result;
-		typedef tlv<proto::u8_t>  		tlv_set_dpf;
-		typedef tlv<proto::u8_t>  		tlv_ms_availability_status;
-		typedef tlv<proto::u8_t[3]>		tlv_network_error_code;
+		typedef tlv<bin::u8_t>		tlv_dest_addr_subunit;
+		typedef tlv<bin::u8_t>		tlv_src_addr_subunit;
+		typedef tlv<bin::u8_t>		tlv_dest_network_type;
+		typedef tlv<bin::u8_t>		tlv_src_network_type;
+		typedef tlv<bin::u8_t>		tlv_dest_bearer_type;
+		typedef tlv<bin::u8_t>		tlv_src_bearer_type;
+		typedef tlv<bin::u16_t>		tlv_dest_telematics_id;
+		typedef tlv<bin::u8_t>		tlv_src_telematics_id;
+		typedef tlv<bin::u32_t>		tlv_qos_time_to_live;
+		typedef tlv<bin::u8_t>		tlv_payload_type;
+		typedef tlv<bin::u8_t[256]>	tlv_additional_status_info_text;
+		typedef tlv<bin::u8_t[65]>	tlv_receipted_msg_id;
+		typedef tlv<bin::u8_t>		tlv_ms_msg_wait_fclts;
+		typedef tlv<bin::u8_t>		tlv_privacy_ind;
+		typedef tlv<bin::u8_t[23]>	tlv_src_subaddr;
+		typedef tlv<bin::u8_t[23]> 	tlv_dest_subaddr;
+		typedef tlv<bin::u16_t> 	tlv_user_msg_reference;
+		typedef tlv<bin::u8_t>  	tlv_user_resp_code;
+		typedef tlv<bin::u8_t>  	tlv_lang_ind;
+		typedef tlv<bin::u16_t> 	tlv_src_port;
+		typedef tlv<bin::u16_t> 	tlv_dest_port;
+		typedef tlv<bin::u16_t> 	tlv_sar_msg_ref_num;
+		typedef tlv<bin::u8_t>  	tlv_sar_total_segments;
+		typedef tlv<bin::u8_t>  	tlv_sar_segment_seqnum;
+		typedef tlv<bin::u8_t>  	tlv_sc_interface_version;
+		typedef tlv<bin::u8_t>  	tlv_display_time;
+		typedef tlv<bin::u8_t>  	tlv_ms_validity;
+		typedef tlv<bin::u8_t>  	tlv_dpf_result;
+		typedef tlv<bin::u8_t>  	tlv_set_dpf;
+		typedef tlv<bin::u8_t>  	tlv_ms_availability_status;
+		typedef tlv<bin::u8_t[3]>	tlv_network_error_code;
 
 		/* length of field 'value' is variable */
-		typedef tlv<proto::u8p_t>		tlv_msg_payload;
+		typedef tlv<bin::u8_t *>	tlv_msg_payload;
 
-		typedef tlv<proto::u8_t>		tlv_delivery_failure_reason;
-		typedef tlv<proto::u8_t>		tlv_more_msgs_to_send;
-		typedef tlv<proto::u8_t>		tlv_msg_state;
-		typedef tlv<proto::u8_t[19]>	tlv_callback_num;
-		typedef tlv<proto::u8_t>		tlv_callback_num_pres_ind;
-		typedef tlv<proto::u8_t[65]>	tlv_callback_num_atag;
-		typedef tlv<proto::u8_t>		tlv_number_of_msgs;
-		typedef tlv<proto::u16_t>		tlv_sms_signal;
-		typedef tlv<proto::u8_t>		tlv_alert_on_msg_delivery;
-		typedef tlv<proto::u8_t>		tlv_its_reply_type;
-		typedef tlv<proto::u8_t[2]>		tlv_its_session_info;
-		typedef tlv<proto::u8_t[1]>		tlv_ussd_serv_op;
+		typedef tlv<bin::u8_t>		tlv_delivery_failure_reason;
+		typedef tlv<bin::u8_t>		tlv_more_msgs_to_send;
+		typedef tlv<bin::u8_t>		tlv_msg_state;
+		typedef tlv<bin::u8_t[19]>	tlv_callback_num;
+		typedef tlv<bin::u8_t>		tlv_callback_num_pres_ind;
+		typedef tlv<bin::u8_t[65]>	tlv_callback_num_atag;
+		typedef tlv<bin::u8_t>		tlv_number_of_msgs;
+		typedef tlv<bin::u16_t>		tlv_sms_signal;
+		typedef tlv<bin::u8_t>		tlv_alert_on_msg_delivery;
+		typedef tlv<bin::u8_t>		tlv_its_reply_type;
+		typedef tlv<bin::u8_t[2]>	tlv_its_session_info;
+		typedef tlv<bin::u8_t[1]>	tlv_ussd_serv_op;
 
 	}
 
@@ -381,13 +366,13 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct bind_transmitter {
 			pdu command;
-			proto::u8_t sys_id[16];
-			proto::u8_t password[9];
-			proto::u8_t sys_type[13];
-			proto::u8_t interface_version;
-			proto::u8_t addr_ton;
-			proto::u8_t addr_npi;
-			proto::u8_t addr_range[41];
+			bin::u8_t sys_id[16];
+			bin::u8_t password[9];
+			bin::u8_t sys_type[13];
+			bin::u8_t interface_version;
+			bin::u8_t addr_ton;
+			bin::u8_t addr_npi;
+			bin::u8_t addr_range[41];
 
 			/* this values will not be writed to buffer */
 			std::size_t sys_id_len;
@@ -398,7 +383,7 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct bind_transmitter_r {
 			pdu command;
-			proto::u8_t sys_id[16];
+			bin::u8_t sys_id[16];
 			tlv_sc_interface_version sc_interface_version;
 
 			std::size_t sys_id_len;
@@ -412,13 +397,13 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct bind_receiver {
 			pdu command;
-			proto::u8_t sys_id[16];
-			proto::u8_t password[9];
-			proto::u8_t sys_type[13];
-			proto::u8_t interface_version;
-			proto::u8_t addr_ton;
-			proto::u8_t addr_npi;
-			proto::u8_t addr_range[41];
+			bin::u8_t sys_id[16];
+			bin::u8_t password[9];
+			bin::u8_t sys_type[13];
+			bin::u8_t interface_version;
+			bin::u8_t addr_ton;
+			bin::u8_t addr_npi;
+			bin::u8_t addr_range[41];
 
 			std::size_t sys_id_len;
 			std::size_t password_len;
@@ -428,7 +413,7 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct bind_receiver_r {
 			pdu command;
-			proto::u8_t sys_id[16];
+			bin::u8_t sys_id[16];
 			tlv_sc_interface_version sc_interface_version;
 
 			std::size_t sys_id_len;
@@ -442,13 +427,13 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct bind_transceiver {
 			pdu command;
-			proto::u8_t sys_id[16];
-			proto::u8_t password[9];
-			proto::u8_t sys_type[13];
-			proto::u8_t interface_version;
-			proto::u8_t addr_ton;
-			proto::u8_t addr_npi;
-			proto::u8_t addr_range[41];
+			bin::u8_t sys_id[16];
+			bin::u8_t password[9];
+			bin::u8_t sys_type[13];
+			bin::u8_t interface_version;
+			bin::u8_t addr_ton;
+			bin::u8_t addr_npi;
+			bin::u8_t addr_range[41];
 
 			std::size_t sys_id_len;
 			std::size_t password_len;
@@ -458,7 +443,7 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct bind_transceiver_r {
 			pdu command;
-			proto::u8_t sys_id[16];
+			bin::u8_t sys_id[16];
 			tlv_sc_interface_version sc_interface_version;
 
 			std::size_t sys_id_len;
@@ -472,8 +457,8 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct outbind {
 			pdu command;
-			proto::u8_t sys_id[16];
-			proto::u8_t passwd[9];
+			bin::u8_t sys_id[16];
+			bin::u8_t passwd[9];
 
 			std::size_t sys_id_len;
 			std::size_t passwd_len;
@@ -506,35 +491,35 @@ namespace mobi { namespace net { namespace smpp {
 		struct submit_sm {
 			pdu command;
 
-			proto::u8_t	serv_type[6];
+			bin::u8_t	serv_type[6];
 
 			/* Address of ESME which originated this msg */
-			proto::u8_t src_addr_ton;
-			proto::u8_t src_addr_npi;
-			proto::u8_t src_addr[21];
+			bin::u8_t src_addr_ton;
+			bin::u8_t src_addr_npi;
+			bin::u8_t src_addr[21];
 
 			/* Address  ME which originated this msg */
-			proto::u8_t dst_addr_ton;
-			proto::u8_t dst_addr_npi;
-			proto::u8_t dst_addr[21];
+			bin::u8_t dst_addr_ton;
+			bin::u8_t dst_addr_npi;
+			bin::u8_t dst_addr[21];
 
-			proto::u8_t esm_class;
-			proto::u8_t protocol_id;
-			proto::u8_t priority_flag;
+			bin::u8_t esm_class;
+			bin::u8_t protocol_id;
+			bin::u8_t priority_flag;
 
-			proto::u8_t schedule_delivery_time[17];
-			proto::u8_t validity_period[17];
+			bin::u8_t schedule_delivery_time[17];
+			bin::u8_t validity_period[17];
 
 			/* Indicator to signify if and SMSC delivery receipt
 			 * or and SMS aknowledgment is required. */
-			proto::u8_t registered_delivery;
-			proto::u8_t replace_if_present_flag;
-			proto::u8_t data_coding;
+			bin::u8_t registered_delivery;
+			bin::u8_t replace_if_present_flag;
+			bin::u8_t data_coding;
 
-			proto::u8_t sm_default_msg_id;
+			bin::u8_t sm_default_msg_id;
 
-			proto::u8_t sm_len;
-			proto::u8_t short_msg[254];
+			bin::u8_t sm_len;
+			bin::u8_t short_msg[254];
 
 			tlv_user_msg_reference			user_msg_reference;
 			tlv_src_port					src_port;
@@ -577,7 +562,7 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct submit_sm_r {
 			pdu command;
-			proto::u8_t msg_id[65];
+			bin::u8_t msg_id[65];
 
 			std::size_t msg_id_len;
 
@@ -591,23 +576,23 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct submit_multi {
 			pdu command;
-			proto::u8_t serv_type[6];
-			proto::u8_t src_addr_ton;
-			proto::u8_t src_addr_npi;
-			proto::u8_t src_addr[21];
-			proto::u8_t number_of_dests;
+			bin::u8_t serv_type[6];
+			bin::u8_t src_addr_ton;
+			bin::u8_t src_addr_npi;
+			bin::u8_t src_addr[21];
+			bin::u8_t number_of_dests;
 			/* TODO: 4.5.1 dest_addr(es) */
-			proto::u8_t esm_class;
-			proto::u8_t protocol_id;
-			proto::u8_t priority_flag;
-			proto::u8_t schedule_delivery_time[17];
-			proto::u8_t validity_period[17];
-			proto::u8_t registered_delivery;
-			proto::u8_t replace_if_present_flag;
-			proto::u8_t data_coding;
-			proto::u8_t sm_default_msg_id;
-			proto::u8_t sm_length;
-			proto::u8_t short_msg[254];
+			bin::u8_t esm_class;
+			bin::u8_t protocol_id;
+			bin::u8_t priority_flag;
+			bin::u8_t schedule_delivery_time[17];
+			bin::u8_t validity_period[17];
+			bin::u8_t registered_delivery;
+			bin::u8_t replace_if_present_flag;
+			bin::u8_t data_coding;
+			bin::u8_t sm_default_msg_id;
+			bin::u8_t sm_length;
+			bin::u8_t short_msg[254];
 
 			tlv_user_msg_reference	user_msg_reference;
 			tlv_src_port				src_port;
@@ -643,25 +628,25 @@ namespace mobi { namespace net { namespace smpp {
 		};
 
 		struct dest_addr {
-			proto::u8_t 	dest_flag;
+			bin::u8_t 	dest_flag;
 			/* TODO: 4.5.1.1 SME_Address */
 		};
 
 		struct SME_dest_addr {
-			proto::u8_t	dest_addr_ton;
-			proto::u8_t dest_addr_npi;
-			proto::u8_t	dest_addr[21];
+			bin::u8_t	dest_addr_ton;
+			bin::u8_t dest_addr_npi;
+			bin::u8_t	dest_addr[21];
 		};
 
 		struct DL_name {
-			proto::u8_t	dl_name[21];
+			bin::u8_t	dl_name[21];
 		};
 
 		struct submit_multi_r {
 			pdu command;
 
-			proto::u8_t	msg_id[65];
-			proto::u8_t	no_unsuccess;
+			bin::u8_t	msg_id[65];
+			bin::u8_t	no_unsuccess;
 			/* TODO: 4.5.2 unsuccess_sme(s) */
 
 			size_t msg_id_len;
@@ -671,10 +656,10 @@ namespace mobi { namespace net { namespace smpp {
 		};
 
 		struct Unsuccess_smes {
-			proto::u8_t		dest_addr_ton;
-			proto::u8_t		dest_addr_npi;
-			proto::u8_t		dest_addr[21];
-			proto::u32_t	error_status_code;
+			bin::u8_t		dest_addr_ton;
+			bin::u8_t		dest_addr_npi;
+			bin::u8_t		dest_addr[21];
+			bin::u32_t	error_status_code;
 		};
 
 		/* DELIVER SM Operations */
@@ -682,24 +667,24 @@ namespace mobi { namespace net { namespace smpp {
 		struct deliver_sm {
 			pdu command;
 
-			proto::u8_t	serv_type[6];
-			proto::u8_t src_addr_ton;
-			proto::u8_t	src_addr_npi;
-			proto::u8_t	src_addr[21];
-			proto::u8_t	dest_addr_ton;
-			proto::u8_t dest_addr_npi;
-			proto::u8_t dest_addr[21];
-			proto::u8_t	esm_class;
-			proto::u8_t	protocol_id;
-			proto::u8_t	priority_flag;
-			proto::u8_t	schedule_delivery_time;
-			proto::u8_t	validity_period;
-			proto::u8_t registered_delivery;
-			proto::u8_t	replace_if_present_flag;
-			proto::u8_t	data_coding;
-			proto::u8_t	sm_default_msg_id;
-			proto::u8_t	sm_length;
-			proto::u8_t short_msg[254];
+			bin::u8_t	serv_type[6];
+			bin::u8_t src_addr_ton;
+			bin::u8_t	src_addr_npi;
+			bin::u8_t	src_addr[21];
+			bin::u8_t	dest_addr_ton;
+			bin::u8_t dest_addr_npi;
+			bin::u8_t dest_addr[21];
+			bin::u8_t	esm_class;
+			bin::u8_t	protocol_id;
+			bin::u8_t	priority_flag;
+			bin::u8_t	schedule_delivery_time;
+			bin::u8_t	validity_period;
+			bin::u8_t registered_delivery;
+			bin::u8_t	replace_if_present_flag;
+			bin::u8_t	data_coding;
+			bin::u8_t	sm_default_msg_id;
+			bin::u8_t	sm_length;
+			bin::u8_t short_msg[254];
 
 			/* OPTIONAL PARAMETERS for DELIVER_SM */
 			tlv_user_msg_reference	user_msg_reference;
@@ -727,7 +712,7 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct deliver_sm_r {
 			pdu command;
-			proto::u8_t	msg_id;
+			bin::u8_t	msg_id;
 
 			deliver_sm_r()
 				: command()
@@ -739,16 +724,16 @@ namespace mobi { namespace net { namespace smpp {
 		struct data_sm {
 			pdu command;
 
-			proto::u8_t		serv_type[6];
-			proto::u8_t		src_addr_ton;
-			proto::u8_t		src_addr_npi;
-			proto::u8_t		src_addr[65];
-			proto::u8_t		dest_addr_ton;
-			proto::u8_t		dest_addr_npi;
-			proto::u8_t		dest_addr[65];
-			proto::u8_t		esm_class;
-			proto::u8_t		registered_delivery;
-			proto::u8_t		data_coding;
+			bin::u8_t		serv_type[6];
+			bin::u8_t		src_addr_ton;
+			bin::u8_t		src_addr_npi;
+			bin::u8_t		src_addr[65];
+			bin::u8_t		dest_addr_ton;
+			bin::u8_t		dest_addr_npi;
+			bin::u8_t		dest_addr[65];
+			bin::u8_t		esm_class;
+			bin::u8_t		registered_delivery;
+			bin::u8_t		data_coding;
 
 			/* OPTIONAL PARAMETERS for DATA SM */
 
@@ -799,7 +784,7 @@ namespace mobi { namespace net { namespace smpp {
 		struct data_sm_r {
 			pdu command;
 
-			proto::u8_t msg_id[65];
+			bin::u8_t msg_id[65];
 
 			/* OPTIONAL PARAMETERS for DATA SM RESP */
 
@@ -818,10 +803,10 @@ namespace mobi { namespace net { namespace smpp {
 		struct query_sm {
 			pdu command;
 
-			proto::u8_t	msg_id[65];
-			proto::u8_t	src_addr_ton;
-			proto::u8_t	src_addr_npi;
-			proto::u8_t	src_addr[21];
+			bin::u8_t	msg_id[65];
+			bin::u8_t	src_addr_ton;
+			bin::u8_t	src_addr_npi;
+			bin::u8_t	src_addr[21];
 
 			query_sm()
 				: command()
@@ -831,10 +816,10 @@ namespace mobi { namespace net { namespace smpp {
 		struct query_sm_r {
 			pdu command;
 
-			proto::u8_t	msg_id[65];
-			proto::u8_t	final_date[17];
-			proto::u8_t	msg_state;
-			proto::u8_t	error_code;
+			bin::u8_t	msg_id[65];
+			bin::u8_t	final_date[17];
+			bin::u8_t	msg_state;
+			bin::u8_t	error_code;
 
 			query_sm_r()
 				: command()
@@ -846,14 +831,14 @@ namespace mobi { namespace net { namespace smpp {
 		struct cancel_sm {
 			pdu command;
 
-			proto::u8_t	serv_type[6];
-			proto::u8_t	msg_id[65];
-			proto::u8_t	src_addr_ton;
-			proto::u8_t	src_addr_npi;
-			proto::u8_t	src_addr[21];
-			proto::u8_t	dest_addr_ton;
-			proto::u8_t dest_addr_npi;
-			proto::u8_t dest_addr[21];
+			bin::u8_t	serv_type[6];
+			bin::u8_t	msg_id[65];
+			bin::u8_t	src_addr_ton;
+			bin::u8_t	src_addr_npi;
+			bin::u8_t	src_addr[21];
+			bin::u8_t	dest_addr_ton;
+			bin::u8_t dest_addr_npi;
+			bin::u8_t dest_addr[21];
 
 			cancel_sm()
 				: command()
@@ -873,16 +858,16 @@ namespace mobi { namespace net { namespace smpp {
 		struct replace_sm {
 			pdu command;
 
-			proto::u8_t	msg_id[65];
-			proto::u8_t	src_addr_ton;
-			proto::u8_t	src_addr_npi;
-			proto::u8_t	src_addr[21];
-			proto::u8_t schedule_delivery_time[17];
-			proto::u8_t validity_period[17];
-			proto::u8_t registered_delivery;
-			proto::u8_t sm_default_msg_id;
-			proto::u8_t sm_length;
-			proto::u8_t short_msg[254];
+			bin::u8_t	msg_id[65];
+			bin::u8_t	src_addr_ton;
+			bin::u8_t	src_addr_npi;
+			bin::u8_t	src_addr[21];
+			bin::u8_t schedule_delivery_time[17];
+			bin::u8_t validity_period[17];
+			bin::u8_t registered_delivery;
+			bin::u8_t sm_default_msg_id;
+			bin::u8_t sm_length;
+			bin::u8_t short_msg[254];
 
 			replace_sm()
 				: command()
@@ -920,12 +905,12 @@ namespace mobi { namespace net { namespace smpp {
 		struct alert_notification {
 			pdu command;
 
-			proto::u8_t	src_addr_ton;
-			proto::u8_t	src_addr_npi;
-			proto::u8_t src_addr[65];
-			proto::u8_t	esme_addr_ton;
-			proto::u8_t esme_addr_npi;
-			proto::u8_t	esme_addr;
+			bin::u8_t	src_addr_ton;
+			bin::u8_t	src_addr_npi;
+			bin::u8_t src_addr[65];
+			bin::u8_t	esme_addr_ton;
+			bin::u8_t esme_addr_npi;
+			bin::u8_t	esme_addr;
 
 			/* OPTIONAL PARAMETERS for ALERT NOTIFICATION */
 
@@ -955,7 +940,7 @@ namespace mobi { namespace net { namespace smpp {
 			typedef bind_receiver_r r_type;
 
 			/* Corresponding resp command id */
-			static const proto::u32_t r_id = command::bind_receiver_r;
+			static const bin::u32_t r_id = command::bind_receiver_r;
 
 			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
@@ -972,7 +957,7 @@ namespace mobi { namespace net { namespace smpp {
 			typedef bind_transmitter_r r_type;
 
 			/* Corresponding resp command id */
-			static const proto::u32_t r_id = command::bind_transmitter_r;
+			static const bin::u32_t r_id = command::bind_transmitter_r;
 
 			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
@@ -989,7 +974,7 @@ namespace mobi { namespace net { namespace smpp {
 			typedef bind_transceiver_r r_type;
 
 			/* Corresponding resp command id */
-			static const proto::u32_t r_id = command::bind_transceiver_r;
+			static const bin::u32_t r_id = command::bind_transceiver_r;
 
 			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
@@ -1003,233 +988,19 @@ namespace mobi { namespace net { namespace smpp {
 		template <>
 		struct the<submit_sm> {
 			typedef submit_sm type;
-			static const proto::u32_t id = command::submit_sm;
+			static const bin::u32_t id = command::submit_sm;
 
 			/* Corresponding resp type */
 			typedef submit_sm_r r_type;
 
 			/* Corresponding resp command id */
-			static const proto::u32_t r_id = command::submit_sm_r;
+			static const bin::u32_t r_id = command::submit_sm_r;
 
 			/* Response overall msg length */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu) + r.msg_id_len;
 			}
 		};
-	}
-
-	/* MEMORY MANIPULATION UTILITIES */
-
-	namespace utl {
-		using namespace proto;
-		typedef std::size_t sz_t;
-
-		/* Byte order handling routines */
-		namespace bo {
-			inline u16_t tohost(u16_t v) { return ntohs(v); }
-			inline u32_t tohost(u32_t v) { return ntohl(v); }
-			inline u16_t tonet(u16_t v) { return htons(v); }
-			inline u32_t tonet(u32_t v) { return htonl(v); }
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T & src) {
-			return reinterpret_cast<const u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline const u8_t * ascbuf(T * src) {
-			return reinterpret_cast<const u8_t *>(src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T & src) {
-			return reinterpret_cast<u8_t *>(&src);
-		}
-
-		template <typename T>
-		inline u8_t * asbuf(T * src) {
-			return reinterpret_cast<u8_t *>(src);
-		}
-
-		/* Parse from buffer to struct , move buffer pointer */
-		namespace p {
-
-			inline const u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 1;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 3;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				/* Copy with byte order handling */
-				dst += 7;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				*dst-- = *src++;
-				return src;
-			}
-
-			inline const u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return src;
-			}
-
-			/* Parse fixed size string. It will contain either exactly
-			 * len-1 characters and a terminating zero, or only and only
-			 * terminating zero, see SMPP 3.4 spec for details */
-
-			//TAG2
-			inline const u8_t * scpyf(u8_t * dst, const u8_t * src
-					, const u8_t * srcend, sz_t len) {
-				if (src == srcend)
-					return NULL;
-
-				if (*src == 0) {
-					*dst++ = *src++;
-					return src;
-				}
-
-				while (len) {
-					*dst++ = *src++;
-					if (src >= srcend)
-						return NULL;
-					--len;
-				}
-				return src;
-			}
-
-			/* Parse zero terminated string with specified max length.
-			 * l will contain number of characters parsed not counting the
-			 * terminating zero. */
-			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
-					, const u8_t * srcend, sz_t len, sz_t & l) {
-				if (src == srcend)
-					return NULL;
-
-				for (l = 0; (l < len) && (src < srcend);) {
-					if (*src == 0) {
-						*dst++ = *src++; ++l;
-						return src;
-					}
-					*dst++ = *src++; ++l;
-				}
-				return src;
-			}
-
-			inline const u8_t * scpyl(u8_t * dst, const u8_t * src
-					, const u8_t * srcend, sz_t len, proto::u8_t & l) {
-				if (src == srcend)
-					return NULL;
-
-				for (l = 0; (l < len) && (src < srcend);) {
-					if (*src == 0) {
-						*dst++ = *src++; ++l;
-						return src;
-					}
-					*dst++ = *src++; ++l;
-				}
-				return src;
-			}
-		}
-
-		/* Write from struct to buffer, move buffer pointer */
-		namespace w {
-
-			inline u8_t * cp_u8(u8_t * dst, const u8_t * src) {
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u16(u8_t * dst, const u8_t * src) {
-				src += 1;
-				*dst++ = *src--;
-				*dst++ = *src;
-				return dst;
-			}
-
-			inline u8_t * cp_u32(u8_t * dst, const u8_t * src) {
-				src += 3;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cp_u64(u8_t * dst, const u8_t * src) {
-				src += 7;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				*dst++ = *src--;
-				return dst;
-			}
-
-			inline u8_t * cpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len) {
-					*dst++ = *src++;
-					--len;
-				}
-				return dst;
-			}
-
-			inline u8_t * scpyf(u8_t * dst, const u8_t * const dend
-					, const u8_t * src, sz_t len) {
-				if (dst == dend)
-					return NULL;
-
-				if (*src == 0) {
-					*dst++ = *src++;
-					return dst;
-				}
-
-				while (len) {
-					*dst++ = *src++;
-					if (dst >= dend)
-						return NULL;
-					--len;
-				}
-				*dst++ = 0;
-				return dst;
-			}
-
-			inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
-				while (len--) {
-					*dst++ = *src++;
-				}
-				return dst;
-			}
-		}
 	}
 
 	/* PARSERS & WRITERS */
@@ -1245,10 +1016,10 @@ namespace mobi { namespace net { namespace smpp {
 		/* TLV<8> P&W */
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv<proto::u8_t> & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv<bin::u8_t> & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u16(asbuf(t.tag), buf);
 			buf = p::cp_u16(asbuf(t.len), buf);
 			buf = p::cp_u8(asbuf(t.val), buf);
@@ -1256,10 +1027,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
-				, const tlv<proto::u8_t> & t, LogT & L) {
+		bin::u8_t * write(bin::u8_t * buf
+				, const tlv<bin::u8_t> & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u16(buf, ascbuf(t.tag));
 			buf = w::cp_u16(buf, ascbuf(t.len));
 			buf = w::cp_u8(buf, ascbuf(t.val));
@@ -1269,10 +1040,10 @@ namespace mobi { namespace net { namespace smpp {
 		/* TLV<16> P&W */
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv<proto::u16_t> & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv<bin::u16_t> & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u16(asbuf(t.tag), buf);
 			buf = p::cp_u16(asbuf(t.len), buf);
 			buf = p::cp_u16(asbuf(t.val), buf);
@@ -1280,10 +1051,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
-				, const tlv<proto::u16_t> & t, LogT & L) {
+		bin::u8_t * write(bin::u8_t * buf
+				, const tlv<bin::u16_t> & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u16(buf, ascbuf(t.tag));
 			buf = w::cp_u16(buf, ascbuf(t.len));
 			buf = w::cp_u16(buf, ascbuf(t.val));
@@ -1293,10 +1064,10 @@ namespace mobi { namespace net { namespace smpp {
 		/* TLV<32> P&W */
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv<proto::u32_t> & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv<bin::u32_t> & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(t.tag), buf);
 			buf = p::cp_u32(asbuf(t.len), buf);
 			buf = p::cp_u32(asbuf(t.val), buf);
@@ -1304,10 +1075,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
-				, const tlv<proto::u32_t> & t, LogT & L) {
+		bin::u8_t * write(bin::u8_t * buf
+				, const tlv<bin::u32_t> & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(t.tag));
 			buf = w::cp_u32(buf, ascbuf(t.len));
 			buf = w::cp_u32(buf, ascbuf(t.val));
@@ -1315,10 +1086,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv_src_subaddr & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv_src_subaddr & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(t.tag), buf);
 			buf = p::cp_u32(asbuf(t.len), buf);
 			/* TODO: parse value: 5.3.2.15 */
@@ -1328,10 +1099,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
+		bin::u8_t * write(bin::u8_t * buf
 				, const tlv_src_subaddr & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(t.tag));
 			buf = w::cp_u32(buf, ascbuf(t.len));
 			buf = w::scpy(buf, t.val, t.len);
@@ -1339,10 +1110,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv_callback_num & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv_callback_num & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(t.tag), buf);
 			buf = p::cp_u32(asbuf(t.len), buf);
 			/* TODO: parse value: 5.3.2.36 */
@@ -1352,10 +1123,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
+		bin::u8_t * write(bin::u8_t * buf
 				, const tlv_callback_num & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(t.tag));
 			buf = w::cp_u32(buf, ascbuf(t.len));
 			buf = w::scpy(buf, t.val, t.len);
@@ -1363,10 +1134,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv_callback_num_atag & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv_callback_num_atag & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(t.tag), buf);
 			buf = p::cp_u32(asbuf(t.len), buf);
 			/* TODO: parse value: 5.3.2.38 */
@@ -1376,10 +1147,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
+		bin::u8_t * write(bin::u8_t * buf
 				, const tlv_callback_num_atag & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(t.tag));
 			buf = w::cp_u32(buf, ascbuf(t.len));
 			buf = w::scpy(buf, t.val, t.len);
@@ -1387,10 +1158,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv_its_session_info & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv_its_session_info & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(t.tag), buf);
 			buf = p::cp_u32(asbuf(t.len), buf);
 			/* TODO: parse value: 5.3.2.43 */
@@ -1400,10 +1171,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
+		bin::u8_t * write(bin::u8_t * buf
 				, const tlv_its_session_info & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(t.tag));
 			buf = w::cp_u32(buf, ascbuf(t.len));
 			buf = w::scpy(buf, t.val, t.len);
@@ -1411,10 +1182,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		const proto::u8_t * parse(tlv_ussd_serv_op & t
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(tlv_ussd_serv_op & t
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(t.tag), buf);
 			buf = p::cp_u32(asbuf(t.len), buf);
 			/* TODO: parse value: 5.3.2.44 */
@@ -1424,10 +1195,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
+		bin::u8_t * write(bin::u8_t * buf
 				, const tlv_ussd_serv_op & t, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(t.tag));
 			buf = w::cp_u32(buf, ascbuf(t.len));
 			buf = w::scpy(buf, t.val, t.len);
@@ -1440,10 +1211,10 @@ namespace mobi { namespace net { namespace smpp {
 	namespace {
 
 		template <class LogT>
-		const proto::u8_t * parse(pdu & cmd
-				, const proto::u8_t * buf, LogT & L) {
+		const bin::u8_t * parse(pdu & cmd
+				, const bin::u8_t * buf, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = p::cp_u32(asbuf(cmd.len), buf);
 			buf = p::cp_u32(asbuf(cmd.id), buf);
 			buf = p::cp_u32(asbuf(cmd.status), buf);
@@ -1452,10 +1223,10 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
+		bin::u8_t * write(bin::u8_t * buf
 				, const pdu & cmd, LogT & L) {
 			(void)(L);
-			using namespace utl;
+			using namespace bin;
 			buf = w::cp_u32(buf, ascbuf(cmd.len));
 			buf = w::cp_u32(buf, ascbuf(cmd.id));
 			buf = w::cp_u32(buf, ascbuf(cmd.status));
@@ -1472,9 +1243,9 @@ namespace mobi { namespace net { namespace smpp {
 		/* BIND_RECEIVER	*/
 		/* BIND_TRANSCEIVER	*/
 		template <class BindT, class LogT>
-		const proto::u8_t * parse(BindT & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		const bin::u8_t * parse(BindT & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
@@ -1511,9 +1282,9 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class BindT, class LogT>
-		proto::u8_t * write(proto::u8_t * buf, proto::u8_t * bend
+		bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
 				, const BindT & r, LogT & L) {
-			using namespace utl;
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = write(buf, r.command, L);
@@ -1546,11 +1317,11 @@ namespace mobi { namespace net { namespace smpp {
 		/* BIND_RECEIVER_R		*/
 		/* BIND_TRANSCEIVER_R	*/
 		template <class BindT, class LogT>
-		const proto::u8_t * parse_r(BindT & r
-				, const proto::u8_t * buf, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		const bin::u8_t * parse_r(BindT & r
+				, const bin::u8_t * buf, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 
-			proto::u16_t optid;
+			bin::u16_t optid;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
@@ -1571,9 +1342,9 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class BindT, class LogT>
-		const proto::u8_t * write_r(proto::u8_t * buf, proto::u8_t * bend
+		const bin::u8_t * write_r(bin::u8_t * buf, bin::u8_t * bend
 				, const BindT & r, LogT & L) {
-			using namespace utl;
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = write(buf, r.command, L);
@@ -1593,9 +1364,9 @@ namespace mobi { namespace net { namespace smpp {
 
 		/* OUTBIND P&W */
 		template <class LogT>
-		const proto::u8_t * parse(outbind & r, proto::u8_t * buf
-				, proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		const bin::u8_t * parse(outbind & r, bin::u8_t * buf
+				, bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = write(buf, r.command, L);
@@ -1612,9 +1383,9 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		const proto::u8_t * write(proto::u8_t * buf, proto::u8_t * bend
+		const bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
 				, const outbind & r, LogT & L) {
-			using namespace utl;
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = write(buf, r.command, L);
@@ -1630,14 +1401,14 @@ namespace mobi { namespace net { namespace smpp {
 		/* UNBIND_R P&W		*/
 		/* GENERIC_NACK P&W	*/
 		template <class BindT, class LogT>
-		void parse(BindT & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
+		void parse(BindT & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
 			RETURN_NULL_IF(buf + sizeof (r.command) > bend);
 			parse(r.command, buf, L);
 		}
 
 		template <class BindT, class LogT>
-		void write(proto::u8_t * buf, proto::u8_t * bend
+		void write(bin::u8_t * buf, bin::u8_t * bend
 				,const unbind & r, LogT & L) {
 			RETURN_NULL_IF(buf + sizeof (r.command) > bend);
 			write(buf, r.command, L);
@@ -1645,12 +1416,12 @@ namespace mobi { namespace net { namespace smpp {
 
 		/* SUBMIT_SM P&W */
 		template <class LogT>
-		const proto::u8_t * parse(submit_sm & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
+		const bin::u8_t * parse(submit_sm & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
 
-			using namespace utl;
+			using namespace bin;
 
-			proto::u16_t optid;
+			bin::u16_t optid;
 			buf = ascbuf(buf);
 			/*bend = buf + msg->len; */
 
@@ -1726,7 +1497,7 @@ namespace mobi { namespace net { namespace smpp {
 			/* RETURN_NULL_IF(buf + sizeof (tlv) > bend); */
 			p::cp_u16(asbuf(optid), buf);
 			/*
-			buf += sizeof(proto::u16_t);
+			buf += sizeof(bin::u16_t);
 			*/
 
 			while (buf < bend) {
@@ -1801,9 +1572,9 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		proto::u8_t * write(proto::u8_t * buf
-				, proto::u8_t * bend, const submit_sm & r, LogT & L) {
-			using namespace utl;
+		bin::u8_t * write(bin::u8_t * buf
+				, bin::u8_t * bend, const submit_sm & r, LogT & L) {
+			using namespace bin;
 			/* length of var strings are stored
 			 * in additional field of struct */
 
@@ -1985,9 +1756,9 @@ namespace mobi { namespace net { namespace smpp {
 
 		/* SUBMIT_SM_R P&W */
 		template <class LogT>
-		void parse(submit_sm_r & r, const proto::u8_t * buf 
-				, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		void parse(submit_sm_r & r, const bin::u8_t * buf 
+				, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
 			buf = parse(r.command, buf, L);
@@ -1997,20 +1768,20 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		void write(proto::u8_t * buf, const submit_sm_r & r, LogT & L) {
-			using namespace utl;
+		void write(bin::u8_t * buf, const submit_sm_r & r, LogT & L) {
+			using namespace bin;
 			buf = write(buf, r.command, L);
 			buf = w::scpy(buf, r.msg_id, r.msg_id_len + 1);
 		}
 
 		/* SUBMIT_MULTI P&W */
 		template <class LogT>
-		void parse(submit_multi & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
+		void parse(submit_multi & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
 
-			using namespace utl;
+			using namespace bin;
 
-			proto::u16_t optid;
+			bin::u16_t optid;
 			buf = ascbuf(buf);
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
@@ -2071,7 +1842,7 @@ namespace mobi { namespace net { namespace smpp {
 
 			buf = p::cp_u16(asbuf(optid), buf);
 			/*
-			buf += sizeof(proto::u16_t);
+			buf += sizeof(bin::u16_t);
 			*/
 
 			while (buf < bend) {
@@ -2132,8 +1903,8 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		void write(proto::u8_t * buf, const submit_multi & r, LogT & L) {
-			using namespace utl;
+		void write(bin::u8_t * buf, const submit_multi & r, LogT & L) {
+			using namespace bin;
 			buf = write(buf, r.command, L);
 			buf = w::scpy(buf, r.serv_type, 6);
 			
@@ -2182,9 +1953,9 @@ namespace mobi { namespace net { namespace smpp {
 
 		/* DEST_ADDRESS P&W */
 		template <class LogT>
-		void parse(dest_addr & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		void parse(dest_addr & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 
 			RETURN_NULL_IF(buf + sizeof (r.dest_flag) >= bend);
 			buf = p::cp_u8(&r.dest_flag, buf);
@@ -2192,17 +1963,17 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		void write(proto::u8_t * buf, const dest_addr & r, LogT & L) {
-			using namespace utl;
+		void write(bin::u8_t * buf, const dest_addr & r, LogT & L) {
+			using namespace bin;
 			buf = w::cp_u8(buf, &r.dest_flag);
 			/* TODO: 4.5.1.1 SME_Address */
 		}
 
 		/* SME_DEST_ADDRESS P&W */
 		template <class LogT>
-		void parse(SME_dest_addr & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		void parse(SME_dest_addr & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 			RETURN_NULL_IF(buf + sizeof (r.dest_addr_ton) >= bend);
 			buf = p::cp_u8(&r.dest_addr_ton, buf);
 			RETURN_NULL_IF(buf + sizeof (r.dest_addr_npi) >= bend);
@@ -2212,8 +1983,8 @@ namespace mobi { namespace net { namespace smpp {
 		}
 
 		template <class LogT>
-		void write(proto::u8_t * buf, const SME_dest_addr & r, LogT & L) {
-			using namespace utl;
+		void write(bin::u8_t * buf, const SME_dest_addr & r, LogT & L) {
+			using namespace bin;
 			buf = w::cp_u8(buf, &r.dest_addr_ton);
 			buf = w::cp_u8(buf, &r.dest_addr_npi);
 			buf = w::scpy(buf, r.dest_addr, sizeof (r.dest_addr));
@@ -2221,26 +1992,26 @@ namespace mobi { namespace net { namespace smpp {
 
 		/* DL_NAME P&W */
 		template <class LogT>
-		void parse(DL_name & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		void parse(DL_name & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 			RETURN_NULL_IF((buf + sizeof (r.dl_name) > bend)
 					&& (buf+1 != bend));
 			buf = p::scpyf(r.dl_name, buf, bend, sizeof (r.dl_name));
 		}
 
 		template <class LogT>
-		void write(proto::u8_t * buf, proto::u8_t * bend
+		void write(bin::u8_t * buf, bin::u8_t * bend
 				,const DL_name & r, LogT & L) {
-			using namespace utl;
+			using namespace bin;
 			buf = w::scpyf(buf, bend, r.dl_name, sizeof (r.dl_name));
 		}
 
 		/* SUBMIT_MULTI_R P&W */
 		template <class LogT>
-		void parse(submit_multi_r & r, const proto::u8_t * buf
-				, const proto::u8_t * bend, LogT & L) {
-			using namespace utl;
+		void parse(submit_multi_r & r, const bin::u8_t * buf
+				, const bin::u8_t * bend, LogT & L) {
+			using namespace bin;
 			buf = ascbuf(buf);
 
 			RETURN_NULL_IF(buf + sizeof (r.command) >= bend);
@@ -2265,7 +2036,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t> & t) {
+				, const tlv<bin::u8_t> & t) {
 			L << std::bitset<8>(t.val);
 			return L;
 		}
@@ -2273,7 +2044,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u16_t> & t) {
+				, const tlv<bin::u16_t> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2281,7 +2052,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u32_t> & t) {
+				, const tlv<bin::u32_t> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2289,7 +2060,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[256]> & t) {
+				, const tlv<bin::u8_t[256]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2297,7 +2068,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[65]> & t) {
+				, const tlv<bin::u8_t[65]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2305,7 +2076,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[23]> & t) {
+				, const tlv<bin::u8_t[23]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2313,7 +2084,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[19]> & t) {
+				, const tlv<bin::u8_t[19]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2321,7 +2092,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[3]> & t) {
+				, const tlv<bin::u8_t[3]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2329,7 +2100,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[2]> & t) {
+				, const tlv<bin::u8_t[2]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2337,7 +2108,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8_t[1]> & t) {
+				, const tlv<bin::u8_t[1]> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2345,7 +2116,7 @@ namespace mobi { namespace net { namespace smpp {
 		template <typename CharT, typename TraitsT>
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
-				, const tlv<proto::u8p_t> & t) {
+				, const tlv<bin::u8_t *> & t) {
 			L << t.val;
 			return L;
 		}
@@ -2404,7 +2175,7 @@ namespace mobi { namespace net { namespace smpp {
 		}
 	}
 
-	const std::size_t bind_pdu_min_len = sizeof(pdu) + sizeof(proto::u8_t) * 7;
+	const std::size_t bind_pdu_min_len = sizeof(pdu) + sizeof(bin::u8_t) * 7;
 } } }
 
 #endif

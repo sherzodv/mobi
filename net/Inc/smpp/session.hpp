@@ -6,14 +6,15 @@
 #include <smpp/proto.hpp>
 
 namespace mobi { namespace net { namespace smpp {
+	using namespace toolbox;
 
-struct session {
+	struct session {
 
-		proto::u32_t type;
+		bin::u32_t type;
 
-		proto::u8_t interface_version;
-		proto::u8_t addr_ton;
-		proto::u8_t addr_npi;
+		bin::u8_t interface_version;
+		bin::u8_t addr_ton;
+		bin::u8_t addr_npi;
 
 		std::string sys_id;
 		std::string sys_type;

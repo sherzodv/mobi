@@ -4,11 +4,12 @@
 #include <smpp/proto.hpp>
 
 using namespace mobi::net;
+using namespace mobi::net::toolbox;
 
 /* TOOLS FOR TESTING */
 namespace tst_tools {
-	int sncmp(const smpp::proto::u8_t * s1
-				, const smpp::proto::u8_t * s2
+	int sncmp(const bin::u8_t * s1
+				, const bin::u8_t * s2
 				, std::size_t l)
 	{
 		while (l--) if (*s1++ != *s2++) return 1;
@@ -16,8 +17,8 @@ namespace tst_tools {
 	}
 
 	/* overloaded operator for comparing tlv<u8_t> */
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t> & a1
-		, const smpp::tlv<smpp::proto::u8_t> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t> & a1
+		, const smpp::tlv<bin::u8_t> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -27,8 +28,8 @@ namespace tst_tools {
 	}
 
 	/* overloaded operator for comparing tlv<u8_t> */
-	inline bool operator==(const smpp::tlv<smpp::proto::u16_t> & a1
-		, const smpp::tlv<smpp::proto::u16_t> & a2)
+	inline bool operator==(const smpp::tlv<bin::u16_t> & a1
+		, const smpp::tlv<bin::u16_t> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -38,8 +39,8 @@ namespace tst_tools {
 	}
 
 	/* overloaded operator for comparing tlv<u8_t> */
-	inline bool operator==(const smpp::tlv<smpp::proto::u32_t> & a1
-		, const smpp::tlv<smpp::proto::u32_t> & a2)
+	inline bool operator==(const smpp::tlv<bin::u32_t> & a1
+		, const smpp::tlv<bin::u32_t> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -49,8 +50,8 @@ namespace tst_tools {
 	}
 
 	/* for value = u8_t[256] */
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[256]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[256]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[256]> & a1
+		, const smpp::tlv<bin::u8_t[256]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -59,8 +60,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[65]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[65]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[65]> & a1
+		, const smpp::tlv<bin::u8_t[65]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -69,8 +70,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[23]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[23]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[23]> & a1
+		, const smpp::tlv<bin::u8_t[23]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -79,8 +80,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[19]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[19]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[19]> & a1
+		, const smpp::tlv<bin::u8_t[19]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -89,8 +90,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[3]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[3]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[3]> & a1
+		, const smpp::tlv<bin::u8_t[3]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -99,8 +100,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[2]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[2]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[2]> & a1
+		, const smpp::tlv<bin::u8_t[2]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -109,8 +110,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8_t[1]> & a1
-		, const smpp::tlv<smpp::proto::u8_t[1]> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t[1]> & a1
+		, const smpp::tlv<bin::u8_t[1]> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -119,8 +120,8 @@ namespace tst_tools {
 		return true;
 	}
 
-	inline bool operator==(const smpp::tlv<smpp::proto::u8p_t> & a1
-		, const smpp::tlv<smpp::proto::u8p_t> & a2)
+	inline bool operator==(const smpp::tlv<bin::u8_t *> & a1
+		, const smpp::tlv<bin::u8_t *> & a2)
 	{
 		if (a1.tag != a2.tag) return false;
 		if (a1.len != a2.len) return false;
@@ -135,10 +136,10 @@ using namespace tst_tools;
 BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 {
 	using namespace smpp;
-	using namespace utl;
+	using namespace bin;
 
 	submit_sm			r, r2;
-	smpp::proto::u8_t	hand_dat[512];
+	bin::u8_t	hand_dat[512];
 	union {
 		uint32_t		len;
 		uint8_t			oct[4];

@@ -97,6 +97,29 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return src;
 		}
 
+		/* Parse fixed size string. It will contain either exactly
+		 * len-1 characters and a terminating zero, or only and only
+		 * terminating zero, see SMPP 3.4 spec for details */
+
+		inline const u8_t * scpyf(u8_t * dst, const u8_t * src
+				, const u8_t * srcend, sz_t len) {
+			if (src == srcend)
+				return NULL;
+
+			if (*src == 0) {
+				*dst++ = *src++;
+				return src;
+			}
+
+			while (len) {
+				*dst++ = *src++;
+				if (src >= srcend)
+					return NULL;
+				--len;
+			}
+			return src;
+		}
+
 		/* Reverse copy */
 		inline const u8_t * ypc(u8_t * dst, const u8_t * src, sz_t len) {
 			std::size_t templ = len;
@@ -107,38 +130,44 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			}
 			return src + templ + 1;
 		}
-		/* Parse fixed size string. It will contain either exactly
-		 * len-1 characters and a terminating zero, or only and only
-		 * terminating zero, see SMPP 3.4 spec for details */
-		inline const u8_t * scpyf(u8_t * dst, const u8_t * src, sz_t len) {
-			if (*src == 0) {
-				*dst++ = *src++;
-				return src;
-			}
-			while (len) {
-				*dst++ = *src++;
-				--len;
-			}
-			return src;
-		}
+
+		/* Parse zero terminated string with specified max length.
+		 * l will contain number of characters parsed not counting the
+		 * terminating zero. */
 
 		/* Parse zero terminated string with specified max length.
 		 * l will contain number of characters parsed not counting the
 		 * terminating zero. */
 		inline const u8_t * scpyl(u8_t * dst, const u8_t * src
-				, sz_t len, sz_t & l) {
-			l = 0;
-			while (len) {
+				, const u8_t * srcend, sz_t len, sz_t & l) {
+			if (src == srcend)
+				return NULL;
+
+			for (l = 0; (l < len) && (src < srcend);) {
 				if (*src == 0) {
-					*dst++ = *src++;
+					*dst++ = *src++; ++l;
 					return src;
 				}
-				*dst++ = *src++;
-				--len;
-				++l;
+				*dst++ = *src++; ++l;
 			}
 			return src;
 		}
+
+		inline const u8_t * scpyl(u8_t * dst, const u8_t * src
+				, const u8_t * srcend, sz_t len, bin::u8_t & l) {
+			if (src == srcend)
+				return NULL;
+
+			for (l = 0; (l < len) && (src < srcend);) {
+				if (*src == 0) {
+					*dst++ = *src++; ++l;
+					return src;
+				}
+				*dst++ = *src++; ++l;
+			}
+			return src;
+		}
+
 	}
 
 	/* Write from struct to buffer, move buffer pointer */
@@ -196,17 +225,34 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return dst;
 		}
 
-		inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
-			while (len) {
-				if (*src == 0) {
-					*dst++ = *src++;
-					return dst;
-				}
+		
+		inline u8_t * scpyf(u8_t * dst, const u8_t * const dend
+				, const u8_t * src, sz_t len) {
+			if (dst == dend)
+				return NULL;
+
+			if (*src == 0) {
 				*dst++ = *src++;
+				return dst;
+			}
+
+			while (len) {
+				*dst++ = *src++;
+				if (dst >= dend)
+					return NULL;
 				--len;
+			}
+			*dst++ = 0;
+			return dst;
+		}
+
+		inline u8_t * scpy(u8_t * dst, const u8_t * src, sz_t len) {
+			while (len--) {
+				*dst++ = *src++;
 			}
 			return dst;
 		}
+
 	}
 
 	class hex_str_ref {
