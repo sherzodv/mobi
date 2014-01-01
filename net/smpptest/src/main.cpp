@@ -3,6 +3,8 @@
 #include <boost/test/unit_test.hpp>
 #include <smpp/proto.hpp>
 
+using namespace mobi::net;
+
 /* TOOLS FOR TESTING */
 namespace tst_tools {
 	int sncmp(const smpp::proto::u8_t * s1

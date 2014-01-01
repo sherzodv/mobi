@@ -8,7 +8,7 @@ add_subdirectory(vision)
 add_subdirectory(fastmq)
 add_subdirectory(fastmqr)
 add_subdirectory(smpp)
-add_subdirectory(smppd)
+# add_subdirectory(smppd)
 add_subdirectory(asn)
 add_subdirectory(ss7)
 

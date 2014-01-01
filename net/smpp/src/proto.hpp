@@ -10,7 +10,7 @@
 #include <ostream>
 #include <arpa/inet.h>
 
-namespace smpp {
+namespace mobi { namespace net { namespace smpp {
 
 	/* INTEGER & RELATED POINTERS TYPEDEFS */
 
@@ -2405,6 +2405,6 @@ namespace smpp {
 	}
 
 	const std::size_t bind_pdu_min_len = sizeof(pdu) + sizeof(proto::u8_t) * 7;
-}
+} } }
 
 #endif

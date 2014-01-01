@@ -10,7 +10,7 @@
 #include <smpp/proto.hpp>
 #include <smpp/session.hpp>
 
-namespace smpp {
+namespace mobi { namespace net { namespace smpp {
 
 void fix_pdu_bo(pdu * p) {
 	using namespace utl::bo;
@@ -395,6 +395,6 @@ class channel: public session {
 
 };
 
-}
+} } }
 
 #endif

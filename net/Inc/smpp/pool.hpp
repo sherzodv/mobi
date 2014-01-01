@@ -6,7 +6,7 @@
 
 #include <smpp/proto.hpp>
 
-namespace smpp {
+namespace mobi { namespace net { namespace smpp {
 
 	class message_pool_base {
 		public:
@@ -48,6 +48,6 @@ namespace smpp {
 				return nmsg;
 			}
 	};
-}
+} } }
 
 #endif

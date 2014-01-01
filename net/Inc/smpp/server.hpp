@@ -12,7 +12,7 @@
 #include <smpp/proto.hpp>
 #include <smpp/channel.hpp>
 
-namespace smpp {
+namespace mobi { namespace net { namespace smpp {
 
 namespace ba = boost::asio;
 namespace bs = boost::system;
@@ -251,6 +251,6 @@ template <class LogT>
 using tcp_server_base
 	= server_base<boost::asio::ip::tcp, LogT>;
 
-}
+} } }
 
 #endif

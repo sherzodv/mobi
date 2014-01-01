@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <smpp/proto.hpp>
 
-namespace smpp {
+namespace mobi { namespace net { namespace smpp {
 
 struct session {
 
@@ -52,6 +52,6 @@ struct session {
 		}
 };
 
-}
+} } }
 
 #endif
