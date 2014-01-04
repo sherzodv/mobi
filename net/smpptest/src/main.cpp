@@ -138,6 +138,101 @@ namespace tst_tools {
 
 using namespace tst_tools;
 
+class smpp_parser : public smpp::parser<std::ostream> {
+	public:
+		smpp_parser(std::ostream & out): smpp::parser<std::ostream>(out) {}
+		virtual ~smpp_parser() {}
+
+	protected:
+		virtual action on_bind_transmitter(const smpp::bind_transmitter & msg) {
+
+			std::cout << msg.command.len << std::endl;
+			std::cout << msg.command.id << std::endl;
+			std::cout << msg.command.status << std::endl;
+			std::cout << msg.command.seqno << std::endl;
+			std::cout << msg.sys_id << std::endl;
+			std::cout << msg.password << std::endl;
+			std::cout << msg.interface_version << std::endl;
+
+			return resume;
+		}
+
+		virtual action on_bind_transmitter_r(const smpp::bind_transmitter_r & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_bind_receiver(const smpp::bind_receiver & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_bind_receiver_r(const smpp::bind_receiver_r & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_bind_transceiver(const smpp::bind_transceiver & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_bind_transceiver_r(const smpp::bind_transceiver_r & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_unbind(const smpp::unbind & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_unbind_r(const smpp::unbind_r & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_outbind(const smpp::outbind & msg) {
+			(void)(msg);
+			return resume;
+		}
+		virtual action on_generic_nack(const smpp::generic_nack & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_submit_sm(const smpp::submit_sm & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_submit_sm_r(const smpp::submit_sm_r & msg) {
+			(void)(msg);
+			return resume;
+		}
+
+		virtual action on_parse_error(const smpp::bin::u8_t * buf, const smpp::bin::u8_t * bend) {
+			(void)(buf);
+			(void)(bend);
+			return resume;
+		}
+
+		virtual action on_submit_multi_sm(const smpp::submit_multi_sm & msg) {
+			(void)(msg);
+			return resume;
+		}
+};
+
+BOOST_AUTO_TEST_CASE( parser_class_test )
+{
+	smpp_parser p(std::cout);
+	const bin::u8_t raw_dat[] =
+		"\x00\x00\x00\x20\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x01"
+	  	"\x74\x65\x73\x74\x00\x74\x65\x73\x74\x31\x00\x00\x33\x00\x00\x00";
+
+	p.parse(raw_dat, raw_dat + sizeof(raw_dat)-1);
+}
+
 #if 0
 BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 {
