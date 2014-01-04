@@ -223,6 +223,21 @@ class smpp_parser : public smpp::parser<std::ostream> {
 		}
 };
 
+BOOST_AUTO_TEST_CASE( test_size_detect_func )
+{
+	using namespace smpp;
+	submit_sm p;
+
+	p.command.id		= command::submit_multi_sm;
+	p.command.seqno		= 0x00000008;
+	p.command.len		= 2;
+	p.command.status	= 0x00000FFF;
+
+	std::cout << p.raw_size() << std::endl;
+}
+
+
+#if 0
 BOOST_AUTO_TEST_CASE( parser_class_test )
 {
 	smpp_parser p(std::cout);
@@ -232,8 +247,6 @@ BOOST_AUTO_TEST_CASE( parser_class_test )
 
 	p.parse(raw_dat, raw_dat + sizeof(raw_dat)-1);
 }
-
-#if 0
 BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 {
 	using namespace smpp;

@@ -296,7 +296,7 @@ namespace mobi { namespace net { namespace smpp {
 		bin::u32_t 		seqno;
 	};
 
-	/* SMPP 3.4 generic tag-length-value type */
+	/* SMPP 3.4 generic tag-len-value type */
 
 	template <typename ValueT>
 	struct tlv {
@@ -310,54 +310,270 @@ namespace mobi { namespace net { namespace smpp {
 
 	namespace {
 
-		typedef tlv<bin::u8_t>		tlv_dest_addr_subunit;
-		typedef tlv<bin::u8_t>		tlv_src_addr_subunit;
-		typedef tlv<bin::u8_t>		tlv_dest_network_type;
-		typedef tlv<bin::u8_t>		tlv_src_network_type;
-		typedef tlv<bin::u8_t>		tlv_dest_bearer_type;
-		typedef tlv<bin::u8_t>		tlv_src_bearer_type;
-		typedef tlv<bin::u16_t>		tlv_dest_telematics_id;
-		typedef tlv<bin::u8_t>		tlv_src_telematics_id;
-		typedef tlv<bin::u32_t>		tlv_qos_time_to_live;
-		typedef tlv<bin::u8_t>		tlv_payload_type;
-		typedef tlv<bin::u8_t[256]>	tlv_additional_status_info_text;
-		typedef tlv<bin::u8_t[65]>	tlv_receipted_msg_id;
-		typedef tlv<bin::u8_t>		tlv_ms_msg_wait_fclts;
-		typedef tlv<bin::u8_t>		tlv_privacy_ind;
-		typedef tlv<bin::u8_t[23]>	tlv_src_subaddr;
-		typedef tlv<bin::u8_t[23]> 	tlv_dest_subaddr;
-		typedef tlv<bin::u16_t> 	tlv_user_msg_reference;
-		typedef tlv<bin::u8_t>  	tlv_user_resp_code;
-		typedef tlv<bin::u8_t>  	tlv_lang_ind;
-		typedef tlv<bin::u16_t> 	tlv_src_port;
-		typedef tlv<bin::u16_t> 	tlv_dest_port;
-		typedef tlv<bin::u16_t> 	tlv_sar_msg_ref_num;
-		typedef tlv<bin::u8_t>  	tlv_sar_total_segments;
-		typedef tlv<bin::u8_t>  	tlv_sar_segment_seqnum;
-		typedef tlv<bin::u8_t>  	tlv_sc_interface_version;
-		typedef tlv<bin::u8_t>  	tlv_display_time;
-		typedef tlv<bin::u8_t>  	tlv_ms_validity;
-		typedef tlv<bin::u8_t>  	tlv_dpf_result;
-		typedef tlv<bin::u8_t>  	tlv_set_dpf;
-		typedef tlv<bin::u8_t>  	tlv_ms_availability_status;
-		typedef tlv<bin::u8_t[3]>	tlv_network_error_code;
+		struct tlv_dest_addr_subunit: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_dest_addr_subunit(): base() {}
 
-		/* length of field 'value' is variable */
-		typedef tlv<bin::u8_t *>	tlv_msg_payload;
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_src_addr_subunit: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_src_addr_subunit(): base() {}
 
-		typedef tlv<bin::u8_t>		tlv_delivery_failure_reason;
-		typedef tlv<bin::u8_t>		tlv_more_msgs_to_send;
-		typedef tlv<bin::u8_t>		tlv_msg_state;
-		typedef tlv<bin::u8_t[19]>	tlv_callback_num;
-		typedef tlv<bin::u8_t>		tlv_callback_num_pres_ind;
-		typedef tlv<bin::u8_t[65]>	tlv_callback_num_atag;
-		typedef tlv<bin::u8_t>		tlv_number_of_msgs;
-		typedef tlv<bin::u16_t>		tlv_sms_signal;
-		typedef tlv<bin::u8_t>		tlv_alert_on_msg_delivery;
-		typedef tlv<bin::u8_t>		tlv_its_reply_type;
-		typedef tlv<bin::u8_t[2]>	tlv_its_session_info;
-		typedef tlv<bin::u8_t[1]>	tlv_ussd_serv_op;
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_dest_network_type: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_dest_network_type(): base() {}
 
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_src_network_type: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_src_network_type(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_dest_bearer_type: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_dest_bearer_type(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_src_bearer_type: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_src_bearer_type(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_dest_telematics_id: tlv<bin::u16_t> {
+			typedef tlv<bin::u16_t> base;
+			tlv_dest_telematics_id(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_src_telematics_id: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_src_telematics_id(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_qos_time_to_live: tlv<bin::u32_t> {
+			typedef tlv<bin::u32_t> base;
+			tlv_qos_time_to_live(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_payload_type: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_payload_type(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_additional_status_info_text: tlv<bin::u8_t[256]> {
+			typedef tlv<bin::u8_t[256]>	base;
+			tlv_additional_status_info_text(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_receipted_msg_id: tlv<bin::u8_t[65]> {
+			typedef tlv<bin::u8_t[65]> base;
+			tlv_receipted_msg_id(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_ms_msg_wait_fclts: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_ms_msg_wait_fclts(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_privacy_ind: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_privacy_ind(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_src_subaddr: tlv<bin::u8_t[23]> {
+			typedef tlv<bin::u8_t[23]> base;
+			tlv_src_subaddr(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_dest_subaddr: tlv<bin::u8_t[23]> {
+			typedef tlv<bin::u8_t[23]> base;
+			tlv_dest_subaddr(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_user_msg_reference: tlv<bin::u16_t> {
+			typedef tlv<bin::u16_t> base;
+			tlv_user_msg_reference(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_user_resp_code: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_user_resp_code(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_lang_ind: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_lang_ind(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_src_port: tlv<bin::u16_t> {
+			typedef tlv<bin::u16_t> base;
+			tlv_src_port(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_dest_port: tlv<bin::u16_t> {
+			typedef tlv<bin::u16_t> base;
+			tlv_dest_port(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_sar_msg_ref_num: tlv<bin::u16_t> {
+			typedef tlv<bin::u16_t> base;
+			tlv_sar_msg_ref_num(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_sar_total_segments: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_sar_total_segments(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_sar_segment_seqnum: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_sar_segment_seqnum(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_sc_interface_version: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_sc_interface_version(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_display_time: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_display_time(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_ms_validity: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_ms_validity(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_dpf_result: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_dpf_result(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_set_dpf: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_set_dpf(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_ms_availability_status: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_ms_availability_status(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_network_error_code: tlv<bin::u8_t[3]> {
+			typedef tlv<bin::u8_t[3]> base;
+			tlv_network_error_code(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_msg_payload: tlv<bin::u8_t *> {
+			typedef tlv<bin::u8_t *> base;
+			tlv_msg_payload(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_delivery_failure_reason: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_delivery_failure_reason(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_more_msgs_to_send: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_more_msgs_to_send(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_msg_state: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_msg_state(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_callback_num: tlv<bin::u8_t[19]> {
+			typedef tlv<bin::u8_t[19]> base;
+			tlv_callback_num(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_callback_num_pres_ind: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_callback_num_pres_ind(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_callback_num_atag: tlv<bin::u8_t[65]> {
+			typedef tlv<bin::u8_t[65]> base;
+			tlv_callback_num_atag(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_number_of_msgs: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_number_of_msgs(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_sms_signal: tlv<bin::u16_t> {
+			typedef tlv<bin::u16_t> base;
+			tlv_sms_signal(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_alert_on_msg_delivery: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_alert_on_msg_delivery(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_its_reply_type: tlv<bin::u8_t> {
+			typedef tlv<bin::u8_t> base;
+			tlv_its_reply_type(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_its_session_info: tlv<bin::u8_t[2]> {
+			typedef tlv<bin::u8_t[2]> base;
+			tlv_its_session_info(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
+		struct tlv_ussd_serv_op: tlv<bin::u8_t[1]> {
+			typedef tlv<bin::u8_t[1]> base;
+			tlv_ussd_serv_op(): base() {}
+
+			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+		};
 	}
 
 	/* SMPP 3.4 OPERATION STRUCTURES */
@@ -375,6 +591,23 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t addr_ton;
 			bin::u8_t addr_npi;
 			bin::u8_t addr_range[41];
+
+			bind_transmitter()
+				: command()
+				, sys_id_len(0)
+				, password_len(0)
+				, sys_type_len(0)
+				, addr_range_len(0)
+			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ password_len
+						+ sys_type_len
+						+ 3
+						+ addr_range_len;
+			}
 
 			/* this values will not be writed to buffer */
 			std::size_t sys_id_len;
@@ -395,6 +628,13 @@ namespace mobi { namespace net { namespace smpp {
 				, sc_interface_version()
 				, sys_id_len(0)
 			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ (sc_interface_version.tag == option::sc_interface_version
+								? sc_interface_version.raw_size() : 0);
+			}
 		};
 
 		struct bind_receiver {
@@ -411,6 +651,23 @@ namespace mobi { namespace net { namespace smpp {
 			std::size_t password_len;
 			std::size_t sys_type_len;
 			std::size_t addr_range_len;
+
+			bind_receiver()
+				: command()
+				, sys_id_len(0)
+				, password_len(0)
+				, sys_type_len(0)
+				, addr_range_len(0)
+			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ password_len
+						+ sys_type_len
+						+ 3
+						+ addr_range_len;
+			}
 		};
 
 		struct bind_receiver_r {
@@ -425,6 +682,14 @@ namespace mobi { namespace net { namespace smpp {
 				, sc_interface_version()
 				, sys_id_len(0)
 			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ (sc_interface_version.tag == option::sc_interface_version
+							? sc_interface_version.raw_size()
+							: 0);
+			}
 		};
 
 		struct bind_transceiver {
@@ -437,6 +702,23 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t addr_npi;
 			bin::u8_t addr_range[41];
 
+			bind_transceiver()
+				: command()
+				, sys_id_len(0)
+				, password_len(0)
+				, sys_type_len(0)
+				, addr_range_len(0)
+			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ password_len
+						+ sys_type_len
+						+ 3
+						+ addr_range_len;
+			}
+
 			std::size_t sys_id_len;
 			std::size_t password_len;
 			std::size_t sys_type_len;
@@ -448,13 +730,21 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t sys_id[16];
 			tlv_sc_interface_version sc_interface_version;
 
-			std::size_t sys_id_len;
-
 			bind_transceiver_r()
 				: command()
 				, sc_interface_version()
 				, sys_id_len(0)
 			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ (sc_interface_version.tag == option::sc_interface_version
+							? sc_interface_version.raw_size()
+							: 0);
+			}
+
+			std::size_t sys_id_len;
 		};
 
 		struct outbind {
@@ -462,23 +752,34 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t sys_id[16];
 			bin::u8_t passwd[9];
 
-			std::size_t sys_id_len;
-			std::size_t passwd_len;
-
 			outbind()
 				: command()
 				, sys_id_len(0)
 				, passwd_len(0)
 			{}
-		};
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ sys_id_len
+						+ passwd_len;
+			}
+
+			std::size_t sys_id_len;
+			std::size_t passwd_len;
+	};
 
 		/* BIND OPERATION */
 
 		struct unbind {
 			pdu command;
+
 			unbind()
 				: command()
 			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command);
+			}
 		};
 
 		struct unbind_r {
@@ -486,6 +787,9 @@ namespace mobi { namespace net { namespace smpp {
 			unbind_r()
 				: command()
 			{}
+			bin::sz_t raw_size() {
+				return	sizeof(command);
+			}
 		};
 
 		/* SUBMIT SM OPERATION */
@@ -552,29 +856,146 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_its_session_info			its_session_info;
 			tlv_ussd_serv_op				ussd_serv_op;
 
+			submit_sm()
+				: command()
+			    , short_msg_len(0)
+				, serv_type_len(0)
+				, src_addr_len(0)
+				, dst_addr_len(0)
+				, registered_delivery_len(0)
+			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ serv_type_len
+						+ 2
+						+ src_addr_len
+						+ 2
+						+ dst_addr_len
+						+ 3
+						+ (schedule_delivery_time[0] == '\0' ? 1: sizeof(schedule_delivery_time))
+						+ (validity_period[0] == '\0' ? 1: sizeof(validity_period))
+						+ 5
+						+ short_msg_len
+						+ (user_msg_reference.tag == option::user_msg_reference
+							? user_msg_reference.raw_size(): 0)
+						+ (src_port.tag == option::src_port
+							? src_port.raw_size() : 0)
+						+ (src_addr_subunit.tag == option::src_addr_subunit
+							? src_addr_subunit.raw_size(): 0)
+						+ (dest_port.tag == option::dest_port
+							? dest_port.raw_size(): 0)
+						+ (dest_addr_subunit.tag == option::dest_addr_subunit
+							? dest_addr_subunit.raw_size(): 0)
+						+ (sar_msg_ref_num.tag == option::sar_msg_ref_num
+							? sar_msg_ref_num.raw_size(): 0)
+						+ (sar_total_segments.tag == option::sar_total_segments
+							? sar_total_segments.raw_size(): 0)
+						+ (sar_segment_seqnum.tag == option::sar_segment_seqnum
+							? sar_segment_seqnum.raw_size(): 0)
+						+ (more_msgs_to_send.tag == option::more_msgs_to_send
+							? more_msgs_to_send.raw_size(): 0)
+						+ (payload_type.tag == option::payload_type
+							? payload_type.raw_size(): 0)
+						+ (msg_payload.tag == option::msg_payload
+							? payload_type.tag: 0)
+						+ (privacy_ind.tag == option::privacy_ind
+							? privacy_ind.raw_size(): 0)
+						+ (callback_num.tag == option::callback_num
+							? callback_num.raw_size(): 0)
+						+ (callback_num_pres_ind.tag == option::callback_num_pres_ind
+							? callback_num_pres_ind.raw_size(): 0)
+						+ (callback_num_atag.tag == option::callback_num_atag
+							? callback_num_atag.raw_size(): 0)
+						+ (src_subaddr.tag == option::src_subaddr
+							? src_subaddr.raw_size(): 0)
+						+ (dest_subaddr.tag == option::dest_subaddr
+							? dest_subaddr.raw_size(): 0)
+						+ (user_resp_code.tag == option::user_resp_code
+							? user_resp_code.raw_size(): 0)
+						+ (display_time.tag == option::display_time
+							? display_time.raw_size(): 0)
+						+ (sms_signal.tag == option::sms_signal
+							? sms_signal.raw_size(): 0)
+						+ (ms_validity.tag == option::ms_validity
+							? ms_validity.raw_size(): 0)
+						+ (ms_msg_wait_fclts.tag == option::ms_msg_wait_fclts
+							? ms_msg_wait_fclts.raw_size(): 0)
+						+ (number_of_msgs.tag == option::number_of_msgs
+							? number_of_msgs.raw_size(): 0)
+						+ (alert_on_msg_delivery.tag == option::alert_on_msg_delivery
+							? alert_on_msg_delivery.raw_size(): 0)
+						+ (lang_ind.tag == option::lang_ind
+							? lang_ind.raw_size(): 0)
+						+ (its_reply_type.tag == option::its_reply_type
+							? its_reply_type.raw_size(): 0)
+						+ (its_session_info.tag == option::its_session_info
+							? its_session_info.raw_size(): 0)
+						+ (ussd_serv_op.tag == option::ussd_serv_op
+							? ussd_serv_op.raw_size(): 0);
+			}
+
 			std::size_t serv_type_len;
 			std::size_t src_addr_len;
 			std::size_t dst_addr_len;
 			std::size_t registered_delivery_len;
-
-			submit_sm()
-				: command()
-			{}
 		};
 
 		struct submit_sm_r {
 			pdu command;
 			bin::u8_t msg_id[65];
 
-			std::size_t msg_id_len;
-
 			submit_sm_r()
 				: command()
 				, msg_id_len(0)
 			{}
+
+			bin::sz_t raw_size() {
+				return	sizeof(command)
+						+ msg_id_len;
+			}
+
+			std::size_t msg_id_len;
 		};
 
 		/* SUBMIT MULTI Operations */
+
+		/* Additions used in submit_multi_sm */
+		struct dl_name {
+			bin::u8_t	value[21];
+
+			dl_name(): value_len(0) {}
+			bin::sz_t raw_size() { return value_len; }
+
+			std::size_t value_len;
+		};
+		struct sme_dest_addr {
+			bin::u8_t	dest_addr_ton;
+			bin::u8_t	dest_addr_npi;
+			bin::u8_t	dest_addr[21];
+
+			sme_dest_addr(): dest_addr_len(0) {}
+			bin::sz_t raw_size() { return 2 + dest_addr_len; }
+
+			std::size_t dest_addr_len;
+		};
+		struct dest_addr {
+			bin::u8_t 		dest_flag; /* 1 - sme_addr, 2 - dlist_name */
+
+			bin::sz_t raw_size() {
+				switch (dest_flag) {
+					case 1:
+						return sme_addr.raw_size();
+					case 2:
+						return dlist_name.raw_size();
+					default:
+						return 0; /* error */
+				}
+			}
+
+			sme_dest_addr	sme_addr;
+			dl_name			dlist_name;
+		};
 
 		struct submit_multi_sm {
 			pdu command;
@@ -582,8 +1003,8 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t src_addr_ton;
 			bin::u8_t src_addr_npi;
 			bin::u8_t src_addr[21];
-			bin::u8_t number_of_dests;
-			/* TODO: 4.5.1 dest_addr(es) */
+			bin::u8_t num_of_dests;
+			dest_addr dst_addr[24];
 			bin::u8_t esm_class;
 			bin::u8_t protocol_id;
 			bin::u8_t priority_flag;
@@ -593,10 +1014,10 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t replace_if_present_flag;
 			bin::u8_t data_coding;
 			bin::u8_t sm_default_msg_id;
-			bin::u8_t short_msg_length;
+			bin::u8_t short_msg_len;
 			bin::u8_t short_msg[254];
 
-			tlv_user_msg_reference	user_msg_reference;
+			tlv_user_msg_reference		user_msg_reference;
 			tlv_src_port				src_port;
 			tlv_src_addr_subunit		src_addr_subunit;
 			tlv_dest_port				dest_port;
@@ -605,43 +1026,85 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_sar_total_segments		sar_total_segments;
 			tlv_sar_segment_seqnum		sar_segment_seqnum;
 			tlv_payload_type			payload_type;
-			tlv_msg_payload			msg_payload;
-			tlv_privacy_ind		privacy_ind;
+			tlv_msg_payload				msg_payload;
+			tlv_privacy_ind				privacy_ind;
 			tlv_callback_num			callback_num;
 			tlv_callback_num_pres_ind	callback_num_pres_ind;
 			tlv_callback_num_atag		callback_num_atag;
-			tlv_src_subaddr		src_subaddr;
+			tlv_src_subaddr				src_subaddr;
 			tlv_dest_subaddr			dest_subaddr;
 			tlv_display_time			display_time;
 			tlv_sms_signal				sms_signal;
 			tlv_ms_validity				ms_validity;
-			tlv_ms_msg_wait_fclts	ms_msg_wait_fclts;
+			tlv_ms_msg_wait_fclts		ms_msg_wait_fclts;
 			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
-			tlv_lang_ind		lang_ind;
+			tlv_lang_ind				lang_ind;
+
+			submit_multi_sm(): command() {}
+
+			bin::sz_t raw_size() {
+				bin::sz_t len = sizeof(command)
+								+ serv_type_len
+								+ 2
+								+ src_addr_len
+								+ 1;
+				for (int i = 0; i < num_of_dests; ++i)
+					len += dst_addr[i].raw_size();
+				len = len		+ 3
+								+ (schedule_delivery_time[0] == '\0' ? 1: sizeof(schedule_delivery_time))
+								+ (validity_period[0] == '\0' ? 1: sizeof(validity_period))
+								+ 5
+								+ short_msg_len
+								+ (user_msg_reference.tag == option::user_msg_reference
+									? user_msg_reference.raw_size(): 0)
+								+ (src_port.tag == option::src_port
+									? src_port.raw_size() : 0)
+								+ (src_addr_subunit.tag == option::src_addr_subunit
+									? src_addr_subunit.raw_size(): 0)
+								+ (dest_port.tag == option::dest_port
+									? dest_port.raw_size(): 0)
+								+ (dest_addr_subunit.tag == option::dest_addr_subunit
+									? dest_addr_subunit.raw_size(): 0)
+								+ (sar_msg_ref_num.tag == option::sar_msg_ref_num
+									? sar_msg_ref_num.raw_size(): 0)
+								+ (sar_total_segments.tag == option::sar_total_segments
+									? sar_total_segments.raw_size(): 0)
+								+ (sar_segment_seqnum.tag == option::sar_segment_seqnum
+									? sar_segment_seqnum.raw_size(): 0)
+								+ (payload_type.tag == option::payload_type
+									? payload_type.raw_size(): 0)
+								+ (msg_payload.tag == option::msg_payload
+									? payload_type.tag: 0)
+								+ (privacy_ind.tag == option::privacy_ind
+									? privacy_ind.raw_size(): 0)
+								+ (callback_num.tag == option::callback_num
+									? callback_num.raw_size(): 0)
+								+ (callback_num_pres_ind.tag == option::callback_num_pres_ind
+									? callback_num_pres_ind.raw_size(): 0)
+								+ (callback_num_atag.tag == option::callback_num_atag
+									? callback_num_atag.raw_size(): 0)
+								+ (src_subaddr.tag == option::src_subaddr
+									? src_subaddr.raw_size(): 0)
+								+ (dest_subaddr.tag == option::dest_subaddr
+									? dest_subaddr.raw_size(): 0)
+								+ (display_time.tag == option::display_time
+									? display_time.raw_size(): 0)
+								+ (sms_signal.tag == option::sms_signal
+									? sms_signal.raw_size(): 0)
+								+ (ms_validity.tag == option::ms_validity
+									? ms_validity.raw_size(): 0)
+								+ (ms_msg_wait_fclts.tag == option::ms_msg_wait_fclts
+									? ms_msg_wait_fclts.raw_size(): 0)
+								+ (alert_on_msg_delivery.tag == option::alert_on_msg_delivery
+									? alert_on_msg_delivery.raw_size(): 0)
+								+ (lang_ind.tag == option::lang_ind
+									? lang_ind.raw_size(): 0);
+
+					return len;
+				}
 
 			std::size_t serv_type_len;
 			std::size_t src_addr_len;
-			std::size_t dst_addr_len;
-			std::size_t short_msg_len;
-
-			submit_multi_sm()
-				: command()
-			{}
-		};
-
-		struct dest_addr {
-			bin::u8_t 	dest_flag;
-			/* TODO: 4.5.1.1 SME_Address */
-		};
-
-		struct SME_dest_addr {
-			bin::u8_t	dest_addr_ton;
-			bin::u8_t dest_addr_npi;
-			bin::u8_t	dest_addr[21];
-		};
-
-		struct DL_name {
-			bin::u8_t	dl_name[21];
 		};
 
 		struct submit_multi_r {
@@ -685,7 +1148,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	replace_if_present_flag;
 			bin::u8_t	data_coding;
 			bin::u8_t	sm_default_msg_id;
-			bin::u8_t	short_msg_length;
+			bin::u8_t	short_msg_len;
 			bin::u8_t short_msg[254];
 
 			/* OPTIONAL PARAMETERS for DELIVER_SM */
@@ -868,7 +1331,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t validity_period[17];
 			bin::u8_t registered_delivery;
 			bin::u8_t sm_default_msg_id;
-			bin::u8_t short_msg_length;
+			bin::u8_t short_msg_len;
 			bin::u8_t short_msg[254];
 
 			replace_sm()
@@ -948,7 +1411,7 @@ namespace mobi { namespace net { namespace smpp {
 			/* Corresponding resp command id */
 			static const bin::u32_t r_id = command::bind_receiver_r;
 
-			/* Response overall msg length */
+			/* Response overall msg len */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu)
 					+ (r.sc_interface_version.tag != 0)
@@ -965,7 +1428,7 @@ namespace mobi { namespace net { namespace smpp {
 			/* Corresponding resp command id */
 			static const bin::u32_t r_id = command::bind_transmitter_r;
 
-			/* Response overall msg length */
+			/* Response overall msg len */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu)
 					+ (r.sc_interface_version.tag != 0)
@@ -982,7 +1445,7 @@ namespace mobi { namespace net { namespace smpp {
 			/* Corresponding resp command id */
 			static const bin::u32_t r_id = command::bind_transceiver_r;
 
-			/* Response overall msg length */
+			/* Response overall msg len */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu)
 					+ ((r.sc_interface_version.tag != 0)
@@ -1002,7 +1465,7 @@ namespace mobi { namespace net { namespace smpp {
 			/* Corresponding resp command id */
 			static const bin::u32_t r_id = command::submit_sm_r;
 
-			/* Response overall msg length */
+			/* Response overall msg len */
 			static std::size_t r_size(const r_type & r) {
 				return sizeof(pdu) + r.msg_id_len;
 			}
@@ -1372,7 +1835,7 @@ namespace mobi { namespace net { namespace smpp {
 		bin::u8_t * write(bin::u8_t * buf
 				, bin::u8_t * bend, const submit_sm & r, LogT & L) {
 			using namespace bin;
-			/* length of var strings are stored
+			/* len of var strings are stored
 			 * in additional field of struct */
 
 			RETURN_NULL_IF(buf + sizeof(r.command) >= bend);
@@ -1598,8 +2061,8 @@ namespace mobi { namespace net { namespace smpp {
 			buf = p::scpyl(r.src_addr, buf, bend
 					, sizeof(r.src_addr), r.src_addr_len);
 
-			RETURN_NULL_IF(buf + sizeof(r.number_of_dests) >= bend);
-			buf = p::cp_u8(&r.number_of_dests, buf);
+			RETURN_NULL_IF(buf + sizeof(r.num_of_dests) >= bend);
+			buf = p::cp_u8(&r.num_of_dests, buf);
 
 			RETURN_NULL_IF(buf + sizeof(r.esm_class) >= bend);
 			buf = p::cp_u8(&r.esm_class, buf);
@@ -1630,8 +2093,8 @@ namespace mobi { namespace net { namespace smpp {
 			RETURN_NULL_IF(buf + sizeof(r.sm_default_msg_id) >= bend);
 			buf = p::cp_u8(&r.sm_default_msg_id, buf);
 
-			RETURN_NULL_IF(buf + sizeof(r.short_msg_length) >= bend);
-			buf = p::cp_u8(&r.short_msg_length, buf);
+			RETURN_NULL_IF(buf + sizeof(r.short_msg_len) >= bend);
+			buf = p::cp_u8(&r.short_msg_len, buf);
 
 			RETURN_NULL_IF(buf + sizeof(r.short_msg) >= bend);
 			buf = p::scpyl(r.short_msg, buf, bend
@@ -1708,7 +2171,7 @@ namespace mobi { namespace net { namespace smpp {
 			buf = w::cp_u8(buf, r.src_addr_ton);
 			buf = w::cp_u8(buf, r.src_addr_npi);
 			buf = w::scpy(buf, r.src_addr, 21);
-			buf = w::cp_u8(buf, r.number_of_dests);
+			buf = w::cp_u8(buf, r.num_of_dests);
 			/*
 			TODO dest_addr(es)
 			*/
@@ -1721,7 +2184,7 @@ namespace mobi { namespace net { namespace smpp {
 			buf = w::cp_u8(buf, r.replace_if_present_flag);
 			buf = w::cp_u8(buf, r.data_coding);
 			buf = w::cp_u8(buf, r.sm_default_msg_id);
-			buf = w::cp_u8(buf, r.short_msg_length);
+			buf = w::cp_u8(buf, r.short_msg_len);
 			buf = w::scpy(buf, r.short_msg, 254);
 
 			if (r.user_msg_reference.tag != 0)	buf = write(buf, r.user_msg_reference, L);
@@ -1937,6 +2400,7 @@ namespace mobi { namespace net { namespace smpp {
 
 	const std::size_t bind_pdu_min_len = sizeof(pdu) + sizeof(bin::u8_t) * 7;
 
+	/* There is also write functions for the time being */
 	template <class LogT>
 	class tlv_parser {
 		protected:
@@ -2012,7 +2476,7 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			const bin::u8_t * parse_tlv_s23(tlv_src_subaddr & t
+			const bin::u8_t * parse_tlv_s23(tlv<bin::u8_t[23]> & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace bin;
@@ -2613,7 +3077,7 @@ namespace mobi { namespace net { namespace smpp {
 				RETURN_NULL_IF(buf == NULL);
 
 				RETURN_NULL_IF(buf + sizeof(u8_t) > bend);
-				buf = p::cp_u8(&msg.number_of_dests, buf);
+				buf = p::cp_u8(&msg.num_of_dests, buf);
 
 				/* TODO dest_address(es) new struct */
 
@@ -2635,7 +3099,7 @@ namespace mobi { namespace net { namespace smpp {
 				buf = p::cp_u8(&msg.replace_if_present_flag, buf);
 				buf = p::cp_u8(&msg.data_coding, buf);
 				buf = p::cp_u8(&msg.sm_default_msg_id, buf);
-				buf = p::cp_u8(&msg.short_msg_length, buf);
+				buf = p::cp_u8(&msg.short_msg_len, buf);
 
 				buf = p::scpyl(msg.short_msg, buf, bend
 						, sizeof(msg.short_msg), msg.short_msg_len);
