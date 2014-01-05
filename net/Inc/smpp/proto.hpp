@@ -314,265 +314,265 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_addr_subunit(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_addr_subunit: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_addr_subunit(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dest_network_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_network_type(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_network_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_network_type(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dest_bearer_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_bearer_type(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_bearer_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_bearer_type(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dest_telematics_id: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_dest_telematics_id(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_telematics_id: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_telematics_id(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_qos_time_to_live: tlv<bin::u32_t> {
 			typedef tlv<bin::u32_t> base;
 			tlv_qos_time_to_live(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_payload_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_payload_type(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_additional_status_info_text: tlv<bin::u8_t[256]> {
 			typedef tlv<bin::u8_t[256]>	base;
 			tlv_additional_status_info_text(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_receipted_msg_id: tlv<bin::u8_t[65]> {
 			typedef tlv<bin::u8_t[65]> base;
 			tlv_receipted_msg_id(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_ms_msg_wait_fclts: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_ms_msg_wait_fclts(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_privacy_ind: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_privacy_ind(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_subaddr: tlv<bin::u8_t[23]> {
 			typedef tlv<bin::u8_t[23]> base;
 			tlv_src_subaddr(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dest_subaddr: tlv<bin::u8_t[23]> {
 			typedef tlv<bin::u8_t[23]> base;
 			tlv_dest_subaddr(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_user_msg_reference: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_user_msg_reference(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_user_resp_code: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_user_resp_code(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_lang_ind: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_lang_ind(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_port: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_src_port(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dest_port: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_dest_port(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sar_msg_ref_num: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_sar_msg_ref_num(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sar_total_segments: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_sar_total_segments(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sar_segment_seqnum: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_sar_segment_seqnum(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sc_interface_version: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_sc_interface_version(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_display_time: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_display_time(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_ms_validity: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_ms_validity(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dpf_result: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_dpf_result(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_set_dpf: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_set_dpf(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_ms_availability_status: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_ms_availability_status(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_network_error_code: tlv<bin::u8_t[3]> {
 			typedef tlv<bin::u8_t[3]> base;
 			tlv_network_error_code(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_msg_payload: tlv<bin::u8_t *> {
 			typedef tlv<bin::u8_t *> base;
 			tlv_msg_payload(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_delivery_failure_reason: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_delivery_failure_reason(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_more_msgs_to_send: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_more_msgs_to_send(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_msg_state: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_msg_state(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_callback_num: tlv<bin::u8_t[19]> {
 			typedef tlv<bin::u8_t[19]> base;
 			tlv_callback_num(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_callback_num_pres_ind: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_callback_num_pres_ind(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_callback_num_atag: tlv<bin::u8_t[65]> {
 			typedef tlv<bin::u8_t[65]> base;
 			tlv_callback_num_atag(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_number_of_msgs: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_number_of_msgs(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sms_signal: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_sms_signal(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_alert_on_msg_delivery: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_alert_on_msg_delivery(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_its_reply_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_its_reply_type(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_its_session_info: tlv<bin::u8_t[2]> {
 			typedef tlv<bin::u8_t[2]> base;
 			tlv_its_session_info(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_ussd_serv_op: tlv<bin::u8_t[1]> {
 			typedef tlv<bin::u8_t[1]> base;
 			tlv_ussd_serv_op(): base() {}
 
-			bin::sz_t raw_size() { return len + sizeof(bin::u16_t)*2; }
+			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 	}
 
@@ -1473,28 +1473,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* PARSERS & WRITERS */
-
-	/* Parsers take a pointer to a buffer end when PDU may have
-	 * optional parameters, in order to be able to check, if we
-	 * are done with parsing or have to parse more optional parameters */
-
-	/* PDU P&W */
-
-	namespace {
-
-		template <class LogT>
-		bin::u8_t * write(bin::u8_t * buf
-				, const pdu & cmd, LogT & L) {
-			(void)(L);
-			using namespace bin;
-			buf = w::cp_u32(buf, ascbuf(cmd.len));
-			buf = w::cp_u32(buf, ascbuf(cmd.id));
-			buf = w::cp_u32(buf, ascbuf(cmd.status));
-			buf = w::cp_u32(buf, ascbuf(cmd.seqno));
-			return buf;
-		}
-
-	}
 
 	/* OPERATIONS P&W */
 	namespace {
@@ -2400,7 +2378,450 @@ namespace mobi { namespace net { namespace smpp {
 
 	const std::size_t bind_pdu_min_len = sizeof(pdu) + sizeof(bin::u8_t) * 7;
 
-	/* There is also write functions for the time being */
+	template <class LogT>
+	class tlv_writer {
+		protected:
+			LogT & L;
+
+		public:
+			tlv_writer(LogT & l): L(l) {}
+			virtual ~tlv_writer() {}
+
+			bin::u8_t * write_tlv_u8(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 5 > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::cp_u8(buf, ascbuf(t.val));
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_u16(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u16_t> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 6 > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::cp_u16(buf, ascbuf(t.val));
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_u32(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u32_t> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 8 > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::cp_u32(buf, ascbuf(t.val));
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s256(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[256]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s65(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[65]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s23(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[23]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s3(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[3]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_ptr(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t *> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s19(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[19]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s2(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[2]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+
+			bin::u8_t * write_tlv_s1(bin::u8_t * buf, bin::u8_t * bend
+					, const tlv<bin::u8_t[1]> & t) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 + t.len > bend);
+				buf = w::cp_u16(buf, ascbuf(t.tag));
+				buf = w::cp_u16(buf, ascbuf(t.len));
+				buf = w::scpy(buf, t.val, t.len);
+				return buf;
+			}
+	};
+
+	template <class LogT>
+	class writer: public tlv_writer<LogT> {
+		using tlv_writer<LogT>::L;
+		using tlv_writer<LogT>::write_tlv_s256;
+		using tlv_writer<LogT>::write_tlv_s65;
+		using tlv_writer<LogT>::write_tlv_u32;
+		using tlv_writer<LogT>::write_tlv_s23;
+		using tlv_writer<LogT>::write_tlv_s19;
+		using tlv_writer<LogT>::write_tlv_u16;
+		using tlv_writer<LogT>::write_tlv_ptr;
+		using tlv_writer<LogT>::write_tlv_u8;
+		using tlv_writer<LogT>::write_tlv_s3;
+		using tlv_writer<LogT>::write_tlv_s2;
+		using tlv_writer<LogT>::write_tlv_s1;
+
+		public:
+			writer(LogT & l): tlv_writer<LogT>(l) {}
+			virtual ~writer() {}
+
+			const bin::u8_t * write_pdu(bin::u8_t * buf, const pdu & msg) {
+				using namespace bin;
+				buf = w::cp_u32(buf, ascbuf(msg.len));
+				buf = w::cp_u32(buf, ascbuf(msg.id));
+				buf = w::cp_u32(buf, ascbuf(msg.status));
+				buf = w::cp_u32(buf, ascbuf(msg.seqno));
+				return buf;
+			}
+			template <class BindT>
+			bin::u8_t * write_bind(bin::u8_t * buf, bin::u8_t * bend
+					, const BindT & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
+				buf = w::scpyf(buf, bend, msg.sys_id, msg.sys_id_len);
+
+				RETURN_NULL_IF(buf + msg.password_len > bend);
+				buf = w::scpyf(buf, bend, msg.password, msg.password_len);
+
+				RETURN_NULL_IF(buf + msg.sys_type_len > bend);
+				buf = w::scpyf(buf, bend, msg.sys_type, msg.sys_type_len);
+
+				RETURN_NULL_IF(buf
+						+ sizeof(bin::u8_t)
+						+ sizeof(bin::u8_t)
+						+ sizeof(bin::u8_t)
+						> bend);
+				buf = w::cp_u8(buf, &msg.interface_version);
+				buf = w::cp_u8(buf, &msg.addr_ton);
+				buf = w::cp_u8(buf, &msg.addr_npi);
+
+				RETURN_NULL_IF(buf + msg.addr_range_len > bend);
+				buf = w::scpyf(buf, bend, msg.addr_range, msg.addr_range_len+1);
+
+				return buf;
+			}
+
+			template <class BindT>
+			bin::u8_t * write_bind_r(bin::u8_t * buf, bin::u8_t * bend
+					, const BindT & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) >= bend);
+				buf = write(buf, msg.command, L);
+
+				buf = w::scpyf(buf, bend, msg.sys_id, msg.sys_id_len);
+				RETURN_NULL_IF(buf == NULL);
+
+				if (msg.sc_interface_version.tag == option::sc_interface_version) {
+					RETURN_NULL_IF(buf + sizeof(msg.sc_interface_version) > bend);
+					buf = write(buf, msg.sc_interface_version, L);
+				} else if (msg.sc_interface_version.tag != 0) {
+					return NULL; /* tag's value is incorrect */
+				}
+
+				return buf;
+			}
+
+			bin::u8_t * write_outbind(bin::u8_t * buf, bin::u8_t * bend
+					, const outbind & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write(buf, msg.command, L);
+
+				RETURN_NULL_IF(buf + sizeof(msg.sys_id_len) > bend);
+				buf = w::scpyf(buf, bend, msg.sys_id, msg.sys_id_len);
+
+				RETURN_NULL_IF(buf + sizeof(msg.passwd_len) > bend);
+				buf = w::scpyf(buf, bend, msg.passwd, msg.passwd_len);
+
+				return buf;
+			}
+
+			bin::u8_t * write_unbind(bin::u8_t * buf, bin::u8_t * bend
+					, const unbind & msg) {
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+			}
+
+			bin::u8_t * write_submit_sm(bin::u8_t * buf , bin::u8_t * bend
+					, const submit_sm & msg, LogT & L) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				RETURN_NULL_IF(buf + msg.serv_type_len > bend);
+				buf = w::scpy(buf, msg.serv_type, msg.serv_type_len);
+
+				RETURN_NULL_IF(buf + sizeof(msg.src_addr_ton) > bend);
+				buf = w::cp_u8(buf, &msg.src_addr_ton);
+
+				RETURN_NULL_IF(buf + sizeof(msg.src_addr_npi) > bend);
+				buf = w::cp_u8(buf, &msg.src_addr_npi);
+
+				RETURN_NULL_IF(buf + msg.src_addr_len > bend);
+				buf = w::scpy(buf, msg.src_addr, msg.src_addr_len);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 2 > bend);
+				buf = w::cp_u8(buf, &msg.dst_addr_ton);
+				buf = w::cp_u8(buf, &msg.dst_addr_npi);
+
+				RETURN_NULL_IF(buf + msg.dst_addr_len > bend);
+				buf = w::scpy(buf, msg.dst_addr, msg.dst_addr_len);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 3 > bend);
+				buf = w::cp_u8(buf, &msg.esm_class);
+				buf = w::cp_u8(buf, &msg.protocol_id);
+				buf = w::cp_u8(buf, &msg.priority_flag);
+
+				buf = w::scpyf(buf, bend, msg.schedule_delivery_time
+						, sizeof(msg.schedule_delivery_time));
+				RETURN_NULL_IF(buf == NULL);
+
+				buf = w::scpyf(buf, bend, msg.validity_period
+						, sizeof(msg.validity_period));
+				RETURN_NULL_IF(buf == NULL);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 5 > bend);
+				buf = w::cp_u8(buf, &msg.registered_delivery);
+				buf = w::cp_u8(buf, &msg.replace_if_present_flag);
+				buf = w::cp_u8(buf, &msg.data_coding);
+				buf = w::cp_u8(buf, &msg.sm_default_msg_id);
+				buf = w::cp_u8(buf, &msg.short_msg_len);
+
+				RETURN_NULL_IF(buf + msg.short_msg_len > bend);
+				buf = w::scpy(buf, msg.short_msg, msg.short_msg_len);
+
+				if (msg.user_msg_reference.tag == option::user_msg_reference) {
+					RETURN_NULL_IF(buf + msg.user_msg_reference.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.user_msg_reference);
+				}
+				if (msg.src_port.tag == option::src_port) {
+					RETURN_NULL_IF(buf + msg.src_port.raw_size() > bend);
+					buf = write_tlv_u16(buf, msg.src_port);
+				}
+				if (msg.src_addr_subunit.tag == option::src_addr_subunit) {
+					RETURN_NULL_IF(buf + msg.src_addr_subunit.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.src_addr_subunit);
+				}
+				if (msg.dest_port.tag == option::dest_port) {
+					RETURN_NULL_IF(buf + msg.dest_port.raw_size() > bend);
+					buf = write_tlv_u16(buf, msg.dest_port);
+				}
+				if (msg.dest_addr_subunit.tag == option::dest_addr_subunit) {
+					RETURN_NULL_IF(buf + msg.dest_addr_subunit.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.dest_addr_subunit);
+				}
+				if (msg.sar_msg_ref_num.tag == option::sar_msg_ref_num) {
+					RETURN_NULL_IF(buf + msg.sar_msg_ref_num.raw_size() > bend);
+					buf = write_tlv_u16(buf, msg.sar_msg_ref_num);
+				}
+				if (msg.sar_total_segments.tag == option::sar_total_segments) {
+					RETURN_NULL_IF(buf + msg.sar_total_segments.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.sar_total_segments);
+				}
+				if (msg.sar_segment_seqnum.tag == option::sar_segment_seqnum) {
+					RETURN_NULL_IF(buf + msg.sar_segment_seqnum.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.sar_segment_seqnum);
+				}
+				if (msg.more_msgs_to_send.tag == option::more_msgs_to_send) {
+					RETURN_NULL_IF(buf + msg.more_msgs_to_send.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.more_msgs_to_send);
+				}
+				if (msg.payload_type.tag == option::payload_type) {
+					RETURN_NULL_IF(buf + msg.payload_type.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.payload_type);
+				}
+				if (msg.msg_payload.tag == option::msg_payload) {
+					RETURN_NULL_IF(buf + msg.msg_payload.raw_size() > bend);
+					buf = write_tlv_ptr(buf, msg.msg_payload);
+				}
+				if (msg.privacy_ind.tag == option::privacy_ind) {
+					RETURN_NULL_IF(buf + msg.privacy_ind.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.privacy_ind);
+				}
+				if (msg.callback_num.tag == option::privacy_ind) {
+					RETURN_NULL_IF(buf + msg.callback_num.raw_size() > bend);
+					buf = write_tlv_s19(buf, msg.callback_num);
+				}
+				if (msg.callback_num_pres_ind.tag == option::callback_num_pres_ind) {
+					RETURN_NULL_IF(buf + msg.callback_num_pres_ind.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.callback_num_pres_ind);
+				}
+				if (msg.callback_num_atag.tag == option::callback_num_atag) {
+					RETURN_NULL_IF(buf + msg.callback_num_atag.raw_size() > bend);
+					buf = write_tlv_s65(buf, msg.callback_num_atag);
+				}
+				if (msg.src_subaddr.tag == option::src_subaddr) {
+					RETURN_NULL_IF(buf + msg.src_subaddr.raw_size() > bend);
+					buf = write_tlv_s23(buf, msg.src_subaddr);
+				}
+				if (msg.user_resp_code.tag == option::user_resp_code) {
+					RETURN_NULL_IF(buf + msg.user_resp_code.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.user_resp_code);
+				}
+				if (msg.display_time.tag == option::display_time) {
+					RETURN_NULL_IF(buf + msg.display_time.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.display_time);
+				}
+				if (msg.sms_signal.tag == option::sms_signal) {
+					RETURN_NULL_IF(buf + msg.sms_signal.raw_size() > bend);
+					buf = write_tlv_u16(buf, msg.sms_signal);
+				}
+				if (msg.ms_validity.tag == option::ms_validity) {
+					RETURN_NULL_IF(buf + msg.ms_validity.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.ms_validity);
+				}
+				if (msg.ms_msg_wait_fclts.tag == option::ms_msg_wait_fclts) {
+					RETURN_NULL_IF(buf + msg.ms_msg_wait_fclts.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.ms_msg_wait_fclts);
+				}
+				if (msg.number_of_msgs.tag == option::number_of_msgs) {
+					RETURN_NULL_IF(buf + msg.number_of_msgs.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.number_of_msgs);
+				}
+				if (msg.alert_on_msg_delivery.tag == option::alert_on_msg_delivery) {
+					RETURN_NULL_IF(buf + msg.alert_on_msg_delivery.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.alert_on_msg_delivery);
+				}
+				if (msg.lang_ind.tag == option::lang_ind) {
+					RETURN_NULL_IF(buf + msg.lang_ind.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.lang_ind);
+				}
+				if (msg.its_reply_type.tag == option::its_reply_type) {
+					RETURN_NULL_IF(buf + msg.its_reply_type.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.its_reply_type);
+				}
+				if (msg.its_session_info.tag == option::its_session_info) {
+					RETURN_NULL_IF(buf + msg.its_session_info.raw_size() > bend);
+					buf = write_tlv_s2(buf, msg.its_session_info);
+				}
+				if (msg.ussd_serv_op.tag == option::ussd_serv_op) {
+					RETURN_NULL_IF(buf + msg.ussd_serv_op.raw_size() > bend);
+					buf = write_tlv_s1(buf, msg.ussd_serv_op);
+				}
+				return buf;
+			}
+
+			void write_submit_sm_r(bin::u8_t * buf, bin::u8_t * bend,
+					const submit_sm_r & r, LogT & L) {
+				using namespace bin;
+				buf = write(buf, r.command, L);
+				buf = w::scpy(buf, r.msg_id, r.msg_id_len + 1);
+			}
+
+			void write(bin::u8_t * buf, const submit_multi_sm & r, LogT & L) {
+				using namespace bin;
+				buf = write(buf, r.command, L);
+				buf = w::scpy(buf, r.serv_type, 6);
+
+				buf = w::cp_u8(buf, r.src_addr_ton);
+				buf = w::cp_u8(buf, r.src_addr_npi);
+				buf = w::scpy(buf, r.src_addr, 21);
+				buf = w::cp_u8(buf, r.num_of_dests);
+				/*
+				TODO dest_addr(es)
+				*/
+				buf = w::cp_u8(buf, r.esm_class);
+				buf = w::cp_u8(buf, r.protocol_id);
+				buf = w::cp_u8(buf, r.priority_flag);
+				buf = w::scpy(buf, r.schedule_delivery_time, 17);
+				buf = w::scpy(buf, r.validity_period, 17);
+				buf = w::cp_u8(buf, r.registered_delivery);
+				buf = w::cp_u8(buf, r.replace_if_present_flag);
+				buf = w::cp_u8(buf, r.data_coding);
+				buf = w::cp_u8(buf, r.sm_default_msg_id);
+				buf = w::cp_u8(buf, r.short_msg_len);
+				buf = w::scpy(buf, r.short_msg, 254);
+
+				if (r.user_msg_reference.tag != 0)	buf = write(buf, r.user_msg_reference, L);
+				if (r.src_port.tag != 0)				buf = write(buf, r.src_port, L);
+				if (r.src_addr_subunit.tag != 0)		buf = write(buf, r.src_addr_subunit, L);
+				if (r.dest_port.tag != 0)				buf = write(buf, r.dest_port.tag, L);
+				if (r.dest_addr_subunit.tag != 0)		buf = write(buf, r.dest_addr_subunit, L);
+				if (r.sar_msg_ref_num.tag != 0)			buf = write(buf, r.sar_msg_ref_num, L);
+				if (r.sar_total_segments.tag != 0)		buf = write(buf, r.sar_total_segments, L);
+				if (r.sar_segment_seqnum.tag != 0)		buf = write(buf, r.sar_segment_seqnum, L);
+				if (r.payload_type.tag != 0)			buf = write(buf, r.payload_type, L);
+				if (r.msg_payload.tag != 0)			buf = write(buf, r.msg_payload.tag, L);
+				if (r.privacy_ind.tag != 0)		buf = write(buf, r.privacy_ind, L);
+				if (r.callback_num.tag != 0)			buf = write(buf, r.callback_num, L);
+				if (r.callback_num_pres_ind.tag != 0)	buf = write(buf, r.callback_num_pres_ind, L);
+				if (r.callback_num_atag.tag != 0)		buf = write(buf, r.callback_num_atag, L);
+				if (r.src_subaddr.tag != 0)		buf = write(buf, r.src_subaddr, L);
+				if (r.dest_subaddr.tag != 0)			buf = write(buf, r.dest_subaddr, L);
+				if (r.display_time.tag != 0)			buf = write(buf, r.display_time, L);
+				if (r.sms_signal.tag != 0)				buf = write(buf, r.sms_signal, L);
+				if (r.ms_validity.tag != 0)				buf = write(buf, r.ms_validity, L);
+				if (r.ms_msg_wait_fclts.tag != 0)	buf = write(buf, r.ms_msg_wait_fclts, L);
+				if (r.alert_on_msg_delivery.tag!=0)	buf = write(buf, r.alert_on_msg_delivery, L);
+				if (r.lang_ind.tag != 0)		buf = write(buf, r.lang_ind, L);
+			}
+
+			void write(bin::u8_t * buf, const dest_addr & r, LogT & L) {
+				using namespace bin;
+				buf = w::cp_u8(buf, &r.dest_flag);
+				/* TODO: 4.5.1.1 SME_Address */
+			}
+	};
+
 	template <class LogT>
 	class tlv_parser {
 		protected:
@@ -2421,17 +2842,6 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv<bin::u8_t> & t) {
-				using namespace bin;
-				buf = w::cp_u16(buf, ascbuf(t.tag));
-				buf = w::cp_u16(buf, ascbuf(t.len));
-				buf = w::cp_u8(buf, ascbuf(t.val));
-				return buf;
-			}
-
-			/* TLV<16> P&W */
-
 			const bin::u8_t * parse_tlv_u16(tlv<bin::u16_t> & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -2443,18 +2853,6 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv<bin::u16_t> & t, LogT & L) {
-				(void)(L);
-				using namespace bin;
-				buf = w::cp_u16(buf, ascbuf(t.tag));
-				buf = w::cp_u16(buf, ascbuf(t.len));
-				buf = w::cp_u16(buf, ascbuf(t.val));
-				return buf;
-			}
-
-			/* TLV<32> P&W */
-
 			const bin::u8_t * parse_tlv_u32(tlv<bin::u32_t> & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -2463,16 +2861,6 @@ namespace mobi { namespace net { namespace smpp {
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				buf = p::cp_u32(asbuf(t.val), buf);
-				return buf;
-			}
-
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv<bin::u32_t> & t, LogT & L) {
-				(void)(L);
-				using namespace bin;
-				buf = w::cp_u32(buf, ascbuf(t.tag));
-				buf = w::cp_u32(buf, ascbuf(t.len));
-				buf = w::cp_u32(buf, ascbuf(t.val));
 				return buf;
 			}
 
@@ -2489,16 +2877,6 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv_src_subaddr & t, LogT & L) {
-				(void)(L);
-				using namespace bin;
-				buf = w::cp_u32(buf, ascbuf(t.tag));
-				buf = w::cp_u32(buf, ascbuf(t.len));
-				buf = w::scpy(buf, t.val, t.len);
-				return buf;
-			}
-
 			const bin::u8_t * parse_tlv_s19(tlv_callback_num & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -2512,15 +2890,6 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv_callback_num & t) {
-				using namespace bin;
-				buf = w::cp_u32(buf, ascbuf(t.tag));
-				buf = w::cp_u32(buf, ascbuf(t.len));
-				buf = w::scpy(buf, t.val, t.len);
-				return buf;
-			}
-
 			const bin::u8_t * parse_tlv_s65(tlv_callback_num_atag & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -2531,15 +2900,6 @@ namespace mobi { namespace net { namespace smpp {
 				/* TODO: parse value: 5.3.2.38 */
 				memset(t.val, 0, sizeof(t.val));
 				buf += t.len;
-				return buf;
-			}
-
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv_callback_num_atag & t) {
-				using namespace bin;
-				buf = w::cp_u32(buf, ascbuf(t.tag));
-				buf = w::cp_u32(buf, ascbuf(t.len));
-				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
@@ -2557,16 +2917,6 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv_its_session_info & t) {
-				(void)(L);
-				using namespace bin;
-				buf = w::cp_u32(buf, ascbuf(t.tag));
-				buf = w::cp_u32(buf, ascbuf(t.len));
-				buf = w::scpy(buf, t.val, t.len);
-				return buf;
-			}
-
 			const bin::u8_t * parse_tlv_s1(tlv_ussd_serv_op & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -2579,28 +2929,18 @@ namespace mobi { namespace net { namespace smpp {
 				buf += t.len;
 				return buf;
 			}
-
-			bin::u8_t * write(bin::u8_t * buf
-					, const tlv_ussd_serv_op & t) {
-				(void)(L);
-				using namespace bin;
-				buf = w::cp_u32(buf, ascbuf(t.tag));
-				buf = w::cp_u32(buf, ascbuf(t.len));
-				buf = w::scpy(buf, t.val, t.len);
-				return buf;
-			}
 	};
-
 	template <class LogT>
 	class parser: public tlv_parser<LogT> {
 		using tlv_parser<LogT>::L;
 		using tlv_parser<LogT>::parse_tlv_u8;
 		using tlv_parser<LogT>::parse_tlv_u16;
 		using tlv_parser<LogT>::parse_tlv_u32;
-
 		using tlv_parser<LogT>::parse_tlv_s19;
 		using tlv_parser<LogT>::parse_tlv_s23;
 		using tlv_parser<LogT>::parse_tlv_s65;
+		using tlv_parser<LogT>::parse_tlv_s2;
+		using tlv_parser<LogT>::parse_tlv_s1;
 
 		public:
 			parser(LogT & l): tlv_parser<LogT>(l) {}
@@ -2921,7 +3261,7 @@ namespace mobi { namespace net { namespace smpp {
 						, sizeof(msg.dst_addr), msg.dst_addr_len);
 				RETURN_NULL_IF(buf == NULL);
 
-				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 3 >= bend);
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 3 > bend);
 				buf = p::cp_u8(&msg.esm_class, buf);
 				buf = p::cp_u8(&msg.protocol_id, buf);
 				buf = p::cp_u8(&msg.priority_flag, buf);
@@ -2993,16 +3333,16 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_u8(msg.privacy_ind, buf, bend, L);
 							break;
 						case option::callback_num:
-							buf = parse(msg.callback_num, buf, bend, L);
+							buf = parse_tlv_s19(msg.callback_num, buf, bend, L);
 							break;
 						case option::callback_num_pres_ind:
 							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf, bend, L);
 							break;
 						case option::callback_num_atag:
-							buf = parse(msg.callback_num_atag, buf, bend, L);
+							buf = parse_tlv_s65(msg.callback_num_atag, buf, bend, L);
 							break;
 						case option::src_subaddr:
-							buf = parse(msg.src_subaddr, buf, bend, L);
+							buf = parse_tlv_s23(msg.src_subaddr, buf, bend, L);
 							break;
 						case option::dest_subaddr:
 							buf = parse(msg.dest_subaddr, buf, bend, L);
@@ -3035,10 +3375,10 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_u8(msg.its_reply_type, buf, bend, L);
 							break;
 						case option::its_session_info:
-							buf = parse(msg.its_session_info, buf, bend, L);
+							buf = parse_tlv_s2(msg.its_session_info, buf, bend, L);
 							break;
 						case option::ussd_serv_op:
-							buf = parse(msg.ussd_serv_op, buf, bend, L);
+							buf = parse_tlv_s1(msg.ussd_serv_op, buf, bend, L);
 							break;
 						default: return NULL;
 					}
@@ -3201,3 +3541,4 @@ namespace mobi { namespace net { namespace smpp {
 } } }
 
 #endif
+

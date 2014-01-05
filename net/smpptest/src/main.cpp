@@ -196,6 +196,7 @@ class smpp_parser : public smpp::parser<std::ostream> {
 			(void)(msg);
 			return resume;
 		}
+
 		virtual action on_generic_nack(const smpp::generic_nack & msg) {
 			(void)(msg);
 			return resume;
@@ -223,17 +224,26 @@ class smpp_parser : public smpp::parser<std::ostream> {
 		}
 };
 
-BOOST_AUTO_TEST_CASE( test_size_detect_func )
+BOOST_AUTO_TEST_CASE( temp_test )
 {
 	using namespace smpp;
-	submit_sm p;
+	using namespace bin;
 
-	p.command.id		= command::submit_multi_sm;
-	p.command.seqno		= 0x00000008;
-	p.command.len		= 2;
-	p.command.status	= 0x00000FFF;
+	writer<std::ostream> w(std::cout);
+	smpp_parser p(std::cout);
 
-	std::cout << p.raw_size() << std::endl;
+	bind_transmitter msg;
+	msg.command.id					= command::bind_transmitter; /* arbitrary value */
+	msg.command.seqno				= 0x000E0000; /* arbitrary value */
+	msg.command.status				= 0x0000FFAC; /* arbitrary value */
+	msg.command.len					= msg.raw_size();
+	SET_STRING(msg.sys_id,			"MATRIX");
+	SET_STRING(msg.password,		"WRABBIT");
+	SET_STRING(msg.sys_type,		"THRILLER");
+	msg.interface_version			= 0x08;
+	msg.addr_ton					= 0x10;
+	msg.addr_npi					= 0xFF;
+	SET_STRING(msg.addr_range,		"MATRIX_HAS_YOU");
 }
 
 
