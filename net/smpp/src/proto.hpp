@@ -13,14 +13,10 @@
 
 namespace mobi { namespace net { namespace smpp {
 
-	/* INTEGER & RELATED POINTERS TYPEDEFS */
-
 	using namespace toolbox;
 
 	/* SMPP 3.4 COMMAND IDS */
-
-	namespace command {
-		enum id: bin::u32_t {
+	namespace command { enum id: bin::u32_t {
 			generic_nack		= 0x80000000,
 			bind_receiver		= 0x00000001,
 			bind_receiver_r		= 0x80000001,
@@ -48,8 +44,7 @@ namespace mobi { namespace net { namespace smpp {
 			alert_notification	= 0x00000102,
 			data_sm				= 0x00000103,
 			data_sm_r			= 0x80000103,
-		};
-	}
+		}; }
 
 	/* SMPP 3.4 COMMAND STATUS/ERROR CODES */
 	namespace command_status {
@@ -104,7 +99,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* SMPP 3.4 TLV IDS */
-
 	namespace option {
 		const bin::u16_t dest_addr_subunit					= 0x0005;
 		const bin::u16_t dest_networ_type					= 0x0006;
@@ -153,7 +147,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* SMPP 3.4 TON VALUES */
-
 	namespace ton {
 		bin::u32_t unknown				= 0x00000000;
 		bin::u32_t international		= 0x00000001;
@@ -165,7 +158,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* SMPP 3.4 NPI VALUES */
-
 	namespace npi {
 		bin::u32_t unknown				= 0x00000000;
 		bin::u32_t isdn					= 0x00000001;
@@ -180,7 +172,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* SMPP 3.4 SERVICE TYPES */
-
 	namespace serv_types {
 		const bin::u8_t *	default_				= NULL;
 		const bin::u8_t		cell_msging[]			= "CMT";
@@ -192,7 +183,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* SMPP 3.4 esm class consts */
-
 	namespace esm_c {
 
 		namespace submit_sm {
@@ -286,9 +276,7 @@ namespace mobi { namespace net { namespace smpp {
 		}
 	}
 
-
 	/* SMPP 3.4 PDU header */
-
 	struct pdu {
 		bin::u32_t		len;
 		command::id		id;
@@ -297,7 +285,6 @@ namespace mobi { namespace net { namespace smpp {
 	};
 
 	/* SMPP 3.4 generic tag-len-value type */
-
 	template <typename ValueT>
 	struct tlv {
 		bin::u16_t tag;
@@ -307,9 +294,7 @@ namespace mobi { namespace net { namespace smpp {
 	};
 
 	/* SMPP 3.4 TLV specializations */
-
 	namespace {
-
 		struct tlv_dest_addr_subunit: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_addr_subunit(): base() {}
@@ -577,11 +562,9 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* SMPP 3.4 OPERATION STRUCTURES */
-
 	namespace {
 
 		/* BIND OPERATION */
-
 		struct bind_transmitter {
 			pdu command;
 			bin::u8_t sys_id[16];
@@ -750,22 +733,22 @@ namespace mobi { namespace net { namespace smpp {
 		struct outbind {
 			pdu command;
 			bin::u8_t sys_id[16];
-			bin::u8_t passwd[9];
+			bin::u8_t password[9];
 
 			outbind()
 				: command()
 				, sys_id_len(0)
-				, passwd_len(0)
+				, password_len(0)
 			{}
 
 			bin::sz_t raw_size() {
 				return	sizeof(command)
 						+ sys_id_len
-						+ passwd_len;
+						+ password_len;
 			}
 
 			std::size_t sys_id_len;
-			std::size_t passwd_len;
+			std::size_t password_len;
 	};
 
 		/* BIND OPERATION */
@@ -812,18 +795,12 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t esm_class;
 			bin::u8_t protocol_id;
 			bin::u8_t priority_flag;
-
 			bin::u8_t schedule_delivery_time[17];
 			bin::u8_t validity_period[17];
-
-			/* Indicator to signify if and SMSC delivery receipt
-			 * or and SMS aknowledgment is required. */
 			bin::u8_t registered_delivery;
 			bin::u8_t replace_if_present_flag;
 			bin::u8_t data_coding;
-
 			bin::u8_t sm_default_msg_id;
-
 			bin::u8_t short_msg_len;
 			bin::u8_t short_msg[254];
 
@@ -866,6 +843,7 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			bin::sz_t raw_size() {
+				std::cout << user_msg_reference.raw_size() << std::endl;
 				return	sizeof(command)
 						+ serv_type_len
 						+ 2
@@ -939,6 +917,8 @@ namespace mobi { namespace net { namespace smpp {
 			std::size_t src_addr_len;
 			std::size_t dst_addr_len;
 			std::size_t registered_delivery_len;
+			std::size_t schedule_delivery_time_len;
+			std::size_t validity_period_len;
 		};
 
 		struct submit_sm_r {
@@ -1388,11 +1368,14 @@ namespace mobi { namespace net { namespace smpp {
 
 		struct generic_nack {
 			pdu command;
+
+			inline bin::sz_t raw_size() {
+				return sizeof(command);
+			}
 		};
 	}
 
 	/* TYPE TRAITS */
-
 	namespace {
 
 		/* Generic type trait */
@@ -1471,8 +1454,6 @@ namespace mobi { namespace net { namespace smpp {
 			}
 		};
 	}
-
-	/* PARSERS & WRITERS */
 
 	/* OPERATIONS P&W */
 	namespace {
@@ -1613,8 +1594,8 @@ namespace mobi { namespace net { namespace smpp {
 					, sizeof(r.sys_id), r.sys_id_len);
 			RETURN_NULL_IF(buf == NULL);
 
-			buf = p::scpyl(r.passwd, buf, bend
-					, sizeof(r.sys_id), r.passwd_len);
+			buf = p::scpyl(r.password, buf, bend
+					, sizeof(r.sys_id), r.password_len);
 			RETURN_NULL_IF(buf == NULL);
 
 			return buf;
@@ -1631,7 +1612,7 @@ namespace mobi { namespace net { namespace smpp {
 			buf = w::scpyf(buf, bend, r.sys_id, r.sys_id_len);
 			RETURN_NULL_IF(buf == NULL);
 
-			buf = w::scpyf(buf, bend, r.passwd, r.passwd_len);
+			buf = w::scpyf(buf, bend, r.password, r.password_len);
 			RETURN_NULL_IF(buf == NULL);
 		}
 
@@ -2231,7 +2212,6 @@ namespace mobi { namespace net { namespace smpp {
 	}
 
 	/* OPERATIONS DUMP */
-
 	namespace {
 
 		template <typename CharT, typename TraitsT>
@@ -2387,117 +2367,94 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_writer(LogT & l): L(l) {}
 			virtual ~tlv_writer() {}
 
-			bin::u8_t * write_tlv_u8(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t> & t) {
+			bin::u8_t * write_tlv_u8(bin::u8_t * buf, const tlv<bin::u8_t> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 5 > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::cp_u8(buf, ascbuf(t.val));
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_u16(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u16_t> & t) {
+			bin::u8_t * write_tlv_u16(bin::u8_t * buf, const tlv<bin::u16_t> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 6 > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::cp_u16(buf, ascbuf(t.val));
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_u32(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u32_t> & t) {
+			bin::u8_t * write_tlv_u32(bin::u8_t * buf, const tlv<bin::u32_t> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 8 > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::cp_u32(buf, ascbuf(t.val));
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s256(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[256]> & t) {
+			bin::u8_t * write_tlv_s256(bin::u8_t * buf, const tlv<bin::u8_t[256]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s65(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[65]> & t) {
+			bin::u8_t * write_tlv_s65(bin::u8_t * buf, const tlv<bin::u8_t[65]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s23(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[23]> & t) {
+			bin::u8_t * write_tlv_s23(bin::u8_t * buf, const tlv<bin::u8_t[23]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s3(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[3]> & t) {
+			bin::u8_t * write_tlv_s3(bin::u8_t * buf, const tlv<bin::u8_t[3]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_ptr(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t *> & t) {
+			bin::u8_t * write_tlv_ptr(bin::u8_t * buf, const tlv<bin::u8_t *> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s19(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[19]> & t) {
+			bin::u8_t * write_tlv_s19(bin::u8_t * buf, const tlv<bin::u8_t[19]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s2(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[2]> & t) {
+			bin::u8_t * write_tlv_s2(bin::u8_t * buf, const tlv<bin::u8_t[2]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 
-			bin::u8_t * write_tlv_s1(bin::u8_t * buf, bin::u8_t * bend
-					, const tlv<bin::u8_t[1]> & t) {
+			bin::u8_t * write_tlv_s1(bin::u8_t * buf, const tlv<bin::u8_t[1]> & t) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 4 + t.len > bend);
 				buf = w::cp_u16(buf, ascbuf(t.tag));
 				buf = w::cp_u16(buf, ascbuf(t.len));
 				buf = w::scpy(buf, t.val, t.len);
 				return buf;
 			}
 	};
-
 	template <class LogT>
 	class writer: public tlv_writer<LogT> {
 		using tlv_writer<LogT>::L;
@@ -2517,7 +2474,7 @@ namespace mobi { namespace net { namespace smpp {
 			writer(LogT & l): tlv_writer<LogT>(l) {}
 			virtual ~writer() {}
 
-			const bin::u8_t * write_pdu(bin::u8_t * buf, const pdu & msg) {
+			bin::u8_t * write_pdu(bin::u8_t * buf, const pdu & msg) {
 				using namespace bin;
 				buf = w::cp_u32(buf, ascbuf(msg.len));
 				buf = w::cp_u32(buf, ascbuf(msg.id));
@@ -2525,8 +2482,9 @@ namespace mobi { namespace net { namespace smpp {
 				buf = w::cp_u32(buf, ascbuf(msg.seqno));
 				return buf;
 			}
+
 			template <class BindT>
-			bin::u8_t * write_bind(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write_bind(bin::u8_t * buf, const bin::u8_t * bend
 					, const BindT & msg) {
 				using namespace bin;
 
@@ -2534,13 +2492,13 @@ namespace mobi { namespace net { namespace smpp {
 				buf = write_pdu(buf, msg.command);
 
 				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
-				buf = w::scpyf(buf, bend, msg.sys_id, msg.sys_id_len);
+				buf = w::scpy(buf, ascbuf(msg.sys_id), msg.sys_id_len);
 
 				RETURN_NULL_IF(buf + msg.password_len > bend);
-				buf = w::scpyf(buf, bend, msg.password, msg.password_len);
+				buf = w::scpy(buf, ascbuf(msg.password), msg.password_len);
 
 				RETURN_NULL_IF(buf + msg.sys_type_len > bend);
-				buf = w::scpyf(buf, bend, msg.sys_type, msg.sys_type_len);
+				buf = w::scpy(buf, ascbuf(msg.sys_type), msg.sys_type_len);
 
 				RETURN_NULL_IF(buf
 						+ sizeof(bin::u8_t)
@@ -2552,56 +2510,101 @@ namespace mobi { namespace net { namespace smpp {
 				buf = w::cp_u8(buf, &msg.addr_npi);
 
 				RETURN_NULL_IF(buf + msg.addr_range_len > bend);
-				buf = w::scpyf(buf, bend, msg.addr_range, msg.addr_range_len+1);
+				buf = w::scpy(buf, ascbuf(msg.addr_range), msg.addr_range_len);
 
 				return buf;
 			}
 
 			template <class BindT>
-			bin::u8_t * write_bind_r(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write_bind_r(bin::u8_t * buf, const bin::u8_t * bend
 					, const BindT & msg) {
 				using namespace bin;
 
-				RETURN_NULL_IF(buf + sizeof(msg.command) >= bend);
-				buf = write(buf, msg.command, L);
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
 
-				buf = w::scpyf(buf, bend, msg.sys_id, msg.sys_id_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
+				buf = w::scpy(buf, msg.sys_id, msg.sys_id_len);
 
 				if (msg.sc_interface_version.tag == option::sc_interface_version) {
-					RETURN_NULL_IF(buf + sizeof(msg.sc_interface_version) > bend);
-					buf = write(buf, msg.sc_interface_version, L);
+					RETURN_NULL_IF(buf + msg.sc_interface_version.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.sc_interface_version);
 				} else if (msg.sc_interface_version.tag != 0) {
-					return NULL; /* tag's value is incorrect */
+					return nullptr; /* tag's value is incorrect */
 				}
 
 				return buf;
 			}
 
-			bin::u8_t * write_outbind(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write_bind_transmitter(bin::u8_t * buf, bin::u8_t * bend
+				, const bind_transmitter & msg) {
+				return write_bind(buf, bend, msg);
+			}
+
+			bin::u8_t * write_bind_transmitter_r(bin::u8_t * buf, const bin::u8_t * bend
+				, const bind_transmitter_r & msg) {
+				return write_bind_r(buf, bend, msg);
+			}
+
+			bin::u8_t * write_outbind(bin::u8_t * buf, const bin::u8_t * bend
 					, const outbind & msg) {
 				using namespace bin;
 
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
-				buf = write(buf, msg.command, L);
+				buf = write_pdu(buf, msg.command);
 
-				RETURN_NULL_IF(buf + sizeof(msg.sys_id_len) > bend);
-				buf = w::scpyf(buf, bend, msg.sys_id, msg.sys_id_len);
+				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
+				buf = w::scpy(buf, msg.sys_id, msg.sys_id_len);
 
-				RETURN_NULL_IF(buf + sizeof(msg.passwd_len) > bend);
-				buf = w::scpyf(buf, bend, msg.passwd, msg.passwd_len);
+				RETURN_NULL_IF(buf + msg.password_len > bend);
+				buf = w::scpy(buf, msg.password, msg.password_len);
 
 				return buf;
+			}
+
+			bin::u8_t * write_bind_receiver(bin::u8_t * buf, const bin::u8_t * bend
+				, const bind_receiver & msg) {
+				return write_bind(buf, bend, msg);
+			}
+
+			bin::u8_t * write_bind_receiver_r(bin::u8_t * buf, const bin::u8_t * bend
+				, const bind_receiver_r & msg) {
+				return write_bind_r(buf, bend, msg);
+			}
+
+			bin::u8_t * write_bind_transceiver(bin::u8_t * buf, const bin::u8_t * bend
+				, const bind_transceiver & msg) {
+				return write_bind(buf, bend, msg);
+			}
+
+			bin::u8_t * write_bind_transceiver_r(bin::u8_t * buf, const bin::u8_t * bend
+				, const bind_transceiver_r & msg) {
+				return write_bind_r(buf, bend, msg);
 			}
 
 			bin::u8_t * write_unbind(bin::u8_t * buf, bin::u8_t * bend
 					, const unbind & msg) {
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
 				buf = write_pdu(buf, msg.command);
+				return buf;
+			}
+
+			bin::u8_t * write_unbind_r(bin::u8_t * buf, bin::u8_t * bend
+					, const unbind_r & msg) {
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+				return buf;
+			}
+
+			bin::u8_t * write_generic_nack(bin::u8_t * buf, bin::u8_t * bend
+				, const generic_nack & msg) {
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+				return buf;
 			}
 
 			bin::u8_t * write_submit_sm(bin::u8_t * buf , bin::u8_t * bend
-					, const submit_sm & msg, LogT & L) {
+					, const submit_sm & msg) {
 				using namespace bin;
 
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
@@ -2631,13 +2634,13 @@ namespace mobi { namespace net { namespace smpp {
 				buf = w::cp_u8(buf, &msg.protocol_id);
 				buf = w::cp_u8(buf, &msg.priority_flag);
 
-				buf = w::scpyf(buf, bend, msg.schedule_delivery_time
-						, sizeof(msg.schedule_delivery_time));
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf + msg.schedule_delivery_time_len > bend);
+				buf = w::scpy(buf, msg.schedule_delivery_time
+						, msg.schedule_delivery_time_len);
 
-				buf = w::scpyf(buf, bend, msg.validity_period
-						, sizeof(msg.validity_period));
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf + msg.validity_period_len > bend);
+				buf = w::scpy(buf, msg.validity_period
+						, msg.validity_period_len);
 
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 5 > bend);
 				buf = w::cp_u8(buf, &msg.registered_delivery);
@@ -2651,7 +2654,7 @@ namespace mobi { namespace net { namespace smpp {
 
 				if (msg.user_msg_reference.tag == option::user_msg_reference) {
 					RETURN_NULL_IF(buf + msg.user_msg_reference.raw_size() > bend);
-					buf = write_tlv_u8(buf, msg.user_msg_reference);
+					buf = write_tlv_u16(buf, msg.user_msg_reference);
 				}
 				if (msg.src_port.tag == option::src_port) {
 					RETURN_NULL_IF(buf + msg.src_port.raw_size() > bend);
@@ -2832,10 +2835,8 @@ namespace mobi { namespace net { namespace smpp {
 			virtual ~tlv_parser() {}
 
 			const bin::u8_t * parse_tlv_u8(tlv<bin::u8_t> & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 5 > bend);
 				buf = p::cp_u16(asbuf(t.tag), buf);
 				buf = p::cp_u16(asbuf(t.len), buf);
 				buf = p::cp_u8(asbuf(t.val), buf);
@@ -2843,10 +2844,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_u16(tlv<bin::u16_t> & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 5 > bend);
 				buf = p::cp_u16(asbuf(t.tag), buf);
 				buf = p::cp_u16(asbuf(t.len), buf);
 				buf = p::cp_u16(asbuf(t.val), buf);
@@ -2854,10 +2853,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_u32(tlv<bin::u32_t> & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 12 > bend);
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				buf = p::cp_u32(asbuf(t.val), buf);
@@ -2865,10 +2862,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_s23(tlv<bin::u8_t[23]> & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 8 > bend);
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				/* TODO: parse value: 5.3.2.15 */
@@ -2878,10 +2873,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_s19(tlv_callback_num & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 8 > bend);
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				/* TODO: parse value: 5.3.2.36 */
@@ -2891,10 +2884,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_s65(tlv_callback_num_atag & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 8 > bend);
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				/* TODO: parse value: 5.3.2.38 */
@@ -2904,11 +2895,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_s2(tlv_its_session_info & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
-				(void)(L);
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 8 > bend);
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				/* TODO: parse value: 5.3.2.43 */
@@ -2918,10 +2906,8 @@ namespace mobi { namespace net { namespace smpp {
 			}
 
 			const bin::u8_t * parse_tlv_s1(tlv_ussd_serv_op & t
-					, const bin::u8_t * buf
-					, const bin::u8_t * bend) {
+					, const bin::u8_t * buf) {
 				using namespace bin;
-				RETURN_NULL_IF(buf + 8 > bend);
 				buf = p::cp_u32(asbuf(t.tag), buf);
 				buf = p::cp_u32(asbuf(t.len), buf);
 				/* TODO: parse value: 5.3.2.44 */
@@ -2985,63 +2971,76 @@ namespace mobi { namespace net { namespace smpp {
 				bin::u32_t len, id;
 
 				const bin::u8_t * cur = buf;
-				while (buf < bend) {
+				const bin::u8_t * curc;
+				while (cur < bend) {
 					/* Parse PDU len and id
 					 * In general buffer may contain several commands */
-					RETURN_NULL_IF(buf + sizeof(bin::u32_t) * 2 > bend);
-					cur = p::cp_u32(asbuf(len), cur);
-					cur = p::cp_u32(asbuf(id), cur);
+					RETURN_NULL_IF(cur + sizeof(bin::u32_t) * 2 > bend);
+					curc = cur;
+					curc = p::cp_u32(asbuf(len), curc);
+					curc = p::cp_u32(asbuf(id), curc);
 
-					if (buf + len > bend) {
+					if (cur + len > bend) {
 						return nullptr;
 					}
+
 					switch (id) {
 						case command::bind_transmitter:
-							buf = parse_bind_transmitter(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_bind_transmitter(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::bind_receiver:
-							buf = parse_bind_receiver(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_bind_receiver(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::bind_transceiver:
-							buf = parse_bind_transceiver(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_bind_transceiver(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::bind_transmitter_r:
-							buf = parse_bind_transmitter(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_bind_transmitter_r(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
+							continue;
+						case command::submit_sm:
+							cur = parse_submit_sm(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::bind_receiver_r:
-							buf = parse_bind_receiver_r(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							std::cout << "accepted" << std::endl;
+							cur = parse_bind_receiver_r(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::bind_transceiver_r:
-							buf = parse_bind_transceiver_r(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_bind_transceiver_r(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::unbind:
-							buf = parse_unbind(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_unbind(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::unbind_r:
-							buf = parse_unbind_r(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_unbind_r(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::generic_nack:
-							buf = parse_generic_nack(buf, buf + len);
-							RETURN_NULL_IF(buf == nullptr);
+							cur = parse_generic_nack(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::submit_multi_sm:
-							buf = parse_submit_multi_sm(buf, buf + len);
+							cur = parse_submit_multi_sm(cur, cur + len);
+							continue;
+						case command::outbind:
+							cur = parse_outbind(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						default:
+							L << "default" << std::endl;
 							/* TODO: implement other parsers */
 							return nullptr;
 					}
 				}
 
-				return nullptr;
+				return cur;
 			}
 
 			const bin::u8_t * parse_pdu(pdu & cmd, const bin::u8_t * buf) {
@@ -3064,29 +3063,26 @@ namespace mobi { namespace net { namespace smpp {
 
 				buf = p::scpyl(msg.sys_id, buf, bend
 						, sizeof(msg.sys_id), msg.sys_id_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				buf = p::scpyl(msg.password, buf, bend
 						, sizeof(msg.password), msg.password_len);
-				RETURN_NULL_IF(buf == NULL);
-
+				RETURN_NULL_IF(buf == nullptr);
 				buf = p::scpyl(msg.sys_type, buf, bend
 							, sizeof(msg.sys_type), msg.sys_type_len);
-				RETURN_NULL_IF(buf == NULL);
-
+				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(buf
 						+ sizeof(bin::u8_t)
 						+ sizeof(bin::u8_t)
 						+ sizeof(bin::u8_t)
 						> bend);
-
 				buf = p::cp_u8(&msg.interface_version, buf);
 				buf = p::cp_u8(&msg.addr_ton, buf);
 				buf = p::cp_u8(&msg.addr_npi, buf);
 
 				buf = p::scpyl(msg.addr_range, buf, bend
 						, sizeof(msg.addr_range), msg.addr_range_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				return buf;
 			}
@@ -3096,9 +3092,7 @@ namespace mobi { namespace net { namespace smpp {
 			const bin::u8_t * parse_bind_r(BindT & msg
 					, const bin::u8_t * buf, const bin::u8_t * bend) {
 				using namespace bin;
-
 				bin::u16_t optid;
-
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
 				buf = parse_pdu(msg.command, buf);
 
@@ -3111,7 +3105,7 @@ namespace mobi { namespace net { namespace smpp {
 
 				p::cp_u16(asbuf(optid), buf);
 				RETURN_NULL_IF(optid != option::sc_interface_version);
-				buf = parse_tlv_u8(msg.sc_interface_version, buf, bend);
+				buf = parse_tlv_u8(msg.sc_interface_version, buf);
 
 				return buf;
 			}
@@ -3239,11 +3233,11 @@ namespace mobi { namespace net { namespace smpp {
 				bin::u16_t len;
 
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
-				buf = parse(msg.command, buf);
+				buf = parse_pdu(msg.command, buf);
 
 				buf = p::scpyl(msg.serv_type, buf, bend
 						, sizeof(msg.serv_type), msg.serv_type_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 2 > bend);
 				buf = p::cp_u8(&msg.src_addr_ton, buf);
@@ -3266,15 +3260,17 @@ namespace mobi { namespace net { namespace smpp {
 				buf = p::cp_u8(&msg.protocol_id, buf);
 				buf = p::cp_u8(&msg.priority_flag, buf);
 
-				buf = p::scpyf(msg.schedule_delivery_time
-								, buf, bend, sizeof(msg.schedule_delivery_time));
+				buf = p::scpyl(msg.schedule_delivery_time , buf, bend
+						, sizeof(msg.schedule_delivery_time)
+						, msg.schedule_delivery_time_len);
 				RETURN_NULL_IF(buf == NULL);
 
-				buf = p::scpyf(msg.validity_period
-								, buf, bend, sizeof(msg.validity_period));
+				buf = p::scpyl(msg.validity_period, buf, bend
+						, sizeof(msg.validity_period)
+						, msg.validity_period_len);
 				RETURN_NULL_IF(buf == NULL);
 
-				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 5 >= bend);
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 5 > bend);
 				buf = p::cp_u8(&msg.registered_delivery, buf);
 				buf = p::cp_u8(&msg.replace_if_present_flag, buf);
 				buf = p::cp_u8(&msg.data_coding, buf);
@@ -3285,39 +3281,38 @@ namespace mobi { namespace net { namespace smpp {
 						, sizeof(msg.short_msg), msg.short_msg_len);
 				RETURN_NULL_IF(buf == NULL);
 
-				/* See if we have at least tlv tag in buffer */
 				while (buf + sizeof(bin::u16_t) <= bend) {
 					p::cp_u16(asbuf(optid), buf);
 					switch (optid) {
 						case option::user_msg_reference:
-							buf = parse_tlv_u8(msg.user_msg_reference, buf, bend);
+							buf = parse_tlv_u16(msg.user_msg_reference, buf);
 							break;
 						case option::src_port:
-							buf = parse_tlv_u16(msg.src_port, buf, bend, L);
+							buf = parse_tlv_u16(msg.src_port, buf);
 							break;
 						case option::src_addr_subunit:
-							buf = parse_tlv_u8(msg.src_addr_subunit, buf, bend, L);
+							buf = parse_tlv_u8(msg.src_addr_subunit, buf);
 							break;
 						case option::dest_port:
-							buf = parse_tlv_u16(msg.dest_port, buf, bend, L);
+							buf = parse_tlv_u16(msg.dest_port, buf);
 							break;
 						case option::dest_addr_subunit:
-							buf = parse_tlv_u8(msg.dest_addr_subunit, buf, bend, L);
+							buf = parse_tlv_u8(msg.dest_addr_subunit, buf);
 							break;
 						case option::sar_msg_ref_num:
-							buf = parse_tlv_u16(msg.sar_msg_ref_num, buf, bend, L);
+							buf = parse_tlv_u16(msg.sar_msg_ref_num, buf);
 							break;
 						case option::sar_total_segments:
-							buf = parse_tlv_u8(msg.sar_total_segments, buf, bend, L);
+							buf = parse_tlv_u8(msg.sar_total_segments, buf);
 							break;
 						case option::sar_segment_seqnum:
-							buf = parse_tlv_u8(msg.sar_segment_seqnum, buf, bend, L);
+							buf = parse_tlv_u8(msg.sar_segment_seqnum, buf);
 							break;
 						case option::more_msgs_to_send:
-							buf = parse_tlv_u8(msg.more_msgs_to_send, buf, bend, L);
+							buf = parse_tlv_u8(msg.more_msgs_to_send, buf);
 							break;
 						case option::payload_type:
-							buf = parse_tlv_u8(msg.payload_type, buf, bend, L);
+							buf = parse_tlv_u8(msg.payload_type, buf);
 							break;
 						case option::msg_payload:
 							/* TODO: Parse msg_payload, this is just a stub */
@@ -3330,60 +3325,61 @@ namespace mobi { namespace net { namespace smpp {
 							}
 							break;
 						case option::privacy_ind:
-							buf = parse_tlv_u8(msg.privacy_ind, buf, bend, L);
+							buf = parse_tlv_u8(msg.privacy_ind, buf);
 							break;
 						case option::callback_num:
-							buf = parse_tlv_s19(msg.callback_num, buf, bend, L);
+							buf = parse_tlv_s19(msg.callback_num, buf);
 							break;
 						case option::callback_num_pres_ind:
-							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf, bend, L);
+							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf);
 							break;
 						case option::callback_num_atag:
-							buf = parse_tlv_s65(msg.callback_num_atag, buf, bend, L);
+							buf = parse_tlv_s65(msg.callback_num_atag, buf);
 							break;
 						case option::src_subaddr:
-							buf = parse_tlv_s23(msg.src_subaddr, buf, bend, L);
+							buf = parse_tlv_s23(msg.src_subaddr, buf);
 							break;
 						case option::dest_subaddr:
-							buf = parse(msg.dest_subaddr, buf, bend, L);
+							buf = parse_tlv_s23(msg.dest_subaddr, buf);
 							break;
 						case option::user_resp_code:
-							buf = parse_tlv_u8(msg.user_resp_code, buf, bend, L);
+							buf = parse_tlv_u8(msg.user_resp_code, buf);
 							break;
 						case option::display_time:
-							buf = parse_tlv_u8(msg.display_time, buf, bend, L);
+							buf = parse_tlv_u8(msg.display_time, buf);
 							break;
 						case option::sms_signal:
-							buf = parse_tlv_u16(msg.sms_signal, buf, bend, L);
+							buf = parse_tlv_u16(msg.sms_signal, buf);
 							break;
 						case option::ms_validity:
-							buf = parse_tlv_u8(msg.ms_validity, buf, bend, L);
+							buf = parse_tlv_u8(msg.ms_validity, buf);
 							break;
 						case option::ms_msg_wait_fclts:
-							buf = parse_tlv_u8(msg.ms_msg_wait_fclts, buf, bend, L);
+							buf = parse_tlv_u8(msg.ms_msg_wait_fclts, buf);
 							break;
 						case option::number_of_msgs:
-							buf = parse_tlv_u8(msg.number_of_msgs, buf, bend, L);
+							buf = parse_tlv_u8(msg.number_of_msgs, buf);
 							break;
 						case option::alert_on_msg_delivery:
-							buf = parse_tlv_u8(msg.alert_on_msg_delivery, buf, bend, L);
+							buf = parse_tlv_u8(msg.alert_on_msg_delivery, buf);
 							break;
 						case option::lang_ind:
-							buf = parse_tlv_u8(msg.lang_ind, buf, bend, L);
+							buf = parse_tlv_u8(msg.lang_ind, buf);
 							break;
 						case option::its_reply_type:
-							buf = parse_tlv_u8(msg.its_reply_type, buf, bend, L);
+							buf = parse_tlv_u8(msg.its_reply_type, buf);
 							break;
 						case option::its_session_info:
-							buf = parse_tlv_s2(msg.its_session_info, buf, bend, L);
+							buf = parse_tlv_s2(msg.its_session_info, buf);
 							break;
 						case option::ussd_serv_op:
-							buf = parse_tlv_s1(msg.ussd_serv_op, buf, bend, L);
+							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
-						default: return NULL;
+						default:
+							L << "LOOK" << std::endl;
+							return nullptr;
 					}
 				}
-
 				RETURN_NULL_IF(buf == nullptr);
 
 				if (on_submit_sm(msg) == resume) {
@@ -3455,31 +3451,33 @@ namespace mobi { namespace net { namespace smpp {
 
 					switch (optid) {
 						case option::user_msg_reference:
-							buf = parse_tlv_u16(msg.user_msg_reference, buf, bend);
+							RETURN_NULL_IF(buf +
+									msg.user_msg_reference.raw_size() > bend);
+							buf = parse_tlv_u16(msg.user_msg_reference, buf);
 							break;
 						case option::src_port:
-							buf = parse_tlv_u16(msg.src_port, buf, bend);
+							buf = parse_tlv_u16(msg.src_port, buf);
 							break;
 						case option::src_addr_subunit:
-							buf = parse_tlv_u8(msg.src_addr_subunit, buf, bend);
+							buf = parse_tlv_u8(msg.src_addr_subunit, buf);
 							break;
 						case option::dest_port:
-							buf = parse_tlv_u16(msg.dest_port, buf, bend);
+							buf = parse_tlv_u16(msg.dest_port, buf);
 							break;
 						case option::dest_addr_subunit:
-							buf = parse_tlv_u8(msg.dest_addr_subunit, buf, bend);
+							buf = parse_tlv_u8(msg.dest_addr_subunit, buf);
 							break;
 						case option::sar_msg_ref_num:
-							buf = parse_tlv_u16(msg.sar_msg_ref_num, buf, bend);
+							buf = parse_tlv_u16(msg.sar_msg_ref_num, buf);
 							break;
 						case option::sar_total_segments:
-							buf = parse_tlv_u8(msg.sar_total_segments, buf, bend);
+							buf = parse_tlv_u8(msg.sar_total_segments, buf);
 							break;
 						case option::sar_segment_seqnum:
-							buf = parse_tlv_u8(msg.sar_segment_seqnum, buf, bend);
+							buf = parse_tlv_u8(msg.sar_segment_seqnum, buf);
 							break;
 						case option::payload_type:
-							buf = parse_tlv_u8(msg.payload_type, buf, bend);
+							buf = parse_tlv_u8(msg.payload_type, buf);
 							break;
 						/* TODO: Parse msg_payload*/
 						/*
@@ -3488,40 +3486,40 @@ namespace mobi { namespace net { namespace smpp {
 							break;
 						*/
 						case option::privacy_ind:
-							buf = parse_tlv_u8(msg.privacy_ind, buf, bend);
+							buf = parse_tlv_u8(msg.privacy_ind, buf);
 							break;
 						case option::callback_num:
-							buf = parse_tlv_s19(msg.callback_num, buf, bend);
+							buf = parse_tlv_s19(msg.callback_num, buf);
 							break;
 						case option::callback_num_pres_ind:
-							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf, bend);
+							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf);
 							break;
 						case option::callback_num_atag:
-							buf = parse_tlv_s65(msg.callback_num_atag, buf, bend);
+							buf = parse_tlv_s65(msg.callback_num_atag, buf);
 							break;
 						case option::src_subaddr:
-							buf = parse_tlv_s23(msg.src_subaddr, buf, bend);
+							buf = parse_tlv_s23(msg.src_subaddr, buf);
 							break;
 						case option::dest_subaddr:
-							buf = parse_tlv_s23(msg.dest_subaddr, buf, bend);
+							buf = parse_tlv_s23(msg.dest_subaddr, buf);
 							break;
 						case option::display_time:
-							buf = parse_tlv_u8(msg.display_time, buf, bend);
+							buf = parse_tlv_u8(msg.display_time, buf);
 							break;
 						case option::sms_signal:
-							buf = parse_tlv_u16(msg.sms_signal, buf, bend);
+							buf = parse_tlv_u16(msg.sms_signal, buf);
 							break;
 						case option::ms_validity:
-							buf = parse_tlv_u8(msg.ms_validity, buf, bend);
+							buf = parse_tlv_u8(msg.ms_validity, buf);
 							break;
 						case option::ms_msg_wait_fclts:
-							buf = parse_tlv_u8(msg.ms_msg_wait_fclts, buf, bend);
+							buf = parse_tlv_u8(msg.ms_msg_wait_fclts, buf);
 							break;
 						case option::alert_on_msg_delivery:
-							buf = parse_tlv_u8(msg.alert_on_msg_delivery, buf, bend);
+							buf = parse_tlv_u8(msg.alert_on_msg_delivery, buf);
 							break;
 						case option::lang_ind:
-							buf = parse_tlv_u8(msg.lang_ind, buf, bend);
+							buf = parse_tlv_u8(msg.lang_ind, buf);
 							break;
 						default:
 							buf = nullptr;
@@ -3532,6 +3530,30 @@ namespace mobi { namespace net { namespace smpp {
 				}
 
 				if (on_submit_multi_sm(msg) == resume) {
+					return buf;
+				} else {
+					return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_outbind(const bin::u8_t * buf
+				, const bin::u8_t * bend) {
+
+				using namespace bin;
+				outbind msg;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = parse_pdu(msg.command, buf);
+
+				buf = p::scpyl(msg.sys_id, buf, bend
+						, sizeof (msg.sys_id), msg.sys_id_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = p::scpyl(msg.password, buf, bend
+						, sizeof (msg.password), msg.password_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				if (on_outbind(msg) == resume) {
 					return buf;
 				} else {
 					return nullptr;
