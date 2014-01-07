@@ -523,7 +523,7 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.sm_default_msg_id		= 0x10;
 	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
 	/* optional fields */
-
+	/*
 	msg.user_msg_reference.set(0x10);
 	msg.src_port.set(0x10);
 	msg.src_addr_subunit.set(0x10);
@@ -539,27 +539,36 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.callback_num_pres_ind.set(0x10);
 	msg.callback_num_atag.set(STR("HELLO"));
 	msg.src_subaddr.set(STR("HELLO"));
-	SET_TLVS(msg, dest_subaddr,			6, "HELLO");
-	SET_TLV(msg, user_resp_code, 		1, 0x10);
-	SET_TLV(msg, display_time, 			1, 0x10);
-	SET_TLV(msg, sms_signal, 			2, 0x0010);
-	SET_TLV(msg, ms_validity, 			1, 0x10);
-	SET_TLV(msg, ms_msg_wait_fclts,		1, 0x10);
-	SET_TLV(msg, number_of_msgs,		1, 0x10);
-	SET_TLV(msg, alert_on_msg_delivery, 1, 0x10);
-	SET_TLV(msg, lang_ind,				1, 0x10);
-	SET_TLV(msg, its_reply_type, 		1, 0x10);
-	SET_TLVS(msg, its_session_info, 	3, "HE");
-	SET_TLVS(msg, ussd_serv_op,			2, "H");
+	msg.dest_subaddr.set(STR("HELLO"));
+	msg.user_resp_code.set(0x10);
+	msg.display_time.set(0x10);
+	msg.sms_signal.set(0x10);
+	msg.ms_validity.set(0x10);
+	msg.ms_msg_wait_fclts.set(0x10);
+	msg.number_of_msgs.set(0x10);
+	msg.alert_on_msg_delivery.set(0x10);
+	msg.lang_ind.set(0x10);
+	msg.its_reply_type.set(0x10);
+	msg.its_session_info.set(STR("H"));
+	msg.ussd_serv_op.set(0x10);
+	*/
 
 	msg.command.id				= command::submit_sm;
 	msg.command.seqno			= 0x00000010;
 	msg.command.status			= 0x00000010;
 	msg.command.len				= msg.raw_size();
 
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+	bin::u8_t _buf[0x100];
+
+	/*=
+		"\x00\x00\x00\x41\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x01\x00"
+		"\x00\x01\x30\x30\x30\x30\x00\x01\x01\x37\x39\x38\x32\x32\x32\x30\x36"
+		"\x36\x39\x32\x00\x40\x00\x00\x00\x00\x01\x00\x08\x00\x11\x06\x08\x04"
+		"\x00\x03\x01\x01\x00\x61\x00\x73\x00\x73\x00\x73\x00\x73";
+		*/
+	
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
 
 	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);

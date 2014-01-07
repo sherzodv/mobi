@@ -48,6 +48,7 @@ namespace mobi { namespace net { namespace smpp {
 		}; }
 
 	/* SMPP 3.4 COMMAND STATUS/ERROR CODES */
+	/* TODO modify to enum */
 	namespace command_status {
 		const bin::u32_t esme_rok				= 0x00000000;
 		const bin::u32_t esme_rinvmsglen		= 0x00000001;
@@ -822,10 +823,10 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t[1]> base;
 			tlv_ussd_serv_op(): base() {}
 
-			void set(const bin::u8_t * v, bin::sz_t l) {
+			void set(bin::u8_t v) {
 				tag = option::ussd_serv_op;
-				len = std::min(sizeof(val), l);
-				std::memcpy(val, v, len);
+				len = sizeof(bin::u8_t);
+				*val = v;
 			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
@@ -3715,7 +3716,7 @@ namespace mobi { namespace net { namespace smpp {
 				buf = p::scpyl(msg.dst_addr, buf, bend
 						, sizeof(msg.dst_addr), msg.dst_addr_len);
 				RETURN_NULL_IF(buf == nullptr);
-
+				
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 3 > bend);
 				buf = p::cp_u8(&msg.esm_class, buf);
 				buf = p::cp_u8(&msg.protocol_id, buf);
@@ -3738,8 +3739,7 @@ namespace mobi { namespace net { namespace smpp {
 				buf = p::cp_u8(&msg.sm_default_msg_id, buf);
 				buf = p::cp_u8(&msg.short_msg_len, buf);
 
-				buf = p::scpyl(msg.short_msg, buf, bend
-						, sizeof(msg.short_msg), msg.short_msg_len);
+				buf = p::cpy(msg.short_msg, buf, msg.short_msg_len);
 				RETURN_NULL_IF(buf == nullptr);
 
 				const bin::u8_t * cur;
@@ -3787,7 +3787,6 @@ namespace mobi { namespace net { namespace smpp {
 							break;
 						case option::callback_num:
 							buf = parse_tlv_s19(msg.callback_num, buf);
-							L << msg.callback_num << std::endl;
 							break;
 						case option::callback_num_pres_ind:
 							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf);
@@ -3835,7 +3834,6 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
 						default:
-							L << "DEFAULT" << std::endl;
 							return nullptr;
 					}
 				}
