@@ -136,6 +136,20 @@ namespace tst_tools {
 									w::cpy(fld, ascbuf(cstr), fld ## _len);	\
 								} while (0)
 
+#define SET_TLV(msg, tlv, alen, aval)										\
+							do {											\
+								msg.tlv.tag = option::tlv;					\
+								msg.tlv.len	= alen;							\
+								msg.tlv.val = aval;							\
+							} while(0)
+
+#define SET_TLVS(msg, tlv, alen, aval)										\
+							do {											\
+								msg.tlv.tag = option::tlv;					\
+								msg.tlv.len	= alen;							\
+								w::cpy(msg.tlv.val, ascbuf(aval), alen);	\
+							} while(0)
+
 using namespace tst_tools;
 
 class smpp_parser : public smpp::parser<std::ostream> {
@@ -508,21 +522,35 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
 	/* optional fields */
 
-	msg.user_msg_reference.tag	= option::user_msg_reference;
-	msg.user_msg_reference.len	= 2;
-	msg.user_msg_reference.val	= 0x10;
-
-	msg.src_port.tag			= option::src_port;
-	msg.src_port.len			= 2;
-	msg.src_port.val			= 0x10;
-
-	msg.src_addr_subunit.tag	= option::src_addr_subunit;
-	msg.src_addr_subunit.len	= 
-	msg.src_addr_subunit.val	=
-
-	msg.dest_port.tag			= option::dest_port;
-	msg.dest_port.len			=
-	msg.dest_port.val
+	SET_TLV(msg, user_msg_reference,	2, 0x10);
+	SET_TLV(msg, src_port,				2, 0x10);
+	SET_TLV(msg, src_addr_subunit,		1, 0x10);
+	SET_TLV(msg, dest_port,				2, 0x10);
+	SET_TLV(msg, dest_addr_subunit,		1, 0x10);
+	SET_TLV(msg, sar_msg_ref_num,		2, 0x10);
+	SET_TLV(msg, sar_total_segments,	1, 0x10);
+	SET_TLV(msg, sar_segment_seqnum,	1, 0x10);
+	SET_TLV(msg, more_msgs_to_send,		1, 0x10);
+	SET_TLV(msg, payload_type,			1, 0x10);
+	msg.msg_payload.val = new bin::u8_t [6];
+	SET_TLVS(msg, msg_payload, 			6, "HELLO");
+	SET_TLV(msg, privacy_ind, 			1, 0x10);
+	SET_TLVS(msg, callback_num, 		6, "HELLO");
+	SET_TLV(msg, callback_num_pres_ind, 1, 0x10);
+	SET_TLVS(msg, callback_num_atag, 	6, "HELLO");
+	SET_TLVS(msg, src_subaddr, 			6, "HELLO");
+	SET_TLVS(msg, dest_subaddr,			6, "HELLO");
+	SET_TLV(msg, user_resp_code, 		1, 0x10);
+	SET_TLV(msg, display_time, 			1, 0x10);
+	SET_TLV(msg, sms_signal, 			2, 0x0010);
+	SET_TLV(msg, ms_validity, 			1, 0x10);
+	SET_TLV(msg, ms_msg_wait_fclts,		1, 0x10);
+	SET_TLV(msg, number_of_msgs,		1, 0x10);
+	SET_TLV(msg, alert_on_msg_delivery, 1, 0x10);
+	SET_TLV(msg, lang_ind,				1, 0x10);
+	SET_TLV(msg, its_reply_type, 		1, 0x10);
+	SET_TLVS(msg, its_session_info, 	3, "HE");
+	SET_TLVS(msg, ussd_serv_op,			1, "H");
 
 	msg.command.id				= command::submit_sm;
 	msg.command.seqno			= 0x00000010;

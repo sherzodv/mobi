@@ -583,7 +583,7 @@ namespace mobi { namespace net { namespace smpp {
 				, addr_range_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ password_len
@@ -612,7 +612,7 @@ namespace mobi { namespace net { namespace smpp {
 				, sys_id_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ (sc_interface_version.tag == option::sc_interface_version
@@ -643,7 +643,7 @@ namespace mobi { namespace net { namespace smpp {
 				, addr_range_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ password_len
@@ -666,7 +666,7 @@ namespace mobi { namespace net { namespace smpp {
 				, sys_id_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ (sc_interface_version.tag == option::sc_interface_version
@@ -693,7 +693,7 @@ namespace mobi { namespace net { namespace smpp {
 				, addr_range_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ password_len
@@ -719,7 +719,7 @@ namespace mobi { namespace net { namespace smpp {
 				, sys_id_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ (sc_interface_version.tag == option::sc_interface_version
@@ -741,7 +741,7 @@ namespace mobi { namespace net { namespace smpp {
 				, password_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ sys_id_len
 						+ password_len;
@@ -760,7 +760,7 @@ namespace mobi { namespace net { namespace smpp {
 				: command()
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command);
 			}
 		};
@@ -770,7 +770,7 @@ namespace mobi { namespace net { namespace smpp {
 			unbind_r()
 				: command()
 			{}
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command);
 			}
 		};
@@ -842,7 +842,7 @@ namespace mobi { namespace net { namespace smpp {
 				, registered_delivery_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				std::cout << user_msg_reference.raw_size() << std::endl;
 				return	sizeof(command)
 						+ serv_type_len
@@ -930,7 +930,7 @@ namespace mobi { namespace net { namespace smpp {
 				, msg_id_len(0)
 			{}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				return	sizeof(command)
 						+ msg_id_len;
 			}
@@ -945,7 +945,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	value[21];
 
 			dl_name(): value_len(0) {}
-			bin::sz_t raw_size() { return value_len; }
+			bin::sz_t raw_size() const { return value_len; }
 
 			std::size_t value_len;
 		};
@@ -955,14 +955,14 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	dest_addr[21];
 
 			sme_dest_addr(): dest_addr_len(0) {}
-			bin::sz_t raw_size() { return 2 + dest_addr_len; }
+			bin::sz_t raw_size() const { return 2 + dest_addr_len; }
 
 			std::size_t dest_addr_len;
 		};
 		struct dest_addr {
 			bin::u8_t 		dest_flag; /* 1 - sme_addr, 2 - dlist_name */
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				switch (dest_flag) {
 					case 1:
 						return sme_addr.raw_size();
@@ -1022,7 +1022,7 @@ namespace mobi { namespace net { namespace smpp {
 
 			submit_multi_sm(): command() {}
 
-			bin::sz_t raw_size() {
+			bin::sz_t raw_size() const {
 				bin::sz_t len = sizeof(command)
 								+ serv_type_len
 								+ 2
@@ -1369,7 +1369,7 @@ namespace mobi { namespace net { namespace smpp {
 		struct generic_nack {
 			pdu command;
 
-			inline bin::sz_t raw_size() {
+			inline bin::sz_t raw_size() const {
 				return sizeof(command);
 			}
 		};
@@ -2325,17 +2325,18 @@ namespace mobi { namespace net { namespace smpp {
 				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)						<< "]"
 				<< " [short_msg_len:"			<< static_cast<int>(r.short_msg_len)							<< "]"
 				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)		<< "]";
-			if (r.user_msg_reference.tag != 0)	{ L << " [user_msg_reference:"		<< r.user_msg_reference		<< "]";	}
-			if (r.src_port.tag != 0)			{ L << " [src_port:"				<< r.src_port				<< "]"; }
-			if (r.src_addr_subunit.tag != 0)	{ L << " [src_addr_subunit:"		<< r.src_addr_subunit		<< "]"; }
-			if (r.dest_port.tag != 0)			{ L << " [dest_port:"				<< r.dest_port				<< "]"; }
-			if (r.dest_addr_subunit.tag != 0)	{ L << " [dest_addr_subunit:"		<< r.dest_addr_subunit		<< "]";	}
-			if (r.sar_msg_ref_num.tag != 0)		{ L << " [sar_msg_ref_num:"			<< r.sar_msg_ref_num		<< "]";	}
-			if (r.sar_total_segments.tag != 0)	{ L << " [sar_total_segments:"		<< r.sar_total_segments		<< "]";	}
-			if (r.sar_segment_seqnum.tag != 0)	{ L << " [sar_segment_seqnum:"		<< r.sar_segment_seqnum		<< "]";	}
-			if (r.more_msgs_to_send.tag != 0)	{ L << " [more_msgs_to_send:"		<< r.more_msgs_to_send		<< "]"; }
-			if (r.payload_type.tag != 0)		{ L << " [payload_type:"			<< r.payload_type			<< "]"; }
-			if (r.msg_payload.tag != 0)			{ L << " [msg_payload:"				<< r.payload_type			<< "]"; }
+			if (r.user_msg_reference.tag != 0)	{ L << "[user_msg_reference:"		<< r.user_msg_reference		<< "]";	}
+			if (r.src_port.tag != 0)			{ L << "[src_port:"				<< r.src_port				<< "]"; }
+			if (r.src_addr_subunit.tag != 0)	{ L << "[src_addr_subunit:"		<< r.src_addr_subunit		<< "]"; }
+			if (r.dest_port.tag != 0)			{ L << "[dest_port:"				<< r.dest_port				<< "]"; }
+			if (r.dest_addr_subunit.tag != 0)	{ L << "[dest_addr_subunit:"		<< r.dest_addr_subunit		<< "]";	}
+			if (r.sar_msg_ref_num.tag != 0)		{ L << "[sar_msg_ref_num:"			<< r.sar_msg_ref_num		<< "]";	}
+			if (r.sar_total_segments.tag != 0)	{ L << "[sar_total_segments:"		<< r.sar_total_segments		<< "]";	}
+			if (r.sar_segment_seqnum.tag != 0)	{ L << "[sar_segment_seqnum:"		<< r.sar_segment_seqnum		<< "]";	}
+			if (r.more_msgs_to_send.tag != 0)	{ L << "[more_msgs_to_send:"		<< r.more_msgs_to_send		<< "]"; }
+			if (r.payload_type.tag != 0)		{ L << "[payload_type:"			<< r.payload_type			<< "]"; }
+			if (r.msg_payload.tag != 0)			{ L << "[msg_payload:"
+				<< std::string(r.payload_type.val, r.payload_type.val +	r.payload_type.len) << "]"; }
 			if (r.privacy_ind.tag != 0)			{ L << " [privacy_ind:"				<< r.privacy_ind			<< "]"; }
 			if (r.callback_num.tag != 0)		{ L << " [callback_num:"			<< r.callback_num			<< "]";	}
 			if (r.callback_num_pres_ind.tag!=0) { L << " [callback_num_pres_ind:"	<< r.callback_num_pres_ind 	<< "]"; }
@@ -3041,8 +3042,8 @@ namespace mobi { namespace net { namespace smpp {
 			const bin::u8_t * parse_tlv_u32(tlv<bin::u32_t> & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
-				buf = p::cp_u32(asbuf(t.tag), buf);
-				buf = p::cp_u32(asbuf(t.len), buf);
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
 				buf = p::cp_u32(asbuf(t.val), buf);
 				return buf;
 			}
@@ -3050,55 +3051,45 @@ namespace mobi { namespace net { namespace smpp {
 			const bin::u8_t * parse_tlv_s23(tlv<bin::u8_t[23]> & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
-				buf = p::cp_u32(asbuf(t.tag), buf);
-				buf = p::cp_u32(asbuf(t.len), buf);
-				/* TODO: parse value: 5.3.2.15 */
-				memset(t.val, 0, sizeof(t.val));
-				buf += t.len;
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
+				buf = p::cpy(t.val, ascbuf(buf), t.len);
 				return buf;
 			}
 
 			const bin::u8_t * parse_tlv_s19(tlv_callback_num & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
-				buf = p::cp_u32(asbuf(t.tag), buf);
-				buf = p::cp_u32(asbuf(t.len), buf);
-				/* TODO: parse value: 5.3.2.36 */
-				memset(t.val, 0, sizeof(t.val));
-				buf += t.len;
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
+				buf = p::cpy(t.val, ascbuf(buf), t.len);
 				return buf;
 			}
 
 			const bin::u8_t * parse_tlv_s65(tlv_callback_num_atag & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
-				buf = p::cp_u32(asbuf(t.tag), buf);
-				buf = p::cp_u32(asbuf(t.len), buf);
-				/* TODO: parse value: 5.3.2.38 */
-				memset(t.val, 0, sizeof(t.val));
-				buf += t.len;
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
+				buf = p::cpy(t.val, ascbuf(buf), t.len);
 				return buf;
 			}
 
 			const bin::u8_t * parse_tlv_s2(tlv_its_session_info & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
-				buf = p::cp_u32(asbuf(t.tag), buf);
-				buf = p::cp_u32(asbuf(t.len), buf);
-				/* TODO: parse value: 5.3.2.43 */
-				memset(t.val, 0, sizeof(t.val));
-				buf += t.len;
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
+				buf = p::cpy(t.val, ascbuf(buf), t.len);
 				return buf;
 			}
 
 			const bin::u8_t * parse_tlv_s1(tlv_ussd_serv_op & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
-				buf = p::cp_u32(asbuf(t.tag), buf);
-				buf = p::cp_u32(asbuf(t.len), buf);
-				/* TODO: parse value: 5.3.2.44 */
-				memset(t.val, 0, sizeof(t.val));
-				buf += t.len;
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
+				buf = p::cpy(t.val, ascbuf(buf), t.len);
 				return buf;
 			}
 	};
