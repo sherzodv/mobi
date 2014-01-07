@@ -153,10 +153,11 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 		/* Parse zero terminated string with specified max length.
 		 * l will contain number of characters parsed not counting the
 		 * terminating zero. */
+
 		inline const u8_t * scpyl(u8_t * dst, const u8_t * src
 				, const u8_t * srcend, sz_t len, sz_t & l) {
 			if (src == srcend)
-				return NULL;
+				return nullptr;
 
 			for (l = 0; (l < len) && (src < srcend);) {
 				if (*src == 0) {

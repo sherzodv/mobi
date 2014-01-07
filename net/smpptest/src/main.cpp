@@ -131,9 +131,9 @@ namespace tst_tools {
 	}
 }
 
-#define SET_STRING(fld, cstr)	do {										\
-									fld ## _len = sizeof(cstr); 			\
-									w::cpy(fld, ascbuf(cstr), fld ## _len);	\
+#define SET_STRING(fld, cstr)	do {												\
+									fld ## _len = sizeof(cstr); 					\
+									w::cpy(asbuf(fld), ascbuf(cstr), fld ## _len);	\
 								} while (0)
 
 #define SET_TLV(msg, tlv, alen, aval)										\
@@ -149,6 +149,8 @@ namespace tst_tools {
 								msg.tlv.len	= alen;							\
 								w::cpy(msg.tlv.val, ascbuf(aval), alen);	\
 							} while(0)
+
+#define STR(a) ascbuf(a), sizeof(a)
 
 using namespace tst_tools;
 
@@ -214,7 +216,7 @@ class smpp_parser : public smpp::parser<std::ostream> {
 		}
 
 		virtual action on_submit_sm_r(const smpp::submit_sm_r & msg) {
-			(void)(msg);
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
@@ -228,352 +230,17 @@ class smpp_parser : public smpp::parser<std::ostream> {
 			(void)(msg);
 			return resume;
 		}
+
+		virtual action on_deliver_sm(const smpp::deliver_sm & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_deliver_sm_r(const smpp::deliver_sm_r & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
 };
-
-BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream> w(std::cout);
-	smpp_parser p(std::cout);
-
-	bind_transmitter msg;
-	/* mandatory fileds */
-	SET_STRING(msg.sys_id,			"MATRIX");
-	SET_STRING(msg.password,		"WRABBIT");
-	SET_STRING(msg.sys_type,		"THRILLER");
-	SET_STRING(msg.addr_range,		"MATRIX_HAS_YOU");
-	msg.interface_version			= 0x10;
-	msg.addr_ton					= 0x10;
-	msg.addr_npi					= 0x10;
-	/* setting up pdu */
-	msg.command.id					= command::bind_transmitter; /* arbitrary value */
-	msg.command.seqno				= 0x00000010; /* arbitrary value */
-	msg.command.status				= 0x00000010; /* arbitrary value */
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf		= asbuf(_buf);
-	bin::u8_t * bend	= asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter_r )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	bind_transmitter_r msg;
-
-	msg.sc_interface_version.tag	= option::sc_interface_version;
-	msg.sc_interface_version.len	= 1;
-	msg.sc_interface_version.val	= 0x10;
-
-	SET_STRING(msg.sys_id,		"LINUX");
-	msg.command.id				= command::bind_transmitter_r;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_outbind )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	outbind msg;
-	SET_STRING(msg.password,		"PASSWD");
-	SET_STRING(msg.sys_id,		"LINUX");
-	msg.command.id				= command::outbind;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_bind_receiver )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	bind_receiver msg;
-	SET_STRING(msg.password,	"PASSWD");
-	SET_STRING(msg.sys_id,		"BIND_RECEIVER");
-	SET_STRING(msg.sys_type,	"BIND_RECV_T");
-	msg.interface_version		= 0x10;
-	msg.addr_ton				= 0x10;
-	msg.addr_npi				= 0x10;
-	SET_STRING(msg.addr_range,	"BIND_RECV_RANGE");
-
-	msg.command.id				= command::bind_receiver;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_bind_receiver_r )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	bind_receiver_r msg;
-	SET_STRING(msg.sys_id,			"BIND_RECV_R");
-	msg.sc_interface_version.tag	= option::sc_interface_version;
-	msg.sc_interface_version.len	= 1;
-	msg.sc_interface_version.val	= 0x10;
-
-	msg.command.id				= command::bind_receiver_r;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	bind_transceiver msg;
-	SET_STRING(msg.password,	"PASSWD");
-	SET_STRING(msg.sys_id,		"B_TRANSCEIVER");
-	SET_STRING(msg.sys_type,	"B_TRANSC_T");
-	msg.interface_version		= 0x10;
-	msg.addr_ton				= 0x10;
-	msg.addr_npi				= 0x10;
-	SET_STRING(msg.addr_range,	"RANGE");
-
-	msg.command.id				= command::bind_transceiver;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver_r )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	bind_transceiver_r msg;
-	SET_STRING(msg.sys_id,		"B_TRANSCEIVER_R");
-	msg.sc_interface_version.tag	= option::sc_interface_version;
-	msg.sc_interface_version.len	= 1;
-	msg.sc_interface_version.val	= 0x10;
-
-	msg.command.id				= command::bind_transceiver_r;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_unbind )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	unbind msg;
-	msg.command.id				= command::unbind;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_unbind_r )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	unbind_r msg;
-	msg.command.id				= command::unbind_r;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-BOOST_AUTO_TEST_CASE( test_pw_generic_nack )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	generic_nack msg;
-	msg.command.id				= command::generic_nack;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::sz_t _buf[0x100] = {};
-	bin::u8_t * buf = asbuf(_buf);
-	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
-#define STR(a) ascbuf(a), sizeof(a)
-
-BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
-{
-	using namespace smpp;
-	using namespace bin;
-
-	writer<std::ostream>	w(std::cout);
-	smpp_parser				p(std::cout);
-
-	submit_sm msg;
-	/* mandatory fields */
-	SET_STRING(msg.serv_type,	"SUBS");
-	msg.src_addr_ton			= 0x10;
-	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"SUBMIT_SM");
-	msg.dst_addr_ton			= 0x10;
-	msg.dst_addr_npi			= 0x10;
-	SET_STRING(msg.dst_addr,	"SUBMIT_SM");
-	msg.esm_class				= 0x10;
-	msg.protocol_id				= 0x10;
-	msg.priority_flag			= 0x10;
-	SET_STRING(msg.schedule_delivery_time,	"17_LEN_STR______");
-	SET_STRING(msg.validity_period,			"17_len_STR______");
-	msg.registered_delivery		= 0x10;
-	msg.replace_if_present_flag	= 0x10;
-	msg.data_coding				= 0x10;
-	msg.sm_default_msg_id		= 0x10;
-	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
-	/* optional fields */
-	/*
-	msg.user_msg_reference.set(0x10);
-	msg.src_port.set(0x10);
-	msg.src_addr_subunit.set(0x10);
-	msg.dest_port.set(0x10);
-	msg.dest_addr_subunit.set(0x10);
-	msg.sar_msg_ref_num.set(0x10);
-	msg.sar_total_segments.set(0x10);
-	msg.sar_segment_seqnum.set(0x10);
-	msg.more_msgs_to_send.set(0x10);
-	msg.payload_type.set(0x10);
-	msg.privacy_ind.set(0x10);
-	msg.callback_num.set(STR("HELLO"));
-	msg.callback_num_pres_ind.set(0x10);
-	msg.callback_num_atag.set(STR("HELLO"));
-	msg.src_subaddr.set(STR("HELLO"));
-	msg.dest_subaddr.set(STR("HELLO"));
-	msg.user_resp_code.set(0x10);
-	msg.display_time.set(0x10);
-	msg.sms_signal.set(0x10);
-	msg.ms_validity.set(0x10);
-	msg.ms_msg_wait_fclts.set(0x10);
-	msg.number_of_msgs.set(0x10);
-	msg.alert_on_msg_delivery.set(0x10);
-	msg.lang_ind.set(0x10);
-	msg.its_reply_type.set(0x10);
-	msg.its_session_info.set(STR("H"));
-	msg.ussd_serv_op.set(0x10);
-	*/
-
-	msg.command.id				= command::submit_sm;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
-	msg.command.len				= msg.raw_size();
-
-	bin::u8_t _buf[0x100];
-
-	/*=
-		"\x00\x00\x00\x41\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x01\x00"
-		"\x00\x01\x30\x30\x30\x30\x00\x01\x01\x37\x39\x38\x32\x32\x32\x30\x36"
-		"\x36\x39\x32\x00\x40\x00\x00\x00\x00\x01\x00\x08\x00\x11\x06\x08\x04"
-		"\x00\x03\x01\x01\x00\x61\x00\x73\x00\x73\x00\x73\x00\x73";
-		*/
-	
-	bin::u8_t * buf = _buf;
-	bin::u8_t * bend = _buf + msg.command.len;
-
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-}
-
 
 #if 0
 BOOST_AUTO_TEST_CASE( parser_class_test )
@@ -691,3 +358,461 @@ BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 }
 #endif
 
+BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream> w(std::cout);
+	smpp_parser p(std::cout);
+
+	bind_transmitter msg;
+	/* mandatory fileds */
+	SET_STRING(msg.sys_id,			"MATRIX");
+	SET_STRING(msg.password,		"WRABBIT");
+	SET_STRING(msg.sys_type,		"THRILLER");
+	SET_STRING(msg.addr_range,		"MATRIX_HAS_YOU");
+	msg.interface_version			= 0x10;
+	msg.addr_ton					= 0x10;
+	msg.addr_npi					= 0x10;
+	/* setting up pdu */
+	msg.command.id					= command::bind_transmitter; /* arbitrary value */
+	msg.command.seqno				= 0x00000010; /* arbitrary value */
+	msg.command.status				= 0x00000010; /* arbitrary value */
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf		= asbuf(_buf);
+	bin::u8_t * bend	= asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	bind_transmitter_r msg;
+
+	msg.sc_interface_version.tag	= option::sc_interface_version;
+	msg.sc_interface_version.len	= 1;
+	msg.sc_interface_version.val	= 0x10;
+
+	SET_STRING(msg.sys_id,		"LINUX");
+	msg.command.id				= command::bind_transmitter_r;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_outbind )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	outbind msg;
+	SET_STRING(msg.password,		"PASSWD");
+	SET_STRING(msg.sys_id,		"LINUX");
+	msg.command.id				= command::outbind;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_bind_receiver )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	bind_receiver msg;
+	SET_STRING(msg.password,	"PASSWD");
+	SET_STRING(msg.sys_id,		"BIND_RECEIVER");
+	SET_STRING(msg.sys_type,	"BIND_RECV_T");
+	msg.interface_version		= 0x10;
+	msg.addr_ton				= 0x10;
+	msg.addr_npi				= 0x10;
+	SET_STRING(msg.addr_range,	"BIND_RECV_RANGE");
+
+	msg.command.id				= command::bind_receiver;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_bind_receiver_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	bind_receiver_r msg;
+	SET_STRING(msg.sys_id,			"BIND_RECV_R");
+	msg.sc_interface_version.tag	= option::sc_interface_version;
+	msg.sc_interface_version.len	= 1;
+	msg.sc_interface_version.val	= 0x10;
+
+	msg.command.id				= command::bind_receiver_r;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	bind_transceiver msg;
+	SET_STRING(msg.password,	"PASSWD");
+	SET_STRING(msg.sys_id,		"B_TRANSCEIVER");
+	SET_STRING(msg.sys_type,	"B_TRANSC_T");
+	msg.interface_version		= 0x10;
+	msg.addr_ton				= 0x10;
+	msg.addr_npi				= 0x10;
+	SET_STRING(msg.addr_range,	"RANGE");
+
+	msg.command.id				= command::bind_transceiver;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	bind_transceiver_r msg;
+	SET_STRING(msg.sys_id,		"B_TRANSCEIVER_R");
+	msg.sc_interface_version.tag	= option::sc_interface_version;
+	msg.sc_interface_version.len	= 1;
+	msg.sc_interface_version.val	= 0x10;
+
+	msg.command.id				= command::bind_transceiver_r;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_unbind )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	unbind msg;
+	msg.command.id				= command::unbind;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_unbind_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	unbind_r msg;
+	msg.command.id				= command::unbind_r;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_generic_nack )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	generic_nack msg;
+	msg.command.id				= command::generic_nack;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::sz_t _buf[0x100] = {};
+	bin::u8_t * buf = asbuf(_buf);
+	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	submit_sm msg;
+	/* mandatory fields */
+	SET_STRING(msg.serv_type,	"SUBS");
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"SUBMIT_SM");
+	msg.dst_addr_ton			= 0x10;
+	msg.dst_addr_npi			= 0x10;
+	SET_STRING(msg.dst_addr,	"SUBMIT_SM");
+	msg.esm_class				= 0x10;
+	msg.protocol_id				= 0x10;
+	msg.priority_flag			= 0x10;
+	SET_STRING(msg.schedule_delivery_time,	"HELLO");
+	SET_STRING(msg.validity_period,			"HELLO");
+	msg.registered_delivery		= 0x10;
+	msg.replace_if_present_flag	= 0x10;
+	msg.data_coding				= 0x10;
+	msg.sm_default_msg_id		= 0x10;
+	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
+	/* optional fields */
+	msg.user_msg_reference.set(0x10);
+	msg.src_port.set(0x10);
+	msg.src_addr_subunit.set(0x10);
+	msg.dest_port.set(0x10);
+	msg.dest_addr_subunit.set(0x10);
+	msg.sar_msg_ref_num.set(0x10);
+	msg.sar_total_segments.set(0x10);
+	msg.sar_segment_seqnum.set(0x10);
+	msg.more_msgs_to_send.set(0x10);
+	msg.payload_type.set(0x10);
+	msg.privacy_ind.set(0x10);
+	msg.callback_num.set(STR("HELLO"));
+	msg.callback_num_pres_ind.set(0x10);
+	msg.callback_num_atag.set(STR("HELLO"));
+	msg.src_subaddr.set(STR("HELLO"));
+	msg.dest_subaddr.set(STR("HELLO"));
+	msg.user_resp_code.set(0x10);
+	msg.display_time.set(0x10);
+	msg.sms_signal.set(0x10);
+	msg.ms_validity.set(0x10);
+	msg.ms_msg_wait_fclts.set(0x10);
+	msg.number_of_msgs.set(0x10);
+	msg.alert_on_msg_delivery.set(0x10);
+	msg.lang_ind.set(0x10);
+	msg.its_reply_type.set(0x10);
+	msg.its_session_info.set(STR("H"));
+	msg.ussd_serv_op.set(0x41);
+
+	msg.command.id				= command::submit_sm;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x200];
+
+	/*=
+		"\x00\x00\x00\x41\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x01\x00"
+		"\x00\x01\x30\x30\x30\x30\x00\x01\x01\x37\x39\x38\x32\x32\x32\x30\x36"
+		"\x36\x39\x32\x00\x40\x00\x00\x00\x00\x01\x00\x08\x00\x11\x06\x08\x04"
+		"\x00\x03\x01\x01\x00\x61\x00\x73\x00\x73\x00\x73\x00\x73";
+		*/
+	
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_submit_sm_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	submit_sm_r msg;
+	SET_STRING(msg.msg_id,		"MSG_ID");
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x200];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	deliver_sm msg;
+	/* mandatory fields */
+	SET_STRING(msg.serv_type,	"SUBS");
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"SUBMIT_SM");
+	msg.dst_addr_ton			= 0x10;
+	msg.dst_addr_npi			= 0x10;
+	SET_STRING(msg.dst_addr,	"SUBMIT_SM");
+	msg.esm_class				= 0x10;
+	msg.protocol_id				= 0x10;
+	msg.priority_flag			= 0x10;
+	SET_STRING(msg.schedule_delivery_time,	"");
+	SET_STRING(msg.validity_period,			"");
+	msg.registered_delivery		= 0x10;
+	msg.replace_if_present_flag	= 0x10;
+	msg.data_coding				= 0x10;
+	msg.sm_default_msg_id		= 0x10;
+	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
+	/* optional fields */
+	msg.user_msg_reference.set(0x10);
+	msg.src_port.set(0x10);
+	msg.dest_port.set(0x10);
+	msg.sar_msg_ref_num.set(0x10);
+	msg.sar_total_segments.set(0x10);
+	msg.sar_segment_seqnum.set(0x10);
+	msg.payload_type.set(0x10);
+	msg.privacy_ind.set(0x10);
+	msg.callback_num.set(STR("HELLO"));
+	msg.src_subaddr.set(STR("HELLO"));
+	msg.dest_subaddr.set(STR("HELLO"));
+	msg.user_resp_code.set(0x10);
+	msg.lang_ind.set(0x10);
+	msg.its_session_info.set(STR("H"));
+
+	msg.command.id				= command::submit_sm;
+	msg.command.seqno			= 0x00000010;
+	msg.command.status			= 0x00000010;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x200];
+
+	/*=
+		"\x00\x00\x00\x41\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x01\x00"
+		"\x00\x01\x30\x30\x30\x30\x00\x01\x01\x37\x39\x38\x32\x32\x32\x30\x36"
+		"\x36\x39\x32\x00\x40\x00\x00\x00\x00\x01\x00\x08\x00\x11\x06\x08\x04"
+		"\x00\x03\x01\x01\x00\x61\x00\x73\x00\x73\x00\x73\x00\x73";
+		*/
+	
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_deliver_sm_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	deliver_sm_r msg;
+	SET_STRING(msg.msg_id,		"MSG_ID");
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x200];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	BOOST_CHECK(p.parse(buf, bend) != nullptr);
+	BOOST_CHECK(p.parse(buf, bend) == bend);
+}
