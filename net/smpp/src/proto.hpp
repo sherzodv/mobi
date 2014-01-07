@@ -3231,7 +3231,6 @@ namespace mobi { namespace net { namespace smpp {
 				buf = w::cp_u8(buf, &r.dest_flag);
 				/* TODO: 4.5.1.1 SME_Address */
 			}
-
 		private:
 			template <class BindT>
 			bin::u8_t * write_bind(bin::u8_t * buf, const bin::u8_t * bend
@@ -3836,7 +3835,6 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
 						default:
-							L << "DEFAULT" << std::endl;
 							return nullptr;
 					}
 				}
