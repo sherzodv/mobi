@@ -17,6 +17,7 @@ namespace mobi { namespace net { namespace smpp {
 
 	/* SMPP 3.4 COMMAND IDS */
 	namespace command { enum id: bin::u32_t {
+			null				= 0x00000000,
 			generic_nack		= 0x80000000,
 			bind_receiver		= 0x00000001,
 			bind_receiver_r		= 0x80000001,
@@ -282,6 +283,18 @@ namespace mobi { namespace net { namespace smpp {
 		command::id		id;
 		bin::u32_t		status;
 		bin::u32_t 		seqno;
+
+		pdu(): len(0)
+			, id(command::null)
+			, status(0)
+			, seqno(0)
+		{}
+
+		pdu(command::id cid): len(0)
+			, id(cid)
+			, status(0)
+			, seqno(0)
+		{}
 	};
 
 	/* SMPP 3.4 generic tag-len-value type */
@@ -833,8 +846,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t addr_npi;
 			bin::u8_t addr_range[41];
 
-			bind_transmitter()
-				: command()
+			bind_transmitter(): command(command::bind_transmitter)
 				, sys_id_len(0)
 				, password_len(0)
 				, sys_type_len(0)
@@ -865,7 +877,7 @@ namespace mobi { namespace net { namespace smpp {
 			std::size_t sys_id_len;
 
 			bind_transmitter_r()
-				: command()
+				: command(command::bind_transmitter_r)
 				, sc_interface_version()
 				, sys_id_len(0)
 			{}
@@ -894,7 +906,7 @@ namespace mobi { namespace net { namespace smpp {
 			std::size_t addr_range_len;
 
 			bind_receiver()
-				: command()
+				: command(command::bind_receiver)
 				, sys_id_len(0)
 				, password_len(0)
 				, sys_type_len(0)
@@ -919,7 +931,7 @@ namespace mobi { namespace net { namespace smpp {
 			std::size_t sys_id_len;
 
 			bind_receiver_r()
-				: command()
+				: command(command::bind_receiver_r)
 				, sc_interface_version()
 				, sys_id_len(0)
 			{}
@@ -944,7 +956,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t addr_range[41];
 
 			bind_transceiver()
-				: command()
+				: command(command::bind_transceiver)
 				, sys_id_len(0)
 				, password_len(0)
 				, sys_type_len(0)
@@ -972,7 +984,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_sc_interface_version sc_interface_version;
 
 			bind_transceiver_r()
-				: command()
+				: command(command::bind_transceiver_r)
 				, sc_interface_version()
 				, sys_id_len(0)
 			{}
@@ -994,7 +1006,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t password[9];
 
 			outbind()
-				: command()
+				: command(command::outbind)
 				, sys_id_len(0)
 				, password_len(0)
 			{}
@@ -1015,7 +1027,7 @@ namespace mobi { namespace net { namespace smpp {
 			pdu command;
 
 			unbind()
-				: command()
+				: command(command::unbind)
 			{}
 
 			bin::sz_t raw_size() const {
@@ -1026,7 +1038,7 @@ namespace mobi { namespace net { namespace smpp {
 		struct unbind_r {
 			pdu command;
 			unbind_r()
-				: command()
+				: command(command::unbind_r)
 			{}
 			bin::sz_t raw_size() const {
 				return	sizeof(command);
@@ -1092,7 +1104,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_ussd_serv_op				ussd_serv_op;
 
 			submit_sm()
-				: command()
+				: command(command::submit_sm)
 			    , short_msg_len(0)
 				, serv_type_len(0)
 				, src_addr_len(0)
@@ -1184,7 +1196,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t msg_id[65];
 
 			submit_sm_r()
-				: command()
+				: command(command::submit_sm_r)
 				, msg_id_len(0)
 			{}
 
@@ -1278,7 +1290,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_alert_on_msg_delivery	alert_on_msg_delivery;
 			tlv_lang_ind				lang_ind;
 
-			submit_multi_sm(): command() {}
+			submit_multi_sm(): command(command::submit_multi_sm) {}
 
 			bin::sz_t raw_size() const {
 				bin::sz_t len = sizeof(command)
@@ -1354,7 +1366,7 @@ namespace mobi { namespace net { namespace smpp {
 
 			size_t msg_id_len;
 			submit_multi_r()
-				: command()
+				: command(command::submit_multi_sm_r)
 			{}
 		};
 
@@ -1409,7 +1421,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_receipted_msg_id	receipted_msg_id;
 
 			deliver_sm()
-				: command()
+				: command(command::deliver_sm)
 			{}
 		};
 
@@ -1418,7 +1430,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	msg_id;
 
 			deliver_sm_r()
-				: command()
+				: command(command::deliver_sm_r)
 			{}
 		};
 
@@ -1480,7 +1492,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_its_session_info			its_session_info;
 
 			data_sm()
-				: data_sm()
+				: command(command::data_sm)
 			{}
 		};
 
@@ -1497,7 +1509,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_dpf_result						dpf_result;
 
 			data_sm_r()
-				: command()
+				: command(command::data_sm_r)
 			{}
 		};
 
@@ -1525,7 +1537,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	error_code;
 
 			query_sm_r()
-				: command()
+				: command(command::query_sm_r)
 			{}
 		};
 
@@ -1544,7 +1556,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t dest_addr[21];
 
 			cancel_sm()
-				: command()
+				: command(command::cancel_sm)
 			{}
 		};
 
@@ -1552,7 +1564,7 @@ namespace mobi { namespace net { namespace smpp {
 			pdu command;
 
 			cancel_sm_r()
-				: command()
+				: command(command::cancel_sm_r)
 			{}
 		};
 
@@ -1573,7 +1585,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t short_msg[254];
 
 			replace_sm()
-				: command()
+				: command(command::replace_sm)
 			{}
 		};
 
@@ -1581,7 +1593,7 @@ namespace mobi { namespace net { namespace smpp {
 			pdu command;
 
 			replace_sm_r()
-				: command()
+				: command(command::replace_sm_r)
 			{}
 		};
 
@@ -1591,7 +1603,7 @@ namespace mobi { namespace net { namespace smpp {
 			pdu command;
 
 			enquire_link()
-				: command()
+				: command(command::enquire_link)
 			{}
 		};
 
@@ -1599,7 +1611,7 @@ namespace mobi { namespace net { namespace smpp {
 			pdu command;
 
 			enquire_link_r()
-				: command()
+				: command(command::enquire_link_r)
 			{}
 		};
 
@@ -1620,12 +1632,16 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_ms_availability_status	ms_availability_status;
 
 			alert_notification()
-				: alert_notification()
+				: command(command::alert_notification)
 			{}
 		};
 
 		struct generic_nack {
 			pdu command;
+
+			generic_nack():
+				command(command::generic_nack)
+			{}
 
 			inline bin::sz_t raw_size() const {
 				return sizeof(command);
@@ -2928,70 +2944,17 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			template <class BindT>
-			bin::u8_t * write_bind(bin::u8_t * buf, const bin::u8_t * bend
-					, const BindT & msg) {
-				using namespace bin;
-
-				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
-				buf = write_pdu(buf, msg.command);
-
-				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
-				buf = w::scpy(buf, ascbuf(msg.sys_id), msg.sys_id_len);
-
-				RETURN_NULL_IF(buf + msg.password_len > bend);
-				buf = w::scpy(buf, ascbuf(msg.password), msg.password_len);
-
-				RETURN_NULL_IF(buf + msg.sys_type_len > bend);
-				buf = w::scpy(buf, ascbuf(msg.sys_type), msg.sys_type_len);
-
-				RETURN_NULL_IF(buf
-						+ sizeof(bin::u8_t)
-						+ sizeof(bin::u8_t)
-						+ sizeof(bin::u8_t)
-						> bend);
-				buf = w::cp_u8(buf, &msg.interface_version);
-				buf = w::cp_u8(buf, &msg.addr_ton);
-				buf = w::cp_u8(buf, &msg.addr_npi);
-
-				RETURN_NULL_IF(buf + msg.addr_range_len > bend);
-				buf = w::scpy(buf, ascbuf(msg.addr_range), msg.addr_range_len);
-
-				return buf;
-			}
-
-			template <class BindT>
-			bin::u8_t * write_bind_r(bin::u8_t * buf, const bin::u8_t * bend
-					, const BindT & msg) {
-				using namespace bin;
-
-				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
-				buf = write_pdu(buf, msg.command);
-
-				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
-				buf = w::scpy(buf, msg.sys_id, msg.sys_id_len);
-
-				if (msg.sc_interface_version.tag == option::sc_interface_version) {
-					RETURN_NULL_IF(buf + msg.sc_interface_version.raw_size() > bend);
-					buf = write_tlv_u8(buf, msg.sc_interface_version);
-				} else if (msg.sc_interface_version.tag != 0) {
-					return nullptr; /* tag's value is incorrect */
-				}
-
-				return buf;
-			}
-
-			bin::u8_t * write_bind_transmitter(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
 				, const bind_transmitter & msg) {
 				return write_bind(buf, bend, msg);
 			}
 
-			bin::u8_t * write_bind_transmitter_r(bin::u8_t * buf, const bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
 				, const bind_transmitter_r & msg) {
 				return write_bind_r(buf, bend, msg);
 			}
 
-			bin::u8_t * write_outbind(bin::u8_t * buf, const bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
 					, const outbind & msg) {
 				using namespace bin;
 
@@ -3007,48 +2970,48 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			bin::u8_t * write_bind_receiver(bin::u8_t * buf, const bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
 				, const bind_receiver & msg) {
 				return write_bind(buf, bend, msg);
 			}
 
-			bin::u8_t * write_bind_receiver_r(bin::u8_t * buf, const bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
 				, const bind_receiver_r & msg) {
 				return write_bind_r(buf, bend, msg);
 			}
 
-			bin::u8_t * write_bind_transceiver(bin::u8_t * buf, const bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
 				, const bind_transceiver & msg) {
 				return write_bind(buf, bend, msg);
 			}
 
-			bin::u8_t * write_bind_transceiver_r(bin::u8_t * buf, const bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
 				, const bind_transceiver_r & msg) {
 				return write_bind_r(buf, bend, msg);
 			}
 
-			bin::u8_t * write_unbind(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
 					, const unbind & msg) {
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
 				buf = write_pdu(buf, msg.command);
 				return buf;
 			}
 
-			bin::u8_t * write_unbind_r(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
 					, const unbind_r & msg) {
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
 				buf = write_pdu(buf, msg.command);
 				return buf;
 			}
 
-			bin::u8_t * write_generic_nack(bin::u8_t * buf, bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
 				, const generic_nack & msg) {
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
 				buf = write_pdu(buf, msg.command);
 				return buf;
 			}
 
-			bin::u8_t * write_submit_sm(bin::u8_t * buf , bin::u8_t * bend
+			bin::u8_t * write(bin::u8_t * buf , bin::u8_t * bend
 					, const submit_sm & msg) {
 				using namespace bin;
 
@@ -3208,7 +3171,7 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
-			void write_submit_sm_r(bin::u8_t * buf, bin::u8_t * bend,
+			void write(bin::u8_t * buf, bin::u8_t * bend,
 					const submit_sm_r & r, LogT & L) {
 				using namespace bin;
 				buf = write(buf, r.command, L);
@@ -3267,6 +3230,60 @@ namespace mobi { namespace net { namespace smpp {
 				using namespace bin;
 				buf = w::cp_u8(buf, &r.dest_flag);
 				/* TODO: 4.5.1.1 SME_Address */
+			}
+
+		private:
+			template <class BindT>
+			bin::u8_t * write_bind(bin::u8_t * buf, const bin::u8_t * bend
+					, const BindT & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
+				buf = w::scpy(buf, ascbuf(msg.sys_id), msg.sys_id_len);
+
+				RETURN_NULL_IF(buf + msg.password_len > bend);
+				buf = w::scpy(buf, ascbuf(msg.password), msg.password_len);
+
+				RETURN_NULL_IF(buf + msg.sys_type_len > bend);
+				buf = w::scpy(buf, ascbuf(msg.sys_type), msg.sys_type_len);
+
+				RETURN_NULL_IF(buf
+						+ sizeof(bin::u8_t)
+						+ sizeof(bin::u8_t)
+						+ sizeof(bin::u8_t)
+						> bend);
+				buf = w::cp_u8(buf, &msg.interface_version);
+				buf = w::cp_u8(buf, &msg.addr_ton);
+				buf = w::cp_u8(buf, &msg.addr_npi);
+
+				RETURN_NULL_IF(buf + msg.addr_range_len > bend);
+				buf = w::scpy(buf, ascbuf(msg.addr_range), msg.addr_range_len);
+
+				return buf;
+			}
+
+			template <class BindT>
+			bin::u8_t * write_bind_r(bin::u8_t * buf, const bin::u8_t * bend
+					, const BindT & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				RETURN_NULL_IF(buf + msg.sys_id_len > bend);
+				buf = w::scpy(buf, msg.sys_id, msg.sys_id_len);
+
+				if (msg.sc_interface_version.tag == option::sc_interface_version) {
+					RETURN_NULL_IF(buf + msg.sc_interface_version.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.sc_interface_version);
+				} else if (msg.sc_interface_version.tag != 0) {
+					return nullptr; /* tag's value is incorrect */
+				}
+
+				return buf;
 			}
 	};
 

@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter )
 	bin::u8_t * buf		= asbuf(_buf);
 	bin::u8_t * bend	= asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_bind_transmitter(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_bind_transmitter_r(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE( test_pw_outbind )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_outbind(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_receiver )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_bind_receiver(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -366,7 +366,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_receiver_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_bind_receiver_r(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_bind_transceiver(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -423,7 +423,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_bind_transceiver_r(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE( test_pw_unbind )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_unbind(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE( test_pw_unbind_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_unbind_r(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
@@ -489,9 +489,11 @@ BOOST_AUTO_TEST_CASE( test_pw_generic_nack )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_generic_nack(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
+
+#define STR(a) ascbuf(a), sizeof(a)
 
 BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 {
@@ -522,23 +524,21 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
 	/* optional fields */
 
-	SET_TLV(msg, user_msg_reference,	2, 0x10);
-	SET_TLV(msg, src_port,				2, 0x10);
-	SET_TLV(msg, src_addr_subunit,		1, 0x10);
-	SET_TLV(msg, dest_port,				2, 0x10);
-	SET_TLV(msg, dest_addr_subunit,		1, 0x10);
-	SET_TLV(msg, sar_msg_ref_num,		2, 0x10);
-	SET_TLV(msg, sar_total_segments,	1, 0x10);
-	SET_TLV(msg, sar_segment_seqnum,	1, 0x10);
-	SET_TLV(msg, more_msgs_to_send,		1, 0x10);
-	SET_TLV(msg, payload_type,			1, 0x10);
-	msg.msg_payload.val = new bin::u8_t [6];
-	SET_TLVS(msg, msg_payload, 			6, "HELLO");
-	SET_TLV(msg, privacy_ind, 			1, 0x10);
-	SET_TLVS(msg, callback_num, 		6, "HELLO");
-	SET_TLV(msg, callback_num_pres_ind, 1, 0x10);
-	SET_TLVS(msg, callback_num_atag, 	6, "HELLO");
-	SET_TLVS(msg, src_subaddr, 			6, "HELLO");
+	msg.user_msg_reference.set(0x10);
+	msg.src_port.set(0x10);
+	msg.src_addr_subunit.set(0x10);
+	msg.dest_port.set(0x10);
+	msg.dest_addr_subunit.set(0x10);
+	msg.sar_msg_ref_num.set(0x10);
+	msg.sar_total_segments.set(0x10);
+	msg.sar_segment_seqnum.set(0x10);
+	msg.more_msgs_to_send.set(0x10);
+	msg.payload_type.set(0x10);
+	msg.privacy_ind.set(0x10);
+	msg.callback_num.set(STR("HELLO"));
+	msg.callback_num_pres_ind.set(0x10);
+	msg.callback_num_atag.set(STR("HELLO"));
+	msg.src_subaddr.set(STR("HELLO"));
 	SET_TLVS(msg, dest_subaddr,			6, "HELLO");
 	SET_TLV(msg, user_resp_code, 		1, 0x10);
 	SET_TLV(msg, display_time, 			1, 0x10);
@@ -561,7 +561,7 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write_submit_sm(buf, bend, msg) != nullptr);
+	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 
