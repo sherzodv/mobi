@@ -1,108 +1,71 @@
 
 #include <toolbox/toolbox.hpp>
 #include <vision/log.hpp>
-#include <smpp/server.hpp>
 
+#include "pool.hpp"
+#include "server.hpp"
 #include <sstream>
 
 namespace local {
+
+	using namespace mobi::net;
+	using namespace mobi::net::toolbox;
 
 	namespace ba = boost::asio;
 	namespace bs = boost::system;
 
 	typedef vision::log::source log_t;
-	typedef smpp::tcp_server_base<log_t> server_base;
+	typedef smpp::tcp_server<smpp::malloc_allocator, log_t> server_base;
 
 	class server: public server_base {
 
-			public:
-				server(boost::asio::io_service & io
-						, smpp::message_pool_base & p
-						, const ba::ip::tcp::endpoint & endpoint
-						, log_t l)
-					: server_base(io, p, endpoint, std::move(l))
-				{
-				}
+		public:
+			server(const ba::ip::tcp::endpoint & endpoint
+					, smpp::malloc_allocator & a
+					, log_t l)
+				: server_base(endpoint, a, std::move(l))
+			{
+			}
 
-				virtual ~server() {
-				}
+			virtual ~server()
+			{
+			}
 
-				virtual bool open(smpp::session * s) {
-					ltrace(L) << "server::open: new incoming session:"
-						<< " password: " << s->password
-						<< " system_id: " << s->sys_id
-						<< " system_type: " << s->sys_type;
-					s->password.clear();
-					return true;
-				}
-
-				virtual void close(smpp::session * s) {
-					(void)(s);
-				}
-
-				virtual void on_recv_error(smpp::session * s) {
-					server_base::on_recv_error(s);
-				}
-
-				virtual void on_send_error(smpp::session * s
-						, smpp::pdu * msg) {
-					server_base::on_send_error(s, msg);
-				}
-
-				virtual std::string on_submit_sm(smpp::session * s
-						, smpp::submit_sm * msg) {
-					(void)(s);
-					(void)(msg);
-
-					static std::size_t counter = 0;
-					++counter;
-					std::stringstream msgid;
-					msgid << counter;
-					ltrace(L) << "------------------ " << counter
-						<< "-----------------------";
-					return msgid.str();
-				}
+		protected:
+			bool authenticate(const std::string & sys_id, const std::string & password) {
+				(void)(password);
+				ltrace(L) << sys_id << " authenticated";
+				return true;
+			}
 	};
 
 }
 
 int main()
 {
+	using namespace mobi::net;
 	namespace ba = boost::asio;
 	namespace bs = boost::system;
 
-	vision::log::file::add("fastmqr%5N.log", false);
+	vision::log::file::add("smppd%5N.log", false);
 	vision::log::console::add();
 
 	static auto L = vision::log::channel("main");
-	static const char opt_sock_path[] = "/tmp/fastmqr.sock";
 
 	linfo(L) << "Log initialized";
-
-	::unlink(opt_sock_path);
-
-	ba::io_service io;
-
-	toolbox::io::stop_on_signal(io);
-	//toolbox::io::stop_after(io, boost::posix_time::seconds(10));
-
 	linfo(L) << "sizeof(pdu): " << sizeof(smpp::pdu);
 	linfo(L) << "sizeof(submit_sm): " << sizeof(smpp::submit_sm);
 
 	try {
-		smpp::malloc_message_pool pool;
+		smpp::malloc_allocator allocator;
 		ba::ip::tcp::endpoint endpoint(ba::ip::tcp::v4(), 5555);
-		local::server server(io, pool, endpoint, vision::log::channel("srv"));
-		server.listen();
-		linfo(L) << "Starting io service";
-		io.run();
-		linfo(L) << "Bye!";
+		local::server server(endpoint, allocator, vision::log::channel("srv"));
+		toolbox::set_signal_handler(toolbox::stopper<local::server>(server));
+		server.start();
 	} catch (const std::exception & e) {
-		::unlink(opt_sock_path);
 		lcritical(L) << e.what();
 		return 1;
 	}
 
-	::unlink(opt_sock_path);
 	return 0;
 }

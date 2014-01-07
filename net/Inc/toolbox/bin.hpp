@@ -19,12 +19,27 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 
 	typedef std::size_t		sz_t;
 
+	struct buffer {
+		bin::sz_t len;
+		bin::u8_t * data;
+
+		buffer(): len(0), data(nullptr) {}
+	};
+
+	struct const_buffer {
+		bin::sz_t len;
+		const bin::u8_t * data;
+
+		const_buffer(): len(0), data(nullptr) {}
+		const_buffer(const buffer & mbuf): len(mbuf.len), data(mbuf.data) {}
+	};
+
 	/* Byte order handling routines */
 	namespace bo {
-		inline u16_t tohost(u16_t v) { return ntohs(v); }
-		inline u32_t tohost(u32_t v) { return ntohl(v); }
-		inline u16_t tonet(u16_t v) { return htons(v); }
-		inline u32_t tonet(u32_t v) { return htonl(v); }
+		inline u16_t to_host(u16_t v) { return ntohs(v); }
+		inline u32_t to_host(u32_t v) { return ntohl(v); }
+		inline u16_t to_net(u16_t v) { return htons(v); }
+		inline u32_t to_net(u32_t v) { return htonl(v); }
 	}
 
 	template <typename T>
@@ -276,6 +291,20 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			hex_str_ref(const char * buf, sz_t len)
 				: m_buf(reinterpret_cast<const u8_t *>(buf))
 				, m_len(len)
+				, m_delimiter(" ")
+				, m_prefix("0x")
+			{}
+
+			hex_str_ref(const buffer & buf)
+				: m_buf(reinterpret_cast<const u8_t *>(buf.data))
+				, m_len(buf.len)
+				, m_delimiter(" ")
+				, m_prefix("0x")
+			{}
+
+			hex_str_ref(const const_buffer & buf)
+				: m_buf(reinterpret_cast<const u8_t *>(buf.data))
+				, m_len(buf.len)
 				, m_delimiter(" ")
 				, m_prefix("0x")
 			{}
