@@ -22,6 +22,13 @@ class channel {
 	typedef ServiceT service_t;
 	typedef typename ServiceT::sock_t sock_t;
 
+	struct msg_t {
+		bin::sz_t seqno;
+		bin::buffer buf;
+		msg_t(): seqno(0), buf() {}
+		msg_t(bin::sz_t n, bin::buffer b): seqno(n), buf(b) {}
+	};
+
 	public:
 		channel(bin::sz_t index, sock_t & sock, ServiceT & service)
 			: S(service)
@@ -34,11 +41,18 @@ class channel {
 			out.ready = true;
 			out.total_bytes = 0;
 
+			out.seqno = 0;
+			out.last_seqno = 0;
+
 			ltrace(S.L) << "channel created: idx: " << m_idx;
 		}
 
-		virtual ~channel() {
+		~channel() {
 			ltrace(S.L) << "channel destroyed: idx: " << m_idx;
+		}
+
+		void close() {
+			m_sock.close();
 		}
 
 		bin::sz_t id() const {
@@ -56,18 +70,26 @@ class channel {
 		void flush() {
 			if (!out.ready || out.que.empty())
 				return;
-			bin::buffer buf = out.que.front();
+			msg_t msg = out.que.front();
+			out.seqno = msg.seqno;
+			out.buf = msg.buf;
 			out.que.pop();
-			send(buf);
+			ba::async_write(m_sock
+				, ba::buffer(out.buf.data, out.buf.len)
+				, bind(&channel::on_out_bytes, this
+					, &channel::on_send
+					, ba::placeholders::error
+					, ba::placeholders::bytes_transferred));
 		}
 
-		virtual void send(bin::buffer buf) {
+		bin::sz_t send(bin::buffer buf) {
+			using namespace bin;
+			/* Caller is responsible for destroying message. */
 			if (out.ready) {
-				using namespace bin;
-				/* Caller is responsible for destroying message. */
 				out.ready = false;
+				out.last_seqno++;
+				out.seqno = out.last_seqno;
 				out.buf = buf;
-				ltrace(S.L) << "channel#" << m_idx << "::send: bytes: " << buf.len;
 				ba::async_write(m_sock
 					, ba::buffer(out.buf.data, out.buf.len)
 					, bind(&channel::on_out_bytes, this
@@ -75,11 +97,13 @@ class channel {
 						, ba::placeholders::error
 						, ba::placeholders::bytes_transferred));
 			} else {
-				out.que.push(buf);
+				out.last_seqno++;
+				out.que.push(msg_t(out.last_seqno, buf));
 			}
+			return out.last_seqno;
 		}
 
-		virtual void recv() {
+		void recv() {
 			recv_len();
 		}
 
@@ -99,8 +123,10 @@ class channel {
 
 		struct outbuf {
 			bool ready;
+			bin::sz_t seqno;
+			bin::sz_t last_seqno;
 			bin::buffer buf;
-			std::queue<bin::buffer> que;
+			std::queue<msg_t> que;
 			bin::sz_t total_bytes;
 		} out;
 
@@ -188,7 +214,7 @@ class channel {
 			out.ready = true;
 			if (!ec) {
 				ltrace(S.L) << "channel::on_send: ok";
-				S.on_send(this, out.buf);
+				S.on_send(this, out.seqno, out.buf);
 				flush();
 			} else {
 				/* Send cycle stop here. Call to flush is needed
@@ -196,7 +222,7 @@ class channel {
 				lerror(S.L) << "channel::on_send: " << ec.message();
 				/* !!! It's crucial to call callback at the very end of this
 				 * member function, since callback may delete this */
-				S.on_send_error(this, out.buf);
+				S.on_send_error(this, out.seqno, out.buf);
 			}
 		}
 };

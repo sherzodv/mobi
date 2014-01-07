@@ -36,15 +36,14 @@ class server: public service<ProtoT, AllocatorT, LogT> {
 		virtual bool authenticate(const std::string & sys_id, const std::string & password) = 0;
 
 		void on_bind_transmitter(bin::sz_t channel_id, const bind_transmitter & msg) {
-			ltrace(L) << "channel#" << channel_id << " got: " << msg << std::endl;
+			ltrace(L) << "channel#" << channel_id << " got: " << msg;
 		}
 
 		void on_bind_receiver(bin::sz_t channel_id, const bind_receiver & msg) {
-			ltrace(L) << "channel#" << channel_id << " got: " << msg << std::endl;
+			ltrace(L) << "channel#" << channel_id << " got: " << msg;
 		}
 
 		void on_bind_transceiver(bin::sz_t channel_id, const bind_transceiver & msg) {
-			ltrace(L) << "channel#" << channel_id << " got: " << msg << std::endl;
 			std::string sys_id(reinterpret_cast<const char *>(msg.sys_id), msg.password_len);
 			std::string password(reinterpret_cast<const char *>(msg.password), msg.password_len);
 			if (authenticate(sys_id, password)) {
@@ -53,22 +52,8 @@ class server: public service<ProtoT, AllocatorT, LogT> {
 				r.sys_id_len = msg.sys_id_len;
 				r.sc_interface_version.set(msg.interface_version);
 				r.command.seqno = msg.command.seqno;
-				service_base::send_bind_transceiver_r(channel_id, r);
+				service_base::send(channel_id, r);
 			}
-		}
-
-		/* Bind responses are not expected at server side */
-		void on_bind_transmitter_r(bin::sz_t channel_id, const bind_transmitter_r & msg) {
-			lerror(L) << channel_id << "got bind_transmitter_r" << std::endl;
-			lerror(L) << channel_id << msg << std::endl;
-		}
-		void on_bind_receiver_r(bin::sz_t channel_id, const bind_receiver_r & msg) {
-			lerror(L) << channel_id << "got bind_receiver_r" << std::endl;
-			ltrace(L) << channel_id << msg << std::endl;
-		}
-		void on_bind_transceiver_r(bin::sz_t channel_id, const bind_transceiver_r & msg) {
-			lerror(L) << channel_id << "got bind_transceiver_r" << std::endl;
-			ltrace(L) << channel_id << msg << std::endl;
 		}
 
 		void on_unbind(bin::sz_t channel_id, const unbind & msg) {
@@ -88,16 +73,46 @@ class server: public service<ProtoT, AllocatorT, LogT> {
 		}
 
 		void on_submit_sm(bin::sz_t channel_id, const submit_sm & msg) {
-			ltrace(L) << "channel#" << channel_id << " got: " << msg << std::endl;
+			ltrace(L) << "channel#" << channel_id << " got: " << msg;
 		}
 
-		void on_submit_sm_r(bin::sz_t channel_id, const submit_sm_r & msg) {
-			(void)(channel_id);(void)(msg);
+		void on_send(bin::sz_t channel_id, bin::sz_t msg_id) {
+			(void)(channel_id);
+			(void)(msg_id);
 		}
 
-		void on_send_error(bin::sz_t channel_id) {
+		void on_send_error(bin::sz_t channel_id, bin::sz_t msg_id) {
+			(void)(channel_id);
+			(void)(msg_id);
+		}
+
+		void on_recv_error(bin::sz_t channel_id) {
 			(void)(channel_id);
 		}
+
+		void on_parse_error(bin::sz_t channel_id) {
+			(void)(channel_id);
+		}
+
+		/* Bind responses are not expected at server side */
+		void on_bind_transmitter_r(bin::sz_t channel_id, const bind_transmitter_r & msg) {
+			lerror(L) << channel_id << "got bind_transmitter_r";
+			lerror(L) << channel_id << msg;
+		}
+		void on_bind_receiver_r(bin::sz_t channel_id, const bind_receiver_r & msg) {
+			lerror(L) << channel_id << "got bind_receiver_r";
+			ltrace(L) << channel_id << msg;
+		}
+		void on_bind_transceiver_r(bin::sz_t channel_id, const bind_transceiver_r & msg) {
+			lerror(L) << channel_id << "got bind_transceiver_r";
+			ltrace(L) << channel_id << msg;
+		}
+		void on_submit_sm_r(bin::sz_t channel_id, const submit_sm_r & msg) {
+			(void)(msg);
+			lerror(L) << channel_id << "got submit_sm_r";
+			//ltrace(L) << channel_id << msg;
+		}
+
 };
 
 template <class AllocatorT, class LogT>

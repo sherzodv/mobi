@@ -289,6 +289,13 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 				, m_prefix("0x")
 			{}
 
+			hex_str_ref(const u8_t * buf, const u8_t * bend)
+				: m_buf(reinterpret_cast<const u8_t *>(buf))
+				, m_len(bend - buf)
+				, m_delimiter(" ")
+				, m_prefix("0x")
+			{}
+
 			hex_str_ref(const char * buf, sz_t len)
 				: m_buf(reinterpret_cast<const u8_t *>(buf))
 				, m_len(len)

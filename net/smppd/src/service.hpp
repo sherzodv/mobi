@@ -49,7 +49,16 @@ class service: private parser<LogT>, private writer<LogT>  {
 			, A(a)
 		{}
 
-		virtual ~service() {}
+		virtual ~service() {
+			for (channel_t * ch: m_book) {
+				if (ch != nullptr) {
+					ch->close();
+					delete ch;
+				}
+			}
+			m_book.clear();
+			std::stack<bin::sz_t>().swap(m_hole);
+		}
 
 		void start() {
 			m_acpt.async_accept(m_sock
@@ -76,23 +85,35 @@ class service: private parser<LogT>, private writer<LogT>  {
 		virtual void on_submit_sm(bin::sz_t channel_id, const submit_sm & msg) = 0;
 		virtual void on_submit_sm_r(bin::sz_t channel_id, const submit_sm_r & msg) = 0;
 
-		virtual void on_send_error(bin::sz_t channel_id) = 0;
+		virtual void on_send(bin::sz_t channel_id, bin::sz_t msg_id) = 0;
+		virtual void on_send_error(bin::sz_t channel_id, bin::sz_t msg_id) = 0;
+		virtual void on_recv_error(bin::sz_t channel_id) = 0;
+		virtual void on_parse_error(bin::sz_t channel_id) = 0;
 
-		void send_bind_transceiver_r(bin::sz_t channel_id, bind_transceiver_r & msg) {
+		template <typename MsgT>
+		bin::sz_t send(bin::sz_t channel_id, MsgT & msg) {
 			channel_t * ch = get_channel(channel_id);
 			if (ch == nullptr) {
-				lerror(L) << "wrong channel id: " << channel_id;
-				on_send_error(channel_id);
+				lerror(L) << "service::send: wrong channel id: " << channel_id;
+				return 0;
 			}
 			bin::buffer buf;
 			buf.len = msg.raw_size();
 			buf.data = bin::asbuf(A.alloc(buf.len));
+			/* Set message overall length before serializing it to buffer */
 			msg.command.len = msg.raw_size();
 			writer_base::write(buf.data, buf.data + buf.len, msg);
-			ch->send(buf);
+			return ch->send(buf);
 		}
 
-		void close(std::size_t session_id) {
+		void close(std::size_t channel_id) {
+			channel_t * ch = get_channel(channel_id);
+			if (ch == nullptr) {
+				lerror(L) << "service::close: wrong channel id: " << channel_id;
+			} else {
+				ch->close();
+				destroy(ch);
+			}
 		}
 
 	private:
@@ -195,27 +216,29 @@ class service: private parser<LogT>, private writer<LogT>  {
 			}
 		}
 
-		void on_recv_error(channel_t * ch) {
-			(void)(ch);
-		}
-
-		void on_send_error(channel_t * ch, bin::buffer buf) {
-			(void)(ch);
-			A.dealloc(buf.data);
-		}
-
 		void on_recv(channel_t * ch, bin::buffer buf) {
 			m_channel_id = ch->id();
-			parser_base::parse(buf.data, buf.data + buf.len);
-			ltrace(L) << bin::hex_str_ref(buf) << std::endl;
+			if (parser_base::parse(buf.data, buf.data + buf.len) == nullptr) {
+				ltrace(L) << bin::hex_str_ref(buf);
+				on_parse_error(ch->id());
+			}
 			A.dealloc(buf.data);
 			ch->recv();
 		}
 
-		void on_send(channel_t * ch, bin::buffer buf) {
-			ltrace(L) << "channel" << ch->id() << "::on_send:";
-			ltrace(L) << bin::hex_str_ref(buf);
+		void on_send(channel_t * ch, bin::sz_t msg_id, bin::buffer buf) {
+			(void)(ch);
 			A.dealloc(buf.data);
+			on_send(ch->id(), msg_id);
+		}
+
+		void on_recv_error(channel_t * ch) {
+			on_recv_error(ch->id());
+		}
+
+		void on_send_error(channel_t * ch, bin::sz_t msg_id, bin::buffer buf) {
+			A.dealloc(buf.data);
+			on_send_error(ch->id(), msg_id);
 		}
 
 		template<typename ... Args>
