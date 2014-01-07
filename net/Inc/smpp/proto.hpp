@@ -101,11 +101,11 @@ namespace mobi { namespace net { namespace smpp {
 	/* SMPP 3.4 TLV IDS */
 	namespace option {
 		const bin::u16_t dest_addr_subunit					= 0x0005;
-		const bin::u16_t dest_networ_type					= 0x0006;
+		const bin::u16_t dest_network_type					= 0x0006;
 		const bin::u16_t dest_bearer_type					= 0x0007;
 		const bin::u16_t dest_telematics_id					= 0x0008;
 		const bin::u16_t src_addr_subunit					= 0x000D;
-		const bin::u16_t src_networ_type					= 0x000E;
+		const bin::u16_t src_network_type					= 0x000E;
 		const bin::u16_t src_bearer_type					= 0x000F;
 		const bin::u16_t src_telematics_id					= 0x0010;
 		const bin::u16_t qos_time_to_live					= 0x0017;
@@ -299,11 +299,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_addr_subunit(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::dest_addr_subunit;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_addr_subunit: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_addr_subunit(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::src_addr_subunit;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -311,11 +323,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_network_type(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::dest_network_type;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_network_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_network_type(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::src_network_type;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -323,11 +347,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_dest_bearer_type(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::dest_bearer_type;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_bearer_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_bearer_type(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::src_bearer_type;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -335,11 +371,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u16_t> base;
 			tlv_dest_telematics_id(): base() {}
 
+			void set(bin::u16_t v) {
+				tag = option::dest_telematics_id;
+				len = sizeof(bin::u16_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_telematics_id: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_src_telematics_id(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::src_telematics_id;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -347,11 +395,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u32_t> base;
 			tlv_qos_time_to_live(): base() {}
 
+			void set(bin::u32_t v) {
+				tag = option::qos_time_to_live;
+				len = sizeof(bin::u32_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_payload_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_payload_type(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::payload_type;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -359,11 +419,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t[256]>	base;
 			tlv_additional_status_info_text(): base() {}
 
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::payload_type;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_receipted_msg_id: tlv<bin::u8_t[65]> {
 			typedef tlv<bin::u8_t[65]> base;
 			tlv_receipted_msg_id(): base() {}
+
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::receipted_msg_id;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -371,11 +443,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_ms_msg_wait_fclts(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::ms_msg_wait_fclts;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_privacy_ind: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_privacy_ind(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::privacy_ind;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -383,11 +467,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t[23]> base;
 			tlv_src_subaddr(): base() {}
 
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::src_subaddr;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dest_subaddr: tlv<bin::u8_t[23]> {
 			typedef tlv<bin::u8_t[23]> base;
 			tlv_dest_subaddr(): base() {}
+
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::dest_subaddr;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -395,11 +491,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u16_t> base;
 			tlv_user_msg_reference(): base() {}
 
+			void set(bin::u16_t v) {
+				tag = option::user_msg_reference;
+				len = sizeof(bin::u16_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_user_resp_code: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_user_resp_code(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::user_resp_code;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -407,11 +515,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_lang_ind(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::lang_ind;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_src_port: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_src_port(): base() {}
+
+			void set(bin::u16_t v) {
+				tag = option::src_port;
+				len = sizeof(bin::u16_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -419,11 +539,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u16_t> base;
 			tlv_dest_port(): base() {}
 
+			void set(bin::u16_t v) {
+				tag = option::dest_port;
+				len = sizeof(bin::u16_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sar_msg_ref_num: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_sar_msg_ref_num(): base() {}
+
+			void set(bin::u16_t v) {
+				tag = option::sar_msg_ref_num;
+				len = sizeof(bin::u16_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -431,11 +563,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_sar_total_segments(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::sar_total_segments;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sar_segment_seqnum: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_sar_segment_seqnum(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::sar_segment_seqnum;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -443,11 +587,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_sc_interface_version(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::sc_interface_version;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_display_time: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_display_time(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::display_time;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -455,11 +611,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_ms_validity(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::ms_validity;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_dpf_result: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_dpf_result(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::dpf_result;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -467,17 +635,35 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_set_dpf(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::set_dpf;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_ms_availability_status: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_ms_availability_status(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::ms_availability_status;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_network_error_code: tlv<bin::u8_t[3]> {
 			typedef tlv<bin::u8_t[3]> base;
 			tlv_network_error_code(): base() {}
+
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::network_error_code;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -491,11 +677,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_delivery_failure_reason(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::delivery_failure_reason;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_more_msgs_to_send: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_more_msgs_to_send(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::more_msgs_to_send;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -503,11 +701,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_msg_state(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::msg_state;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_callback_num: tlv<bin::u8_t[19]> {
 			typedef tlv<bin::u8_t[19]> base;
 			tlv_callback_num(): base() {}
+
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::callback_num;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -515,11 +725,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_callback_num_pres_ind(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::callback_num_pres_ind;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_callback_num_atag: tlv<bin::u8_t[65]> {
 			typedef tlv<bin::u8_t[65]> base;
 			tlv_callback_num_atag(): base() {}
+
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::callback_num_atag;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -527,11 +749,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_number_of_msgs(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::number_of_msgs;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_sms_signal: tlv<bin::u16_t> {
 			typedef tlv<bin::u16_t> base;
 			tlv_sms_signal(): base() {}
+
+			void set(bin::u16_t v) {
+				tag = option::sms_signal;
+				len = sizeof(bin::u16_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -539,11 +773,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t> base;
 			tlv_alert_on_msg_delivery(): base() {}
 
+			void set(bin::u8_t v) {
+				tag = option::alert_on_msg_delivery;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_its_reply_type: tlv<bin::u8_t> {
 			typedef tlv<bin::u8_t> base;
 			tlv_its_reply_type(): base() {}
+
+			void set(bin::u8_t v) {
+				tag = option::its_reply_type;
+				len = sizeof(bin::u8_t);
+				val = v;
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -551,11 +797,23 @@ namespace mobi { namespace net { namespace smpp {
 			typedef tlv<bin::u8_t[2]> base;
 			tlv_its_session_info(): base() {}
 
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::its_session_info;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
+
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
 		struct tlv_ussd_serv_op: tlv<bin::u8_t[1]> {
 			typedef tlv<bin::u8_t[1]> base;
 			tlv_ussd_serv_op(): base() {}
+
+			void set(const bin::u8_t * v, bin::sz_t l) {
+				tag = option::ussd_serv_op;
+				len = std::min(sizeof(val), l);
+				std::memcpy(val, v, len);
+			}
 
 			bin::sz_t raw_size() const { return len + sizeof(bin::u16_t)*2; }
 		};
@@ -2242,7 +2500,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[256]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -2250,7 +2508,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[65]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -2258,7 +2516,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[23]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -2266,7 +2524,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[19]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -2274,7 +2532,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[3]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -2282,7 +2540,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[2]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -2290,7 +2548,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT> &
 		operator<<(std::basic_ostream<CharT, TraitsT> & L
 				, const tlv<bin::u8_t[1]> & t) {
-			L << t.val;
+			L << std::string(t.val, t.val + t.len);
 			return L;
 		}
 
@@ -3075,6 +3333,16 @@ namespace mobi { namespace net { namespace smpp {
 				return buf;
 			}
 
+			const bin::u8_t * parse_tlv_ptr(tlv<bin::u8_t *> & t
+					, const bin::u8_t * buf) {
+				using namespace bin;
+				buf = p::cp_u16(asbuf(t.tag), buf);
+				buf = p::cp_u16(asbuf(t.len), buf);
+				buf += t.len;
+				/* TODO buf = p::cpy(t.val, ascbuf(buf), t.len); */
+				return buf;
+			}
+
 			const bin::u8_t * parse_tlv_s2(tlv_its_session_info & t
 					, const bin::u8_t * buf) {
 				using namespace bin;
@@ -3104,6 +3372,7 @@ namespace mobi { namespace net { namespace smpp {
 		using tlv_parser<LogT>::parse_tlv_s65;
 		using tlv_parser<LogT>::parse_tlv_s2;
 		using tlv_parser<LogT>::parse_tlv_s1;
+		using tlv_parser<LogT>::parse_tlv_ptr;
 
 		public:
 			parser(LogT & l): tlv_parser<LogT>(l) {}
@@ -3421,7 +3690,7 @@ namespace mobi { namespace net { namespace smpp {
 
 				buf = p::scpyl(msg.src_addr, buf, bend
 						, sizeof(msg.src_addr), msg.src_addr_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 2 > bend);
 				buf = p::cp_u8(&msg.dst_addr_ton, buf);
@@ -3429,7 +3698,7 @@ namespace mobi { namespace net { namespace smpp {
 
 				buf = p::scpyl(msg.dst_addr, buf, bend
 						, sizeof(msg.dst_addr), msg.dst_addr_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 3 > bend);
 				buf = p::cp_u8(&msg.esm_class, buf);
@@ -3439,12 +3708,12 @@ namespace mobi { namespace net { namespace smpp {
 				buf = p::scpyl(msg.schedule_delivery_time , buf, bend
 						, sizeof(msg.schedule_delivery_time)
 						, msg.schedule_delivery_time_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				buf = p::scpyl(msg.validity_period, buf, bend
 						, sizeof(msg.validity_period)
 						, msg.validity_period_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) * 5 > bend);
 				buf = p::cp_u8(&msg.registered_delivery, buf);
@@ -3455,10 +3724,14 @@ namespace mobi { namespace net { namespace smpp {
 
 				buf = p::scpyl(msg.short_msg, buf, bend
 						, sizeof(msg.short_msg), msg.short_msg_len);
-				RETURN_NULL_IF(buf == NULL);
+				RETURN_NULL_IF(buf == nullptr);
 
-				while (buf + sizeof(bin::u16_t) <= bend) {
-					p::cp_u16(asbuf(optid), buf);
+				const bin::u8_t * cur;
+				while (buf + sizeof(bin::u16_t)*2 <= bend) {
+					cur = buf;
+					cur = p::cp_u16(asbuf(optid), cur);
+					cur = p::cp_u16(asbuf(len), cur);
+
 					switch (optid) {
 						case option::user_msg_reference:
 							buf = parse_tlv_u16(msg.user_msg_reference, buf);
@@ -3491,20 +3764,14 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_u8(msg.payload_type, buf);
 							break;
 						case option::msg_payload:
-							/* TODO: Parse msg_payload, this is just a stub */
-							if (buf + 4 > bend) {
-								buf = nullptr;
-							} else {
-								buf = p::cp_u16(asbuf(optid), buf);
-								buf = p::cp_u16(asbuf(len), buf);
-								buf += len;
-							}
+							buf = parse_tlv_ptr(msg.msg_payload, buf);
 							break;
 						case option::privacy_ind:
 							buf = parse_tlv_u8(msg.privacy_ind, buf);
 							break;
 						case option::callback_num:
 							buf = parse_tlv_s19(msg.callback_num, buf);
+							L << msg.callback_num << std::endl;
 							break;
 						case option::callback_num_pres_ind:
 							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf);
@@ -3552,9 +3819,11 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
 						default:
+							L << "DEFAULT" << std::endl;
 							return nullptr;
 					}
 				}
+
 				RETURN_NULL_IF(buf == nullptr);
 
 				if (on_submit_sm(msg) == resume) {

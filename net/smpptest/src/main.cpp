@@ -550,7 +550,7 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	SET_TLV(msg, lang_ind,				1, 0x10);
 	SET_TLV(msg, its_reply_type, 		1, 0x10);
 	SET_TLVS(msg, its_session_info, 	3, "HE");
-	SET_TLVS(msg, ussd_serv_op,			1, "H");
+	SET_TLVS(msg, ussd_serv_op,			2, "H");
 
 	msg.command.id				= command::submit_sm;
 	msg.command.seqno			= 0x00000010;
