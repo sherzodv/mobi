@@ -2302,56 +2302,242 @@ namespace mobi { namespace net { namespace smpp {
 			return L;
 		}
 
-		template< typename CharT, typename TraitsT >
-		std::basic_ostream< CharT, TraitsT >&
-		operator<<(std::basic_ostream< CharT, TraitsT >& L , const submit_sm & r) {
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const submit_sm & r) {
 			L	<< "submit_sm: "
-				<< " [serv_type:"			<< r.serv_type								<< "]"
-				<< " [src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)				<< "]"
-				<< " [src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)				<< "]"
-				<< " [src_addr:"				<< r.src_addr									<< "]"
-				<< " [dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)				<< "]"
-				<< " [dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)				<< "]"
-				<< " [dst_addr:"				<< r.dst_addr									<< "]"
-				<< " [esm_class:"				<< std::bitset<8>(r.esm_class)					<< "]"
-				<< " [protocol_id:"				<< static_cast<int>(r.protocol_id)				<< "]"
-				<< " [priority_flag:"			<< static_cast<int>(r.priority_flag)			<< "]"
-				<< " [schedule_delivery_time:"	<< r.schedule_delivery_time						<< "]"
-				<< " [validity_period:"			<< r.validity_period							<< "]"
-				<< " [registered_delivery:"		<< static_cast<bool>(r.registered_delivery)		<< "]"
-				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag)	<< "]"
-				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)				<< "]"
-				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)		<< "]"
-				<< " [short_msg_len:"					<< static_cast<int>(r.short_msg_len)					<< "]"
-				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)	<< "]";
-			if (r.user_msg_reference.tag != 0)	{ L << " [user_msg_reference:"	<< r.user_msg_reference		<< "]";	}
-			if (r.src_port.tag != 0)			{ L << " [src_port:"			<< r.src_port			<< "]"; }
-			if (r.src_addr_subunit.tag != 0)	{ L << " [src_addr_subunit:"	<< r.src_addr_subunit		<< "]"; }
-			if (r.dest_port.tag != 0)			{ L << " [dest_port:"			<< r.dest_port				<< "]"; }
-			if (r.dest_addr_subunit.tag != 0)	{ L << " [dest_addr_subunit:"	<< r.dest_addr_subunit		<< "]";	}
-			if (r.sar_msg_ref_num.tag != 0)		{ L << " [sar_msg_ref_num:"		<< r.sar_msg_ref_num		<< "]";	}
-			if (r.sar_total_segments.tag != 0)	{ L << " [sar_total_segments:"	<< r.sar_total_segments		<< "]";	}
-			if (r.sar_segment_seqnum.tag != 0)	{ L << " [sar_segment_seqnum:"	<< r.sar_segment_seqnum		<< "]";	}
-			if (r.more_msgs_to_send.tag != 0)	{ L << " [more_msgs_to_send:"	<< r.more_msgs_to_send		<< "]"; }
-			if (r.payload_type.tag != 0)		{ L << " [payload_type:"		<< r.payload_type			<< "]"; }
-			if (r.msg_payload.tag != 0)			{ L << " [msg_payload:"			<< r.payload_type			<< "]"; }
-			if (r.privacy_ind.tag != 0)			{ L << " [privacy_ind:"			<< r.privacy_ind			<< "]"; }
-			if (r.callback_num.tag != 0)		{ L << " [callback_num:"		<< r.callback_num			<< "]";	}
-			if (r.callback_num_pres_ind.tag!=0) { L << " [callback_num_pres_ind:" << r.callback_num_pres_ind << "]";}
-			if (r.callback_num_atag.tag != 0)	{ L << " [callback_num_atag:"	<< r.callback_num_atag		<< "]";	}
-			if (r.src_subaddr.tag != 0)	{ L << " [src_subaddr:"	<< r.src_subaddr		<< "]";	}
-			if (r.dest_subaddr.tag != 0)		{ L << " [dest_subaddr:"		<< r.dest_subaddr		<< "]";	}
-			if (r.user_resp_code.tag != 0)	{ L << " [user_resp_code:"	<< r.user_resp_code		<< "]";	}
-			if (r.display_time.tag != 0)		{ L << " [display_time:"		<< r.display_time			<< "]"; }
-			if (r.sms_signal.tag != 0)			{ L << " [sms_signal:"			<< r.sms_signal				<< "]";	}
-			if (r.ms_validity.tag != 0)			{ L << " [ms_validity:"			<< r.ms_validity			<< "]"; }
-			if (r.ms_msg_wait_fclts.tag!=0){ L << " [ms_msg_wait_fclts:" << r.ms_msg_wait_fclts << "]"; }
-			if (r.number_of_msgs.tag != 0)		{ L << " [number_of_msgs:"		<< r.number_of_msgs			<< "]";	}
-			if (r.alert_on_msg_delivery.tag!=0) { L << " [alert_on_msg_delivery:" << r.alert_on_msg_delivery << "]";}
-			if (r.lang_ind.tag != 0)			{ L << " [lang_ind:"			<< r.lang_ind				<< "]"; }
-			if (r.its_reply_type.tag != 0)		{ L << " [its_reply_type:"		<< r.its_reply_type			<< "]"; }
-			if (r.its_session_info.tag != 0)	{ L << " [its_session_info:"	<< r.its_session_info		<< "]"; }
-			if (r.ussd_serv_op.tag != 0)		{ L << " [ussd_serv_op:"		<< r.ussd_serv_op		<< "]"; }
+				<< " [serv_type:"				<< r.serv_type													<< "]"
+				<< " [src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
+				<< " [src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
+				<< " [src_addr:"				<< r.src_addr													<< "]"
+				<< " [dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
+				<< " [dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
+				<< " [dst_addr:"				<< r.dst_addr													<< "]"
+				<< " [esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
+				<< " [protocol_id:"				<< static_cast<int>(r.protocol_id)								<< "]"
+				<< " [priority_flag:"			<< static_cast<int>(r.priority_flag)							<< "]"
+				<< " [schedule_delivery_time:"	<< r.schedule_delivery_time										<< "]"
+				<< " [validity_period:"			<< r.validity_period											<< "]"
+				<< " [registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
+				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag)					<< "]"
+				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]"
+				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)						<< "]"
+				<< " [short_msg_len:"			<< static_cast<int>(r.short_msg_len)							<< "]"
+				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)		<< "]";
+			if (r.user_msg_reference.tag != 0)	{ L << " [user_msg_reference:"		<< r.user_msg_reference		<< "]";	}
+			if (r.src_port.tag != 0)			{ L << " [src_port:"				<< r.src_port				<< "]"; }
+			if (r.src_addr_subunit.tag != 0)	{ L << " [src_addr_subunit:"		<< r.src_addr_subunit		<< "]"; }
+			if (r.dest_port.tag != 0)			{ L << " [dest_port:"				<< r.dest_port				<< "]"; }
+			if (r.dest_addr_subunit.tag != 0)	{ L << " [dest_addr_subunit:"		<< r.dest_addr_subunit		<< "]";	}
+			if (r.sar_msg_ref_num.tag != 0)		{ L << " [sar_msg_ref_num:"			<< r.sar_msg_ref_num		<< "]";	}
+			if (r.sar_total_segments.tag != 0)	{ L << " [sar_total_segments:"		<< r.sar_total_segments		<< "]";	}
+			if (r.sar_segment_seqnum.tag != 0)	{ L << " [sar_segment_seqnum:"		<< r.sar_segment_seqnum		<< "]";	}
+			if (r.more_msgs_to_send.tag != 0)	{ L << " [more_msgs_to_send:"		<< r.more_msgs_to_send		<< "]"; }
+			if (r.payload_type.tag != 0)		{ L << " [payload_type:"			<< r.payload_type			<< "]"; }
+			if (r.msg_payload.tag != 0)			{ L << " [msg_payload:"				<< r.payload_type			<< "]"; }
+			if (r.privacy_ind.tag != 0)			{ L << " [privacy_ind:"				<< r.privacy_ind			<< "]"; }
+			if (r.callback_num.tag != 0)		{ L << " [callback_num:"			<< r.callback_num			<< "]";	}
+			if (r.callback_num_pres_ind.tag!=0) { L << " [callback_num_pres_ind:"	<< r.callback_num_pres_ind 	<< "]"; }
+			if (r.callback_num_atag.tag != 0)	{ L << " [callback_num_atag:"		<< r.callback_num_atag		<< "]";	}
+			if (r.src_subaddr.tag != 0)			{ L << " [src_subaddr:"				<< r.src_subaddr			<< "]";	}
+			if (r.dest_subaddr.tag != 0)		{ L << " [dest_subaddr:"			<< r.dest_subaddr			<< "]";	}
+			if (r.user_resp_code.tag != 0)		{ L << " [user_resp_code:"			<< r.user_resp_code			<< "]";	}
+			if (r.display_time.tag != 0)		{ L << " [display_time:"			<< r.display_time			<< "]"; }
+			if (r.sms_signal.tag != 0)			{ L << " [sms_signal:"				<< r.sms_signal				<< "]";	}
+			if (r.ms_validity.tag != 0)			{ L << " [ms_validity:"				<< r.ms_validity			<< "]"; }
+			if (r.ms_msg_wait_fclts.tag!=0)		{ L << " [ms_msg_wait_fclts:"		<< r.ms_msg_wait_fclts		<< "]"; }
+			if (r.number_of_msgs.tag != 0)		{ L << " [number_of_msgs:"			<< r.number_of_msgs			<< "]";	}
+			if (r.alert_on_msg_delivery.tag!=0) { L << " [alert_on_msg_delivery:"	<< r.alert_on_msg_delivery	<< "]"; }
+			if (r.lang_ind.tag != 0)			{ L << " [lang_ind:"				<< r.lang_ind				<< "]"; }
+			if (r.its_reply_type.tag != 0)		{ L << " [its_reply_type:"			<< r.its_reply_type			<< "]"; }
+			if (r.its_session_info.tag != 0)	{ L << " [its_session_info:"		<< r.its_session_info		<< "]"; }
+			if (r.ussd_serv_op.tag != 0)		{ L << " [ussd_serv_op:"			<< r.ussd_serv_op			<< "]"; }
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const bind_transmitter & r) {
+			L<< "bind_transmitter:"
+			 << " [command.len: "		<< r.command.len								<< "]"
+			 << " [command.id: "		<< r.command.id									<< "]"
+			 << " [command.status: "	<< r.command.status								<< "]"
+			 << " [command.seqno: "		<< r.command.seqno								<< "]"
+			 << " [sys_id: "			<< r.sys_id										<< "]"
+			 << " [password: "			<< r.password									<< "]"
+			 << " [sys_type: "			<< r.sys_type									<< "]"
+			 << " [interface_version: "	<< static_cast<unsigned>(r.interface_version)	<< "]"
+			 << " [addr_ton: "			<< static_cast<unsigned>(r.addr_ton)			<< "]"
+			 << " [addr_npi: "			<< static_cast<unsigned>(r.addr_npi)			<< "]"
+			 << " [addr_range: "		<< r.addr_range									<< "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const bind_transmitter_r & r) {
+			L 
+			<< "bind_transmitter_r:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]" 
+
+			<< " [sys_id: " << r.sys_id << "]" 
+
+			<< " [sc_interface_version.tag: " << r.sc_interface_version.tag << "]" 
+			<< " [sc_interface_version.len: " << r.sc_interface_version.len << "]" 
+			<< " [sc_interface_version.val: " << static_cast<unsigned>(r.sc_interface_version.val) << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const bind_receiver & r) {
+			L
+			<< "bind_receiver:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]" 
+
+			<< " [sys_id: " << r.sys_id << "]" 
+			<< " [password: " << r.password << "]" 
+			<< " [sys_type: " << r.sys_type << "]" 
+			<< " [interface_version: " << static_cast<unsigned>(r.interface_version) << "]" 
+			<< " [addr_ton: " << static_cast<unsigned>(r.addr_ton) << "]" 
+			<< " [addr_npi: " << static_cast<unsigned>(r.addr_npi) << "]" 
+			<< " [addr_range: " << r.addr_range << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const bind_receiver_r & r) {
+			L
+			<< "bind_receiver_r:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]" 
+
+			<< " [sys_id: " << r.sys_id << "]" 
+			<< " [sc_interface_version.tag: " << r.sc_interface_version.tag << "]" 
+			<< " [sc_interface_version.len: " << r.sc_interface_version.len << "]" 
+			<< " [sc_interface_version.val: " << static_cast<unsigned>(r.sc_interface_version.val) << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const bind_transceiver & r) {
+			L
+			<< "bind_transceiver:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]" 
+
+			<< " [sys_id: " << r.sys_id << "]" 
+			<< " [password: " << r.password << "]" 
+			<< " [sys_type: " << r.sys_type << "]" 
+			<< " [interface_version: " << static_cast<unsigned>(r.interface_version) << "]" 
+			<< " [addr_ton: " << static_cast<unsigned>(r.addr_ton) << "]" 
+			<< " [addr_npi: " << static_cast<unsigned>(r.addr_npi) << "]" 
+			<< " [addr_range: " << r.addr_range << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const bind_transceiver_r & r) {
+
+			L
+			<< "bind_transceiver_r:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]" 
+			<< " [sys_id: " << r.sys_id << "]";
+
+			if (r.sc_interface_version.tag == option::sc_interface_version) {
+				L << " [sc_interface_version.val: " << static_cast<unsigned>(r.sc_interface_version.val) << "]";
+			}
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const unbind & r) {
+
+			L
+			<< "unbind:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const unbind_r & r) {
+
+			L
+			<< "unbind_r:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const outbind & r) {
+
+			L
+			<< "outbind:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]" 
+			<< " [sys_id: " << r.sys_id << "]" 
+			<< " [sys_password: " << r.password << "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const generic_nack & r) {
+
+			L
+			<< "generic_nack:" 
+			<< " [command.len: " << r.command.len << "]" 
+			<< " [command.id: " << r.command.id << "]" 
+			<< " [command.status: " << r.command.status << "]" 
+			<< " [command.seqno: " << r.command.seqno << "]";
+
 			return L;
 		}
 	}

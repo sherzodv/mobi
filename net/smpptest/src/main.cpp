@@ -145,289 +145,57 @@ class smpp_parser : public smpp::parser<std::ostream> {
 
 	protected:
 		virtual action on_bind_transmitter(const smpp::bind_transmitter & msg) {
-
-			std::cout << std::endl;
-			std::cout << "bind_transmitter" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-			std::cout << "[ password: " << msg.password << " ]" << std::endl;
-			std::cout << "[ sys_type: " << msg.sys_type << " ]" << std::endl;
-			std::cout << "[ interface_version: " << static_cast<unsigned>(msg.interface_version) << " ]" << std::endl;
-			std::cout << "[ addr_ton: " << static_cast<unsigned>(msg.addr_ton) << " ]" << std::endl;
-			std::cout << "[ addr_npi: " << static_cast<unsigned>(msg.addr_npi) << " ]" << std::endl;
-			std::cout << "[ addr_range: " << msg.addr_range << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_bind_transmitter_r(const smpp::bind_transmitter_r & msg) {
-
-			std::cout << std::endl;
-			std::cout << "bind_transmitter_r" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-
-			std::cout << "[ sc_interface_version.tag: " << msg.sc_interface_version.tag << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.len: " << msg.sc_interface_version.len << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.val: " << static_cast<unsigned>(msg.sc_interface_version.val) << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_bind_receiver(const smpp::bind_receiver & msg) {
-
-			std::cout << std::endl;
-			std::cout << "bind_receiver" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-			std::cout << "[ password: " << msg.password << " ]" << std::endl;
-			std::cout << "[ sys_type: " << msg.sys_type << " ]" << std::endl;
-			std::cout << "[ interface_version: " << static_cast<unsigned>(msg.interface_version) << " ]" << std::endl;
-			std::cout << "[ addr_ton: " << static_cast<unsigned>(msg.addr_ton) << " ]" << std::endl;
-			std::cout << "[ addr_npi: " << static_cast<unsigned>(msg.addr_npi) << " ]" << std::endl;
-			std::cout << "[ addr_range: " << msg.addr_range << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_bind_receiver_r(const smpp::bind_receiver_r & msg) {
-
-			std::cout << std::endl;
-			std::cout << "bind_receiver_r" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.tag: " << msg.sc_interface_version.tag << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.len: " << msg.sc_interface_version.len << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.val: " << static_cast<unsigned>(msg.sc_interface_version.val) << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_bind_transceiver(const smpp::bind_transceiver & msg) {
-
-			std::cout << std::endl;
-			std::cout << "bind_transceiver" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-			std::cout << "[ password: " << msg.password << " ]" << std::endl;
-			std::cout << "[ sys_type: " << msg.sys_type << " ]" << std::endl;
-			std::cout << "[ interface_version: " << static_cast<unsigned>(msg.interface_version) << " ]" << std::endl;
-			std::cout << "[ addr_ton: " << static_cast<unsigned>(msg.addr_ton) << " ]" << std::endl;
-			std::cout << "[ addr_npi: " << static_cast<unsigned>(msg.addr_npi) << " ]" << std::endl;
-			std::cout << "[ addr_range: " << msg.addr_range << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_bind_transceiver_r(const smpp::bind_transceiver_r & msg) {
-
-			std::cout << std::endl;
-			std::cout << "bind_transceiver_r" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.tag: " << msg.sc_interface_version.tag << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.len: " << msg.sc_interface_version.len << " ]" << std::endl;
-			std::cout << "[ sc_interface_version.val: " << static_cast<unsigned>(msg.sc_interface_version.val) << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_unbind(const smpp::unbind & msg) {
-
-			std::cout << std::endl;
-			std::cout << "unbind" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_unbind_r(const smpp::unbind_r & msg) {
-
-			std::cout << std::endl;
-			std::cout << "unbind_r" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_outbind(const smpp::outbind & msg) {
-
-			std::cout << std::endl;
-			std::cout << "outbind" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-
-			std::cout << "[ sys_id: " << msg.sys_id << " ]" << std::endl;
-			std::cout << "[ sys_password: " << msg.password << " ]" << std::endl;
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_generic_nack(const smpp::generic_nack & msg) {
-
-			std::cout << std::endl;
-			std::cout << "generic_nack" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
 		virtual action on_submit_sm(const smpp::submit_sm & msg) {
-
-			using namespace smpp;
-
-			std::cout << std::endl;
-			std::cout << "submit_sm" << std::endl;
-			std::cout << "[ command.len: " << msg.command.len << " ]" << std::endl;
-			std::cout << "[ command.id: " << msg.command.id << " ]" << std::endl;
-			std::cout << "[ command.status: " << msg.command.status << " ]" << std::endl;
-			std::cout << "[ command.seqno: " << msg.command.seqno << " ]" << std::endl;
-			std::cout << "[ serv_type: " << msg.serv_type << " ]" << std::endl;
-			std::cout << "[ src_addr_ton: " << static_cast<unsigned>(msg.src_addr_ton) << " ]" << std::endl;
-			std::cout << "[ src_addr_npi: " << static_cast<unsigned>(msg.src_addr_npi) << " ]" << std::endl;
-			std::cout << "[ src_addr: " << msg.src_addr << " ]" << std::endl;
-			std::cout << "[ dst_addr_ton: " << static_cast<unsigned>(msg.dst_addr_ton) << " ]" << std::endl;
-			std::cout << "[ dst_addr_npi: " << static_cast<unsigned>(msg.dst_addr_npi) << " ]" << std::endl;
-			std::cout << "[ dst_addr: " << msg.dst_addr << " ]" << std::endl;
-			std::cout << "[ esm_class: " << static_cast<unsigned>(msg.esm_class) << " ]" << std::endl;
-			std::cout << "[ protocol_id: " << static_cast<unsigned>(msg.protocol_id) << " ]" << std::endl;
-			std::cout << "[ priority_flag: " << static_cast<unsigned>(msg.priority_flag) << " ]" << std::endl;
-			std::cout << "[ schedule_delivery_time: " << msg.schedule_delivery_time << " ]" << std::endl;
-			std::cout << "[ validity_period: " << msg.validity_period << " ]" << std::endl;
-			std::cout << "[ registered_delivery: " << static_cast<unsigned>(msg.registered_delivery) << " ]" << std::endl;
-			std::cout << "[ replace_if_present_flag: " << static_cast<unsigned>(msg.replace_if_present_flag) << " ]" << std::endl;
-			std::cout << "[ data_coding: " << static_cast<unsigned>(msg.data_coding) << " ]" << std::endl;
-			std::cout << "[ sm_default_msg_id: " << static_cast<unsigned>(msg.sm_default_msg_id) << " ]" << std::endl;
-			std::cout << "[ short_msg_len: " << static_cast<unsigned>(msg.short_msg_len) << " ]" << std::endl;
-			std::cout << "[ short_msg: " << msg.short_msg << " ]" << std::endl;
-
-			if (msg.user_msg_reference.tag == option::user_msg_reference) {
-				std::cout << "[ user_msg_reference: " << msg.user_msg_reference.val << " ]" << std::endl;
-			}
-			if (msg.src_port.tag == option::src_port) {
-				std::cout << "[ src_port: " << msg.src_port.val << " ]" << std::endl;
-			}
-			if (msg.src_addr_subunit.tag == option::src_addr_subunit) {
-				std::cout << "[ src_addr_subunit: " << src_addr_subunit.val << " ]" << std::endl;
-			}
-			if (msg.dest_port.tag == option::dest_port) {
-				std::cout << "[ dest_port: " << msg.dest_port.val << " ]" << std::endl;
-			}
-			if (msg.dest_addr_subunit.tag == option::dest_addr_subunit) {
-				std::cout << "[ dest_addr_subunit: " << msg.dest_addr_subunit.val << " ]" << std::endl;
-			}
-			if (msg.sar_msg_ref_num.tag == option::sar_msg_ref_num) {
-				std::cout << "[ sar_msg_ref_num: " << msg.sar_msg_ref_num.val << " ]" << std::endl;
-			}
-			if (msg.sar_total_segments.tag == option::sar_total_segments) {
-				std::cout << "[ sar_total_segments: " << msg.sar_total_segments.val << " ]" << std::endl;
-			}
-			if (msg.sar_segment_seqnum.tag == option::sar_segment_seqnum) {
-				std::cout << "[ sar_segment_seqnum: " << msg.sar_segment_seqnum.val << " ]" << std::endl;
-			}
-			if (msg.more_msgs_to_send.tag == option::more_msgs_to_send) {
-				std::cout << "[ more_msgs_to_send: " << msg.more_msgs_to_send.val << " ]" << std::endl;
-			}
-			if (msg.payload_type.tag == option::payload_type) {
-				std::cout << "[ payload_type: " << msg.payload_type.val << " ]" << std::endl;
-			}
-			if (msg.msg_payload.tag == option::msg_payload) {
-				std::cout << "[ msg_payload: " << msg.msg_payload.val << std::endl;
-			}
-			if (msg.privacy_ind.tag == option::privacy_ind) {
-				std::cout << "[ privacy_ind: " << msg.privacy_ind.val << " ]" << std::endl;
-			}
-			if (msg.callback_num.tag == option::privacy_ind) {
-				std::cout << "[ callback_num: " << msg.callback_num.val << " ]" << std::endl;
-			}
-			if (msg.callback_num_pres_ind.tag == option::callback_num_pres_ind) {
-				std::cout << "[ callback_num_pres_ind: " << msg.callback_num_pres_ind.val << " ]" << std::endl;
-			}
-			if (msg.callback_num_atag.tag == option::callback_num_atag) {
-				std::cout << "[ callback_num_atag: " << msg.callback_num_atag.val << " ]" << std::endl;
-			}
-			if (msg.src_subaddr.tag == option::src_subaddr) {
-			}
-			if (msg.user_resp_code.tag == option::user_resp_code) {
-				RETURN_NULL_IF(buf + msg.user_resp_code.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.user_resp_code);
-			}
-			if (msg.display_time.tag == option::display_time) {
-				RETURN_NULL_IF(buf + msg.display_time.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.display_time);
-			}
-			if (msg.sms_signal.tag == option::sms_signal) {
-				RETURN_NULL_IF(buf + msg.sms_signal.raw_size() > bend);
-				buf = write_tlv_u16(buf, msg.sms_signal);
-			}
-			if (msg.ms_validity.tag == option::ms_validity) {
-				RETURN_NULL_IF(buf + msg.ms_validity.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.ms_validity);
-			}
-			if (msg.ms_msg_wait_fclts.tag == option::ms_msg_wait_fclts) {
-				RETURN_NULL_IF(buf + msg.ms_msg_wait_fclts.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.ms_msg_wait_fclts);
-			}
-			if (msg.number_of_msgs.tag == option::number_of_msgs) {
-				RETURN_NULL_IF(buf + msg.number_of_msgs.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.number_of_msgs);
-			}
-			if (msg.alert_on_msg_delivery.tag == option::alert_on_msg_delivery) {
-				RETURN_NULL_IF(buf + msg.alert_on_msg_delivery.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.alert_on_msg_delivery);
-			}
-			if (msg.lang_ind.tag == option::lang_ind) {
-				RETURN_NULL_IF(buf + msg.lang_ind.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.lang_ind);
-			}
-			if (msg.its_reply_type.tag == option::its_reply_type) {
-				RETURN_NULL_IF(buf + msg.its_reply_type.raw_size() > bend);
-				buf = write_tlv_u8(buf, msg.its_reply_type);
-			}
-			if (msg.its_session_info.tag == option::its_session_info) {
-				RETURN_NULL_IF(buf + msg.its_session_info.raw_size() > bend);
-				buf = write_tlv_s2(buf, msg.its_session_info);
-			}
-			if (msg.ussd_serv_op.tag == option::ussd_serv_op) {
-				RETURN_NULL_IF(buf + msg.ussd_serv_op.raw_size() > bend);
-				buf = write_tlv_s1(buf, msg.ussd_serv_op);
-			}
-
-
+			std::cout << msg << std::endl;
 			return resume;
 		}
 
@@ -743,6 +511,18 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.user_msg_reference.tag	= option::user_msg_reference;
 	msg.user_msg_reference.len	= 2;
 	msg.user_msg_reference.val	= 0x10;
+
+	msg.src_port.tag			= option::src_port;
+	msg.src_port.len			= 2;
+	msg.src_port.val			= 0x10;
+
+	/*msg.src_addr_subunit.tag	= option::src_addr_subunit;
+	msg.src_addr_subunit.len	= 
+	msg.src_addr_subunit.val	=
+
+	msg.dest_port.tag			= option::dest_port;
+	msg.dest_port
+	*/
 
 	msg.command.id				= command::submit_sm;
 	msg.command.seqno			= 0x00000010;
