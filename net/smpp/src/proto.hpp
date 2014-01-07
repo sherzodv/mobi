@@ -3220,7 +3220,6 @@ namespace mobi { namespace net { namespace smpp {
 							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						default:
-							L << "default" << std::endl;
 							/* TODO: implement other parsers */
 							return nullptr;
 					}
@@ -3562,7 +3561,6 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
 						default:
-							L << "LOOK" << std::endl;
 							return nullptr;
 					}
 				}

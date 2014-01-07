@@ -516,13 +516,13 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.src_port.len			= 2;
 	msg.src_port.val			= 0x10;
 
-	/*msg.src_addr_subunit.tag	= option::src_addr_subunit;
+	msg.src_addr_subunit.tag	= option::src_addr_subunit;
 	msg.src_addr_subunit.len	= 
 	msg.src_addr_subunit.val	=
 
 	msg.dest_port.tag			= option::dest_port;
-	msg.dest_port
-	*/
+	msg.dest_port.len			=
+	msg.dest_port.val
 
 	msg.command.id				= command::submit_sm;
 	msg.command.seqno			= 0x00000010;
