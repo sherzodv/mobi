@@ -3787,7 +3787,6 @@ namespace mobi { namespace net { namespace smpp {
 							break;
 						case option::callback_num:
 							buf = parse_tlv_s19(msg.callback_num, buf);
-							L << msg.callback_num << std::endl;
 							break;
 						case option::callback_num_pres_ind:
 							buf = parse_tlv_u8(msg.callback_num_pres_ind, buf);

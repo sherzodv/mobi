@@ -3835,6 +3835,7 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
 						default:
+							L << "DEFAULT" << std::endl;
 							return nullptr;
 					}
 				}
