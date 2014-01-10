@@ -240,6 +240,11 @@ class smpp_parser : public smpp::parser<std::ostream> {
 			std::cout << msg << std::endl;
 			return resume;
 		}
+
+		virtual action on_data_sm(const smpp::data_sm & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
 };
 
 #if 0
@@ -330,8 +335,8 @@ BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 	BOOST_CHECK(r.user_msg_reference				== r2.user_msg_reference);
 	BOOST_CHECK(r.src_port							== r2.src_port);
 	BOOST_CHECK(r.src_addr_subunit					== r2.src_addr_subunit);
-	BOOST_CHECK(r.dest_port							== r2.dest_port);
-	BOOST_CHECK(r.dest_addr_subunit					== r2.dest_addr_subunit);
+	BOOST_CHECK(r.dst_port							== r2.dst_port);
+	BOOST_CHECK(r.dst_addr_subunit					== r2.dst_addr_subunit);
 	BOOST_CHECK(r.sar_msg_ref_num					== r2.sar_msg_ref_num);
 	BOOST_CHECK(r.sar_total_segments				== r2.sar_total_segments);
 	BOOST_CHECK(r.sar_segment_seqnum				== r2.sar_segment_seqnum);
@@ -343,7 +348,7 @@ BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 	BOOST_CHECK(r.callback_num_pres_ind				== r2.callback_num_pres_ind);
 	BOOST_CHECK(r.callback_num_atag					== r2.callback_num_atag);
 	BOOST_CHECK(r.src_subaddr						== r2.src_subaddr);
-	BOOST_CHECK(r.dest_subaddr						== r2.dest_subaddr);
+	BOOST_CHECK(r.dst_subaddr						== r2.dst_subaddr);
 	BOOST_CHECK(r.user_resp_code					== r2.user_resp_code);
 	BOOST_CHECK(r.display_time						== r2.display_time);
 	BOOST_CHECK(r.sms_signal						== r2.sms_signal);
@@ -385,10 +390,10 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter )
 	bin::u8_t * buf		= asbuf(_buf);
 	bin::u8_t * bend	= asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter_r )
 {
@@ -414,10 +419,10 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_outbind )
 {
@@ -439,10 +444,10 @@ BOOST_AUTO_TEST_CASE( test_pw_outbind )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_bind_receiver )
 {
@@ -470,10 +475,10 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_receiver )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_bind_receiver_r )
 {
@@ -498,10 +503,10 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_receiver_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver )
 {
@@ -529,10 +534,10 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver_r )
 {
@@ -557,10 +562,10 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_unbind )
 {
@@ -580,10 +585,10 @@ BOOST_AUTO_TEST_CASE( test_pw_unbind )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_unbind_r )
 {
@@ -603,10 +608,10 @@ BOOST_AUTO_TEST_CASE( test_pw_unbind_r )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_generic_nack )
 {
@@ -626,10 +631,10 @@ BOOST_AUTO_TEST_CASE( test_pw_generic_nack )
 	bin::u8_t * buf = asbuf(_buf);
 	bin::u8_t * bend = asbuf(_buf) + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 {
@@ -662,8 +667,8 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.user_msg_reference.set(0x10);
 	msg.src_port.set(0x10);
 	msg.src_addr_subunit.set(0x10);
-	msg.dest_port.set(0x10);
-	msg.dest_addr_subunit.set(0x10);
+	msg.dst_port.set(0x10);
+	msg.dst_addr_subunit.set(0x10);
 	msg.sar_msg_ref_num.set(0x10);
 	msg.sar_total_segments.set(0x10);
 	msg.sar_segment_seqnum.set(0x10);
@@ -674,7 +679,7 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.callback_num_pres_ind.set(0x10);
 	msg.callback_num_atag.set(STR("HELLO"));
 	msg.src_subaddr.set(STR("HELLO"));
-	msg.dest_subaddr.set(STR("HELLO"));
+	msg.dst_subaddr.set(STR("HELLO"));
 	msg.user_resp_code.set(0x10);
 	msg.display_time.set(0x10);
 	msg.sms_signal.set(0x10);
@@ -687,27 +692,21 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	msg.its_session_info.set(STR("H"));
 	msg.ussd_serv_op.set(0x41);
 
-	msg.command.id				= command::submit_sm;
-	msg.command.seqno			= 0x00000010;
-	msg.command.status			= 0x00000010;
 	msg.command.len				= msg.raw_size();
 
-	bin::u8_t _buf[0x200];
+	bin::u8_t _buf[0x300];
 
-	/*=
-		"\x00\x00\x00\x41\x00\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x01\x00"
-		"\x00\x01\x30\x30\x30\x30\x00\x01\x01\x37\x39\x38\x32\x32\x32\x30\x36"
-		"\x36\x39\x32\x00\x40\x00\x00\x00\x00\x01\x00\x08\x00\x11\x06\x08\x04"
-		"\x00\x03\x01\x01\x00\x61\x00\x73\x00\x73\x00\x73\x00\x73";
-		*/
-	
 	bin::u8_t * buf = _buf;
 	bin::u8_t * bend = _buf + msg.command.len;
 
+	/*const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+	*/
 	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
+	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_submit_sm_r )
 {
@@ -725,10 +724,10 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm_r )
 	bin::u8_t * buf = _buf;
 	bin::u8_t * bend = _buf + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 {
@@ -740,13 +739,13 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 
 	deliver_sm msg;
 	/* mandatory fields */
-	SET_STRING(msg.serv_type,	"SUBS");
+	SET_STRING(msg.serv_type,	"DELV");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"SUBMIT_SM");
+	SET_STRING(msg.src_addr,	"DELV_SM");
 	msg.dst_addr_ton			= 0x10;
 	msg.dst_addr_npi			= 0x10;
-	SET_STRING(msg.dst_addr,	"SUBMIT_SM");
+	SET_STRING(msg.dst_addr,	"DELV_SM");
 	msg.esm_class				= 0x10;
 	msg.protocol_id				= 0x10;
 	msg.priority_flag			= 0x10;
@@ -756,11 +755,11 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 	msg.replace_if_present_flag	= 0x10;
 	msg.data_coding				= 0x10;
 	msg.sm_default_msg_id		= 0x10;
-	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
+	SET_STRING(msg.short_msg,	"DELV_SM_SHORT_MESSAGE");
 	/* optional fields */
 	msg.user_msg_reference.set(0x10);
 	msg.src_port.set(0x10);
-	msg.dest_port.set(0x10);
+	msg.dst_port.set(0x10);
 	msg.sar_msg_ref_num.set(0x10);
 	msg.sar_total_segments.set(0x10);
 	msg.sar_segment_seqnum.set(0x10);
@@ -768,7 +767,7 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 	msg.privacy_ind.set(0x10);
 	msg.callback_num.set(STR("HELLO"));
 	msg.src_subaddr.set(STR("HELLO"));
-	msg.dest_subaddr.set(STR("HELLO"));
+	msg.dst_subaddr.set(STR("HELLO"));
 	msg.user_resp_code.set(0x10);
 	msg.lang_ind.set(0x10);
 	msg.its_session_info.set(STR("H"));
@@ -790,10 +789,10 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 	bin::u8_t * buf = _buf;
 	bin::u8_t * bend = _buf + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_deliver_sm_r )
 {
@@ -803,6 +802,7 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm_r )
 	writer<std::ostream>	w(std::cout);
 	smpp_parser				p(std::cout);
 
+	const void * ptr;
 	deliver_sm_r msg;
 	SET_STRING(msg.msg_id,		"MSG_ID");
 	msg.command.len				= msg.raw_size();
@@ -811,8 +811,68 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm_r )
 	bin::u8_t * buf = _buf;
 	bin::u8_t * bend = _buf + msg.command.len;
 
-	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	BOOST_CHECK(w.write(buf, bend, msg) == bend);
-	BOOST_CHECK(p.parse(buf, bend) != nullptr);
-	BOOST_CHECK(p.parse(buf, bend) == bend);
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
+BOOST_AUTO_TEST_CASE( test_pw_data_sm )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	data_sm msg;
+	/* mandatory fields */
+	SET_STRING(msg.serv_type,	"DATA");
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"DATA_SM");
+	msg.dst_addr_ton			= 0x10;
+	msg.dst_addr_npi			= 0x10;
+	SET_STRING(msg.dst_addr,	"DATA_SM");
+	msg.esm_class				= 0x10;
+	msg.registered_delivery		= 0x10;
+	msg.data_coding				= 0x10;
+	/* optional fields */
+	msg.user_msg_reference.set(0x10);
+	msg.src_port.set(0x10);
+	msg.src_addr_subunit.set(0x10);
+	msg.dst_port.set(0x10);
+	msg.dst_addr_subunit.set(0x10);
+	msg.sar_msg_ref_num.set(0x10);
+	msg.sar_total_segments.set(0x10);
+	msg.sar_segment_seqnum.set(0x10);
+	msg.more_msgs_to_send.set(0x10);
+	msg.payload_type.set(0x10);
+	msg.privacy_ind.set(0x10);
+	msg.callback_num.set(STR("HELLO"));
+	msg.callback_num_pres_ind.set(0x10);
+	msg.callback_num_atag.set(STR("HELLO"));
+	msg.src_subaddr.set(STR("HELLO"));
+	msg.dst_subaddr.set(STR("HELLO"));
+	msg.user_resp_code.set(0x10);
+	msg.display_time.set(0x10);
+	msg.sms_signal.set(0x10);
+	msg.ms_validity.set(0x10);
+	msg.ms_msg_wait_fclts.set(0x10);
+	msg.number_of_msgs.set(0x10);
+	msg.alert_on_msg_delivery.set(0x10);
+	msg.lang_ind.set(0x10);
+	msg.its_reply_type.set(0x10);
+	msg.its_session_info.set(STR("H"));
+
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x200];
+
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+
