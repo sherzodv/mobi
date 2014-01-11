@@ -245,6 +245,31 @@ class smpp_parser : public smpp::parser<std::ostream> {
 			std::cout << msg << std::endl;
 			return resume;
 		}
+
+		virtual action on_data_sm_r(const smpp::data_sm_r & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_query_sm(const smpp::query_sm & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_query_sm_r(const smpp::query_sm_r & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_cancel_sm(const smpp::cancel_sm & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_cancel_sm_r(const smpp::cancel_sm_r & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
 };
 
 #if 0
@@ -873,6 +898,134 @@ BOOST_AUTO_TEST_CASE( test_pw_data_sm )
 	const void * ptr;
 	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
 	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_data_sm_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	data_sm_r msg;
+	/* mandatory fields */
+	SET_STRING(msg.msg_id,		"MSG_ID");
+
+	msg.delivery_failure_reason.set(0x10);
+	msg.network_error_code.set(STR("Fl"));
+	msg.additional_status_info_text.set(STR("hello everybody!"));
+	msg.dpf_result.set(0x10);
+	/*
+	*/
+
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_query_sm )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	query_sm msg;
+	SET_STRING(msg.msg_id,		"QUERY");
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"QUERY_SM");
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_query_sm_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	query_sm_r msg;
+	SET_STRING(msg.msg_id,		"QUERY");
+	SET_STRING(msg.final_date,	"11.01.14");
+	msg.msg_state				= 0x10;
+	msg.error_code				= 0x10;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_cancel_sm )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	cancel_sm msg;
+	SET_STRING(msg.serv_type,	"CNCL");
+	SET_STRING(msg.msg_id,		"CANCEL_SM");
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"CANCEL_SM");
+	msg.dst_addr_ton			= 0x10;
+	msg.dst_addr_npi			= 0x10;
+	SET_STRING(msg.dst_addr,	"CANCEL_SM");
+
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_cancel_sm_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	cancel_sm_r msg;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 
