@@ -1772,16 +1772,32 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	src_addr_ton;
 			bin::u8_t	src_addr_npi;
 			bin::u8_t	src_addr[21];
-			bin::u8_t schedule_delivery_time[17];
-			bin::u8_t validity_period[17];
-			bin::u8_t registered_delivery;
-			bin::u8_t sm_default_msg_id;
-			bin::u8_t short_msg_len;
-			bin::u8_t short_msg[254];
+			bin::u8_t	schedule_delivery_time[17];
+			bin::u8_t	validity_period[17];
+			bin::u8_t	registered_delivery;
+			bin::u8_t	sm_default_msg_id;
+			bin::u8_t	short_msg_len;
+			bin::u8_t	short_msg[254];
+
+			std::size_t msg_id_len;
+			std::size_t src_addr_len;
+			std::size_t schedule_delivery_time_len;
+			std::size_t validity_period_len;
 
 			replace_sm()
 				: command(command::replace_sm)
 			{}
+
+			bin::sz_t raw_size() const {
+				return	sizeof(command)
+						+ msg_id_len
+						+ 2
+						+ src_addr_len
+						+ schedule_delivery_time_len
+						+ validity_period_len
+						+ 3
+						+ short_msg_len;
+			}
 		};
 
 		struct replace_sm_r {
@@ -1790,6 +1806,10 @@ namespace mobi { namespace net { namespace smpp {
 			replace_sm_r()
 				: command(command::replace_sm_r)
 			{}
+
+			bin::sz_t raw_size() const {
+				return	sizeof(command);
+			}
 		};
 
 		/* ENQUIRE LINK Operation */
@@ -1800,6 +1820,10 @@ namespace mobi { namespace net { namespace smpp {
 			enquire_link()
 				: command(command::enquire_link)
 			{}
+
+			bin::sz_t raw_size() const {
+				return 	sizeof(command);
+			}
 		};
 
 		struct enquire_link_r {
@@ -1808,6 +1832,10 @@ namespace mobi { namespace net { namespace smpp {
 			enquire_link_r()
 				: command(command::enquire_link_r)
 			{}
+
+			bin::sz_t raw_size() const {
+				return 	sizeof(command);
+			}
 		};
 
 		/* ALERT NOTIFICATIONS Operation */
@@ -1817,10 +1845,13 @@ namespace mobi { namespace net { namespace smpp {
 
 			bin::u8_t	src_addr_ton;
 			bin::u8_t	src_addr_npi;
-			bin::u8_t src_addr[65];
+			bin::u8_t	src_addr[65];
 			bin::u8_t	esme_addr_ton;
-			bin::u8_t esme_addr_npi;
-			bin::u8_t	esme_addr;
+			bin::u8_t	esme_addr_npi;
+			bin::u8_t	esme_addr[65];
+
+			std::size_t src_addr_len;
+			std::size_t esme_addr_len;
 
 			/* OPTIONAL PARAMETERS for ALERT NOTIFICATION */
 
@@ -1829,6 +1860,17 @@ namespace mobi { namespace net { namespace smpp {
 			alert_notification()
 				: command(command::alert_notification)
 			{}
+
+			bin::sz_t raw_size() const {
+				return 	sizeof(command)
+						+ 2
+						+ src_addr_len
+						+ 2
+						+ esme_addr_len
+						+ (ms_availability_status.tag
+								== option::ms_availability_status
+								? ms_availability_status.raw_size(): 0);
+			}
 		};
 
 		struct generic_nack {
@@ -2790,24 +2832,24 @@ namespace mobi { namespace net { namespace smpp {
 				, const submit_sm & r) {
 			L	<< "submit_sm: "
 				<< r.command
-				<< " [serv_type:"				<< r.serv_type													<< "]"
-				<< " [src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
-				<< " [src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
-				<< " [src_addr:"				<< r.src_addr													<< "]"
-				<< " [dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
-				<< " [dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
-				<< " [dst_addr:"				<< r.dst_addr													<< "]"
-				<< " [esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
-				<< " [protocol_id:"				<< static_cast<int>(r.protocol_id)								<< "]"
-				<< " [priority_flag:"			<< static_cast<int>(r.priority_flag)							<< "]"
-				<< " [schedule_delivery_time:"	<< r.schedule_delivery_time										<< "]"
-				<< " [validity_period:"			<< r.validity_period											<< "]"
-				<< " [registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
-				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag)					<< "]"
-				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]"
-				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)						<< "]"
-				<< " [short_msg_len:"			<< static_cast<int>(r.short_msg_len)							<< "]"
-				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)		<< "]";
+				<< "[serv_type:"				<< r.serv_type													<< "]"
+				<< "[src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
+				<< "[src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
+				<< "[src_addr:"				<< r.src_addr													<< "]"
+				<< "[dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
+				<< "[dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
+				<< "[dst_addr:"				<< r.dst_addr													<< "]"
+				<< "[esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
+				<< "[protocol_id:"				<< static_cast<int>(r.protocol_id)								<< "]"
+				<< "[priority_flag:"			<< static_cast<int>(r.priority_flag)							<< "]"
+				<< "[schedule_delivery_time:"	<< r.schedule_delivery_time										<< "]"
+				<< "[validity_period:"			<< r.validity_period											<< "]"
+				<< "[registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
+				<< "[replace_if_present_flag:"<< static_cast<bool>(r.replace_if_present_flag)					<< "]"
+				<< "[data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]"
+				<< "[sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)						<< "]"
+				<< "[short_msg_len:"			<< static_cast<int>(r.short_msg_len)							<< "]"
+				<< "[short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)		<< "]";
 			if (r.user_msg_reference.tag != 0)	{ L << "[user_msg_reference:"		<< r.user_msg_reference		<< "]";	}
 			if (r.src_port.tag != 0)			{ L << "[src_port:"				<< r.src_port				<< "]"; }
 			if (r.src_addr_subunit.tag != 0)	{ L << "[src_addr_subunit:"		<< r.src_addr_subunit		<< "]"; }
@@ -2820,23 +2862,23 @@ namespace mobi { namespace net { namespace smpp {
 			if (r.payload_type.tag != 0)		{ L << "[payload_type:"			<< r.payload_type			<< "]"; }
 			if (r.msg_payload.tag != 0)			{ L << "[msg_payload:"
 				<< std::string(r.payload_type.val, r.payload_type.val +	r.payload_type.len) << "]"; }
-			if (r.privacy_ind.tag != 0)			{ L << " [privacy_ind:"				<< r.privacy_ind			<< "]"; }
-			if (r.callback_num.tag != 0)		{ L << " [callback_num:"			<< r.callback_num			<< "]";	}
-			if (r.callback_num_pres_ind.tag!=0) { L << " [callback_num_pres_ind:"	<< r.callback_num_pres_ind 	<< "]"; }
-			if (r.callback_num_atag.tag != 0)	{ L << " [callback_num_atag:"		<< r.callback_num_atag		<< "]";	}
-			if (r.src_subaddr.tag != 0)			{ L << " [src_subaddr:"				<< r.src_subaddr			<< "]";	}
-			if (r.dst_subaddr.tag != 0)		{ L << " [dst_subaddr:"			<< r.dst_subaddr			<< "]";	}
-			if (r.user_resp_code.tag != 0)		{ L << " [user_resp_code:"			<< r.user_resp_code			<< "]";	}
-			if (r.display_time.tag != 0)		{ L << " [display_time:"			<< r.display_time			<< "]"; }
-			if (r.sms_signal.tag != 0)			{ L << " [sms_signal:"				<< r.sms_signal				<< "]";	}
-			if (r.ms_validity.tag != 0)			{ L << " [ms_validity:"				<< r.ms_validity			<< "]"; }
-			if (r.ms_msg_wait_fclts.tag!=0)		{ L << " [ms_msg_wait_fclts:"		<< r.ms_msg_wait_fclts		<< "]"; }
-			if (r.number_of_msgs.tag != 0)		{ L << " [number_of_msgs:"			<< r.number_of_msgs			<< "]";	}
-			if (r.alert_on_msg_delivery.tag!=0) { L << " [alert_on_msg_delivery:"	<< r.alert_on_msg_delivery	<< "]"; }
-			if (r.lang_ind.tag != 0)			{ L << " [lang_ind:"				<< r.lang_ind				<< "]"; }
-			if (r.its_reply_type.tag != 0)		{ L << " [its_reply_type:"			<< r.its_reply_type			<< "]"; }
-			if (r.its_session_info.tag != 0)	{ L << " [its_session_info:"		<< r.its_session_info		<< "]"; }
-			if (r.ussd_serv_op.tag != 0)		{ L << " [ussd_serv_op:"			<< r.ussd_serv_op			<< "]"; }
+			if (r.privacy_ind.tag != 0)			{ L << "[privacy_ind:"				<< r.privacy_ind			<< "]"; }
+			if (r.callback_num.tag != 0)		{ L << "[callback_num:"			<< r.callback_num			<< "]";	}
+			if (r.callback_num_pres_ind.tag!=0) { L << "[callback_num_pres_ind:"	<< r.callback_num_pres_ind 	<< "]"; }
+			if (r.callback_num_atag.tag != 0)	{ L << "[callback_num_atag:"		<< r.callback_num_atag		<< "]";	}
+			if (r.src_subaddr.tag != 0)			{ L << "[src_subaddr:"				<< r.src_subaddr			<< "]";	}
+			if (r.dst_subaddr.tag != 0)		{ L << "[dst_subaddr:"			<< r.dst_subaddr			<< "]";	}
+			if (r.user_resp_code.tag != 0)		{ L << "[user_resp_code:"			<< r.user_resp_code			<< "]";	}
+			if (r.display_time.tag != 0)		{ L << "[display_time:"			<< r.display_time			<< "]"; }
+			if (r.sms_signal.tag != 0)			{ L << "[sms_signal:"				<< r.sms_signal				<< "]";	}
+			if (r.ms_validity.tag != 0)			{ L << "[ms_validity:"				<< r.ms_validity			<< "]"; }
+			if (r.ms_msg_wait_fclts.tag!=0)		{ L << "[ms_msg_wait_fclts:"		<< r.ms_msg_wait_fclts		<< "]"; }
+			if (r.number_of_msgs.tag != 0)		{ L << "[number_of_msgs:"			<< r.number_of_msgs			<< "]";	}
+			if (r.alert_on_msg_delivery.tag!=0) { L << "[alert_on_msg_delivery:"	<< r.alert_on_msg_delivery	<< "]"; }
+			if (r.lang_ind.tag != 0)			{ L << "[lang_ind:"				<< r.lang_ind				<< "]"; }
+			if (r.its_reply_type.tag != 0)		{ L << "[its_reply_type:"			<< r.its_reply_type			<< "]"; }
+			if (r.its_session_info.tag != 0)	{ L << "[its_session_info:"		<< r.its_session_info		<< "]"; }
+			if (r.ussd_serv_op.tag != 0)		{ L << "[ussd_serv_op:"			<< r.ussd_serv_op			<< "]"; }
 			return L;
 		}
 
@@ -2846,16 +2888,16 @@ namespace mobi { namespace net { namespace smpp {
 				, const data_sm & r) {
 			L	<< "data_sm: "
 				<< r.command
-				<< " [serv_type:"				<< r.serv_type													<< "]"
-				<< " [src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
-				<< " [src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
-				<< " [src_addr:"				<< r.src_addr													<< "]"
-				<< " [dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
-				<< " [dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
-				<< " [dst_addr:"				<< r.dst_addr													<< "]"
-				<< " [esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
-				<< " [registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
-				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]";
+				<< "[serv_type:"				<< r.serv_type													<< "]"
+				<< "[src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
+				<< "[src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
+				<< "[src_addr:"				<< r.src_addr													<< "]"
+				<< "[dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
+				<< "[dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
+				<< "[dst_addr:"				<< r.dst_addr													<< "]"
+				<< "[esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
+				<< "[registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
+				<< "[data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]";
 			if (r.user_msg_reference.tag != 0)	{ L << "[user_msg_reference:"		<< r.user_msg_reference		<< "]";	}
 			if (r.src_port.tag != 0)			{ L << "[src_port:"				<< r.src_port				<< "]"; }
 			if (r.src_addr_subunit.tag != 0)	{ L << "[src_addr_subunit:"		<< r.src_addr_subunit		<< "]"; }
@@ -2868,22 +2910,22 @@ namespace mobi { namespace net { namespace smpp {
 			if (r.payload_type.tag != 0)		{ L << "[payload_type:"			<< r.payload_type			<< "]"; }
 			if (r.msg_payload.tag != 0)			{ L << "[msg_payload:"
 				<< std::string(r.payload_type.val, r.payload_type.val +	r.payload_type.len) << "]"; }
-			if (r.privacy_ind.tag != 0)			{ L << " [privacy_ind:"				<< r.privacy_ind			<< "]"; }
-			if (r.callback_num.tag != 0)		{ L << " [callback_num:"			<< r.callback_num			<< "]";	}
-			if (r.callback_num_pres_ind.tag!=0) { L << " [callback_num_pres_ind:"	<< r.callback_num_pres_ind 	<< "]"; }
-			if (r.callback_num_atag.tag != 0)	{ L << " [callback_num_atag:"		<< r.callback_num_atag		<< "]";	}
-			if (r.src_subaddr.tag != 0)			{ L << " [src_subaddr:"				<< r.src_subaddr			<< "]";	}
-			if (r.dst_subaddr.tag != 0)		{ L << " [dst_subaddr:"			<< r.dst_subaddr			<< "]";	}
-			if (r.user_resp_code.tag != 0)		{ L << " [user_resp_code:"			<< r.user_resp_code			<< "]";	}
-			if (r.display_time.tag != 0)		{ L << " [display_time:"			<< r.display_time			<< "]"; }
-			if (r.sms_signal.tag != 0)			{ L << " [sms_signal:"				<< r.sms_signal				<< "]";	}
-			if (r.ms_validity.tag != 0)			{ L << " [ms_validity:"				<< r.ms_validity			<< "]"; }
-			if (r.ms_msg_wait_fclts.tag!=0)		{ L << " [ms_msg_wait_fclts:"		<< r.ms_msg_wait_fclts		<< "]"; }
-			if (r.number_of_msgs.tag != 0)		{ L << " [number_of_msgs:"			<< r.number_of_msgs			<< "]";	}
-			if (r.alert_on_msg_delivery.tag!=0) { L << " [alert_on_msg_delivery:"	<< r.alert_on_msg_delivery	<< "]"; }
-			if (r.lang_ind.tag != 0)			{ L << " [lang_ind:"				<< r.lang_ind				<< "]"; }
-			if (r.its_reply_type.tag != 0)		{ L << " [its_reply_type:"			<< r.its_reply_type			<< "]"; }
-			if (r.its_session_info.tag != 0)	{ L << " [its_session_info:"		<< r.its_session_info		<< "]"; }
+			if (r.privacy_ind.tag != 0)			{ L << "[privacy_ind:"				<< r.privacy_ind			<< "]"; }
+			if (r.callback_num.tag != 0)		{ L << "[callback_num:"			<< r.callback_num			<< "]";	}
+			if (r.callback_num_pres_ind.tag!=0) { L << "[callback_num_pres_ind:"	<< r.callback_num_pres_ind 	<< "]"; }
+			if (r.callback_num_atag.tag != 0)	{ L << "[callback_num_atag:"		<< r.callback_num_atag		<< "]";	}
+			if (r.src_subaddr.tag != 0)			{ L << "[src_subaddr:"				<< r.src_subaddr			<< "]";	}
+			if (r.dst_subaddr.tag != 0)		{ L << "[dst_subaddr:"			<< r.dst_subaddr			<< "]";	}
+			if (r.user_resp_code.tag != 0)		{ L << "[user_resp_code:"			<< r.user_resp_code			<< "]";	}
+			if (r.display_time.tag != 0)		{ L << "[display_time:"			<< r.display_time			<< "]"; }
+			if (r.sms_signal.tag != 0)			{ L << "[sms_signal:"				<< r.sms_signal				<< "]";	}
+			if (r.ms_validity.tag != 0)			{ L << "[ms_validity:"				<< r.ms_validity			<< "]"; }
+			if (r.ms_msg_wait_fclts.tag!=0)		{ L << "[ms_msg_wait_fclts:"		<< r.ms_msg_wait_fclts		<< "]"; }
+			if (r.number_of_msgs.tag != 0)		{ L << "[number_of_msgs:"			<< r.number_of_msgs			<< "]";	}
+			if (r.alert_on_msg_delivery.tag!=0) { L << "[alert_on_msg_delivery:"	<< r.alert_on_msg_delivery	<< "]"; }
+			if (r.lang_ind.tag != 0)			{ L << "[lang_ind:"				<< r.lang_ind				<< "]"; }
+			if (r.its_reply_type.tag != 0)		{ L << "[its_reply_type:"			<< r.its_reply_type			<< "]"; }
+			if (r.its_session_info.tag != 0)	{ L << "[its_session_info:"		<< r.its_session_info		<< "]"; }
 			return L;
 		}
 
@@ -2894,7 +2936,7 @@ namespace mobi { namespace net { namespace smpp {
 			L
 			<< "submit_sm_r:"
 			<< r.command
-			<< "[msg_id:" << std::string(r.msg_id, r.msg_id + r.msg_id_len) << "]";
+			<< "[msg_id:"<< std::string(r.msg_id, r.msg_id + r.msg_id_len) << "]";
 
 			return L;
 		}
@@ -2906,7 +2948,7 @@ namespace mobi { namespace net { namespace smpp {
 			L
 			<< "deliver_sm_r:"
 			<< r.command
-			<< "[msg_id:" << std::string(r.msg_id, r.msg_id + r.msg_id_len) << "]";
+			<< "[msg_id:"<< std::string(r.msg_id, r.msg_id + r.msg_id_len) << "]";
 
 			return L;
 		}
@@ -2916,17 +2958,17 @@ namespace mobi { namespace net { namespace smpp {
 		operator<<(std::basic_ostream<CharT, TraitsT> &L
 				, const bind_transmitter & r) {
 			L<< "bind_transmitter:"
-			 << " [command.len: "		<< r.command.len								<< "]"
-			 << " [command.id: "		<< r.command.id									<< "]"
-			 << " [command.status: "	<< r.command.status								<< "]"
-			 << " [command.seqno: "		<< r.command.seqno								<< "]"
-			 << " [sys_id: "			<< r.sys_id										<< "]"
-			 << " [password: "			<< r.password									<< "]"
-			 << " [sys_type: "			<< r.sys_type									<< "]"
-			 << " [interface_version: "	<< static_cast<unsigned>(r.interface_version)	<< "]"
-			 << " [addr_ton: "			<< static_cast<unsigned>(r.addr_ton)			<< "]"
-			 << " [addr_npi: "			<< static_cast<unsigned>(r.addr_npi)			<< "]"
-			 << " [addr_range: "		<< r.addr_range									<< "]";
+			 << "[command.len: "		<< r.command.len								<< "]"
+			 << "[command.id: "		<< r.command.id									<< "]"
+			 << "[command.status: "	<< r.command.status								<< "]"
+			 << "[command.seqno: "		<< r.command.seqno								<< "]"
+			 << "[sys_id: "			<< r.sys_id										<< "]"
+			 << "[password: "			<< r.password									<< "]"
+			 << "[sys_type: "			<< r.sys_type									<< "]"
+			 << "[interface_version: "	<< static_cast<unsigned>(r.interface_version)	<< "]"
+			 << "[addr_ton: "			<< static_cast<unsigned>(r.addr_ton)			<< "]"
+			 << "[addr_npi: "			<< static_cast<unsigned>(r.addr_npi)			<< "]"
+			 << "[addr_range: "		<< r.addr_range									<< "]";
 
 			return L;
 		}
@@ -2936,17 +2978,17 @@ namespace mobi { namespace net { namespace smpp {
 		operator<<(std::basic_ostream<CharT, TraitsT> &L
 				, const bind_transmitter_r & r) {
 			L 
-			<< "bind_transmitter_r:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]" 
+			<< "bind_transmitter_r:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]"
 
-			<< " [sys_id: " << r.sys_id << "]" 
+			<< "[sys_id: "<< r.sys_id << "]"
 
-			<< " [sc_interface_version.tag: " << r.sc_interface_version.tag << "]" 
-			<< " [sc_interface_version.len: " << r.sc_interface_version.len << "]" 
-			<< " [sc_interface_version.val: " << static_cast<unsigned>(r.sc_interface_version.val) << "]";
+			<< "[sc_interface_version.tag: "<< r.sc_interface_version.tag << "]"
+			<< "[sc_interface_version.len: "<< r.sc_interface_version.len << "]"
+			<< "[sc_interface_version.val: "<< static_cast<unsigned>(r.sc_interface_version.val) << "]";
 
 			return L;
 		}
@@ -2956,19 +2998,19 @@ namespace mobi { namespace net { namespace smpp {
 		operator<<(std::basic_ostream<CharT, TraitsT> &L
 				, const bind_receiver & r) {
 			L
-			<< "bind_receiver:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]" 
+			<< "bind_receiver:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]"
 
-			<< " [sys_id: " << r.sys_id << "]" 
-			<< " [password: " << r.password << "]" 
-			<< " [sys_type: " << r.sys_type << "]" 
-			<< " [interface_version: " << static_cast<unsigned>(r.interface_version) << "]" 
-			<< " [addr_ton: " << static_cast<unsigned>(r.addr_ton) << "]" 
-			<< " [addr_npi: " << static_cast<unsigned>(r.addr_npi) << "]" 
-			<< " [addr_range: " << r.addr_range << "]";
+			<< "[sys_id: "<< r.sys_id << "]"
+			<< "[password: "<< r.password << "]"
+			<< "[sys_type: "<< r.sys_type << "]"
+			<< "[interface_version: "<< static_cast<unsigned>(r.interface_version) << "]"
+			<< "[addr_ton: "<< static_cast<unsigned>(r.addr_ton) << "]"
+			<< "[addr_npi: "<< static_cast<unsigned>(r.addr_npi) << "]"
+			<< "[addr_range: "<< r.addr_range << "]";
 
 			return L;
 		}
@@ -2978,16 +3020,16 @@ namespace mobi { namespace net { namespace smpp {
 		operator<<(std::basic_ostream<CharT, TraitsT> &L
 				, const bind_receiver_r & r) {
 			L
-			<< "bind_receiver_r:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]" 
+			<< "bind_receiver_r:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]"
 
-			<< " [sys_id: " << r.sys_id << "]" 
-			<< " [sc_interface_version.tag: " << r.sc_interface_version.tag << "]" 
-			<< " [sc_interface_version.len: " << r.sc_interface_version.len << "]" 
-			<< " [sc_interface_version.val: " << static_cast<unsigned>(r.sc_interface_version.val) << "]";
+			<< "[sys_id: "<< r.sys_id << "]"
+			<< "[sc_interface_version.tag: "<< r.sc_interface_version.tag << "]"
+			<< "[sc_interface_version.len: "<< r.sc_interface_version.len << "]"
+			<< "[sc_interface_version.val: "<< static_cast<unsigned>(r.sc_interface_version.val) << "]";
 
 			return L;
 		}
@@ -2997,19 +3039,19 @@ namespace mobi { namespace net { namespace smpp {
 		operator<<(std::basic_ostream<CharT, TraitsT> &L
 				, const bind_transceiver & r) {
 			L
-			<< "bind_transceiver:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]" 
+			<< "bind_transceiver:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]"
 
-			<< " [sys_id: " << r.sys_id << "]" 
-			<< " [password: " << r.password << "]" 
-			<< " [sys_type: " << r.sys_type << "]" 
-			<< " [interface_version: " << static_cast<unsigned>(r.interface_version) << "]" 
-			<< " [addr_ton: " << static_cast<unsigned>(r.addr_ton) << "]" 
-			<< " [addr_npi: " << static_cast<unsigned>(r.addr_npi) << "]" 
-			<< " [addr_range: " << r.addr_range << "]";
+			<< "[sys_id: "<< r.sys_id << "]"
+			<< "[password: "<< r.password << "]"
+			<< "[sys_type: "<< r.sys_type << "]"
+			<< "[interface_version: "<< static_cast<unsigned>(r.interface_version) << "]"
+			<< "[addr_ton: "<< static_cast<unsigned>(r.addr_ton) << "]"
+			<< "[addr_npi: "<< static_cast<unsigned>(r.addr_npi) << "]"
+			<< "[addr_range: "<< r.addr_range << "]";
 
 			return L;
 		}
@@ -3020,15 +3062,15 @@ namespace mobi { namespace net { namespace smpp {
 				, const bind_transceiver_r & r) {
 
 			L
-			<< "bind_transceiver_r:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]" 
-			<< " [sys_id: " << r.sys_id << "]";
+			<< "bind_transceiver_r:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]"
+			<< "[sys_id: "<< r.sys_id << "]";
 
 			if (r.sc_interface_version.tag == option::sc_interface_version) {
-				L << " [sc_interface_version.val: " << static_cast<unsigned>(r.sc_interface_version.val) << "]";
+				L << "[sc_interface_version.val: "<< static_cast<unsigned>(r.sc_interface_version.val) << "]";
 			}
 
 			return L;
@@ -3040,11 +3082,11 @@ namespace mobi { namespace net { namespace smpp {
 				, const unbind & r) {
 
 			L
-			<< "unbind:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]";
+			<< "unbind:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]";
 
 			return L;
 		}
@@ -3055,11 +3097,11 @@ namespace mobi { namespace net { namespace smpp {
 				, const unbind_r & r) {
 
 			L
-			<< "unbind_r:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]";
+			<< "unbind_r:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]";
 
 			return L;
 		}
@@ -3070,13 +3112,13 @@ namespace mobi { namespace net { namespace smpp {
 				, const outbind & r) {
 
 			L
-			<< "outbind:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]" 
-			<< " [sys_id: " << r.sys_id << "]" 
-			<< " [sys_password: " << r.password << "]";
+			<< "outbind:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]"
+			<< "[sys_id: "<< r.sys_id << "]"
+			<< "[sys_password: "<< r.password << "]";
 
 			return L;
 		}
@@ -3087,11 +3129,11 @@ namespace mobi { namespace net { namespace smpp {
 				, const generic_nack & r) {
 
 			L
-			<< "generic_nack:" 
-			<< " [command.len: " << r.command.len << "]" 
-			<< " [command.id: " << r.command.id << "]" 
-			<< " [command.status: " << r.command.status << "]" 
-			<< " [command.seqno: " << r.command.seqno << "]";
+			<< "generic_nack:"
+			<< "[command.len: "<< r.command.len << "]"
+			<< "[command.id: "<< r.command.id << "]"
+			<< "[command.status: "<< r.command.status << "]"
+			<< "[command.seqno: "<< r.command.seqno << "]";
 
 			return L;
 		}
@@ -3102,24 +3144,24 @@ namespace mobi { namespace net { namespace smpp {
 				, const deliver_sm & r) {
 			L	<< "deliver_sm: "
 				<< r.command
-				<< " [serv_type:"				<< r.serv_type													<< "]"
-				<< " [src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
-				<< " [src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
-				<< " [src_addr:"				<< r.src_addr													<< "]"
-				<< " [dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
-				<< " [dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
-				<< " [dst_addr:"				<< r.dst_addr													<< "]"
-				<< " [esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
-				<< " [protocol_id:"				<< static_cast<int>(r.protocol_id)								<< "]"
-				<< " [priority_flag:"			<< static_cast<int>(r.priority_flag)							<< "]"
-				<< " [schedule_delivery_time:"	<< r.schedule_delivery_time										<< "]"
-				<< " [validity_period:"			<< r.validity_period											<< "]"
-				<< " [registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
-				<< " [replace_if_present_flag:" << static_cast<bool>(r.replace_if_present_flag)					<< "]"
-				<< " [data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]"
-				<< " [sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)						<< "]"
-				<< " [short_msg_len:"			<< static_cast<int>(r.short_msg_len)							<< "]"
-				<< " [short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)		<< "]";
+				<< "[serv_type:"				<< r.serv_type													<< "]"
+				<< "[src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"
+				<< "[src_addr_npi:"			<< std::bitset<8>(r.src_addr_npi)								<< "]"
+				<< "[src_addr:"				<< r.src_addr													<< "]"
+				<< "[dst_addr_ton:"			<< std::bitset<8>(r.dst_addr_ton)								<< "]"
+				<< "[dst_addr_npi:"			<< std::bitset<8>(r.dst_addr_npi)								<< "]"
+				<< "[dst_addr:"				<< r.dst_addr													<< "]"
+				<< "[esm_class:"				<< std::bitset<8>(r.esm_class)									<< "]"
+				<< "[protocol_id:"				<< static_cast<int>(r.protocol_id)								<< "]"
+				<< "[priority_flag:"			<< static_cast<int>(r.priority_flag)							<< "]"
+				<< "[schedule_delivery_time:"	<< r.schedule_delivery_time										<< "]"
+				<< "[validity_period:"			<< r.validity_period											<< "]"
+				<< "[registered_delivery:"		<< static_cast<bool>(r.registered_delivery)						<< "]"
+				<< "[replace_if_present_flag:"<< static_cast<bool>(r.replace_if_present_flag)					<< "]"
+				<< "[data_coding:"				<< std::bitset<8>(r.data_coding)								<< "]"
+				<< "[sm_default_msg_id:"		<< static_cast<int>(r.sm_default_msg_id)						<< "]"
+				<< "[short_msg_len:"			<< static_cast<int>(r.short_msg_len)							<< "]"
+				<< "[short_msg:"				<< std::string(r.short_msg, r.short_msg + r.short_msg_len)		<< "]";
 			if (r.user_msg_reference.tag != 0)	{ L << "[user_msg_reference:"		<< r.user_msg_reference		<< "]";	}
 			if (r.src_port.tag != 0)			{ L << "[src_port:"				<< r.src_port				<< "]"; }
 			if (r.dst_port.tag != 0)			{ L << "[dst_port:"				<< r.dst_port				<< "]"; }
@@ -3147,7 +3189,7 @@ namespace mobi { namespace net { namespace smpp {
 			L
 			<< "data_sm_r:"
 			<< r.command
-			<< "[msg_id:" << std::string(r.msg_id, r.msg_id + r.msg_id_len) << "]";
+			<< "[msg_id:"<< std::string(r.msg_id, r.msg_id + r.msg_id_len) << "]";
 			if (r.delivery_failure_reason.tag != 0) {
 				L
 				<< "[delivery_failure_reason:"
@@ -3168,7 +3210,7 @@ namespace mobi { namespace net { namespace smpp {
 				<< "]";
 			}
 			if (r.dpf_result.tag != 0) {
-				L << "[dpf_result:" << static_cast<unsigned>(r.dpf_result.val) << "]";
+				L << "[dpf_result:"<< static_cast<unsigned>(r.dpf_result.val) << "]";
 			}
 
 			return L;
@@ -3185,8 +3227,8 @@ namespace mobi { namespace net { namespace smpp {
 			<< "[msg_id:"
 			<< std::string(r.msg_id, r.msg_id+r.msg_id_len)
 			<< "]"
-			<< "[src_addr_ton:" << static_cast<unsigned>(r.src_addr_ton) << "]"
-			<< "[src_addr_npi:" << static_cast<unsigned>(r.src_addr_npi) << "]"
+			<< "[src_addr_ton:"<< static_cast<unsigned>(r.src_addr_ton) << "]"
+			<< "[src_addr_npi:"<< static_cast<unsigned>(r.src_addr_npi) << "]"
 			<< "[src_addr:"
 			<< std::string(r.msg_id, r.msg_id+r.msg_id_len)
 			<< "]";
@@ -3202,10 +3244,10 @@ namespace mobi { namespace net { namespace smpp {
 			L
 			<< "query_sm_r:"
 			<< r.command
-			<< "[msg_id:" << std::string(r.msg_id, r.msg_id+r.msg_id_len) << "]"
-			<< "[final_date:" << std::string(r.final_date, r.final_date+r.final_date_len) << "]"
-			<< "[msg_state:" << static_cast<unsigned>(r.msg_state) << "]"
-			<< "[error_code:" << static_cast<unsigned>(r.error_code) << "]";
+			<< "[msg_id:"<< std::string(r.msg_id, r.msg_id+r.msg_id_len) << "]"
+			<< "[final_date:"<< std::string(r.final_date, r.final_date+r.final_date_len) << "]"
+			<< "[msg_state:"<< static_cast<unsigned>(r.msg_state) << "]"
+			<< "[error_code:"<< static_cast<unsigned>(r.error_code) << "]";
 
 			return L;
 		}
@@ -3218,14 +3260,14 @@ namespace mobi { namespace net { namespace smpp {
 			L
 			<< "cancel_sm:"
 			<< r.command
-			<< "[serv_type:" << std::string(r.serv_type, r.serv_type+r.serv_type_len) << "]"
-			<< "[msg_id:" << std::string(r.msg_id, r.msg_id+r.msg_id_len) << "]"
-			<< "[src_addr_ton:" << static_cast<unsigned>(r.src_addr_ton) << "]"
-			<< "[src_addr_npi:" << static_cast<unsigned>(r.src_addr_npi) << "]"
-			<< "[src_addr:" << std::string(r.src_addr, r.src_addr+r.src_addr_len) << "]"
-			<< "[dst_addr_ton:" << static_cast<unsigned>(r.dst_addr_ton) << "]"
-			<< "[dst_addr_npi:" << static_cast<unsigned>(r.dst_addr_npi) << "]"
-			<< "[dst_addr:" << std::string(r.dst_addr, r.dst_addr+r.dst_addr_len) << "]";
+			<< "[serv_type:"<< std::string(r.serv_type, r.serv_type+r.serv_type_len) << "]"
+			<< "[msg_id:"<< std::string(r.msg_id, r.msg_id+r.msg_id_len) << "]"
+			<< "[src_addr_ton:"<< static_cast<unsigned>(r.src_addr_ton) << "]"
+			<< "[src_addr_npi:"<< static_cast<unsigned>(r.src_addr_npi) << "]"
+			<< "[src_addr:"<< std::string(r.src_addr, r.src_addr+r.src_addr_len) << "]"
+			<< "[dst_addr_ton:"<< static_cast<unsigned>(r.dst_addr_ton) << "]"
+			<< "[dst_addr_npi:"<< static_cast<unsigned>(r.dst_addr_npi) << "]"
+			<< "[dst_addr:"<< std::string(r.dst_addr, r.dst_addr+r.dst_addr_len) << "]";
 
 			return L;
 		}
@@ -3237,6 +3279,102 @@ namespace mobi { namespace net { namespace smpp {
 			L
 			<< "cancel_sm_r:"
 			<< r.command;
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const replace_sm & r) {
+
+			L
+			<< "replace_sm:"
+			<< r.command
+			<< "[msg_id:"<< std::string(r.msg_id, r.msg_id+r.msg_id_len) << "]"
+			<< "[src_addr_ton:"<< static_cast<unsigned>(r.src_addr_ton) << "]"
+			<< "[src_addr_npi:"<< static_cast<unsigned>(r.src_addr_npi) << "]"
+			<< "[src_addr:"<< std::string(r.src_addr, r.src_addr+r.src_addr_len) << "]"
+			<< "[schedule_delivery_time:"
+			<< std::string(r.schedule_delivery_time,
+					r.schedule_delivery_time + r.schedule_delivery_time_len)
+			<< "]"
+			<< "[validity_period:"
+			<< std::string(r.validity_period,
+					r.validity_period + r.validity_period_len)
+			<< "]"
+			<< "[registered_delivery:"
+			<< static_cast<unsigned>(r.registered_delivery)
+			<< "]"
+			<< "[sm_default_msg_id:"
+			<< static_cast<unsigned>(r.sm_default_msg_id)
+			<< "]"
+			<< "[short_msg_len:"
+			<< static_cast<unsigned>(r.short_msg_len)
+			<< "]"
+			<< "[short_msg:"
+			<< std::string(r.short_msg,
+					r.short_msg + r.short_msg_len)
+			<< "]";
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const replace_sm_r & r) {
+
+			L
+			<< "replace_sm_r:"
+			<< r.command;
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const enquire_link & r) {
+
+			L
+			<< "enquire_link:"
+			<< r.command;
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const enquire_link_r & r) {
+
+			L
+			<< "enquire_link_r:"
+			<< r.command;
+
+			return L;
+		}
+
+		template<typename CharT, typename TraitsT>
+		std::basic_ostream<CharT, TraitsT>&
+		operator<<(std::basic_ostream<CharT, TraitsT> &L
+				, const alert_notification & r) {
+
+			L
+			<< "alert_notification:"
+			<< r.command
+			<< "[src_addr_ton:"<< static_cast<unsigned>(r.src_addr_ton) << "]"
+			<< "[src_addr_npi:"<< static_cast<unsigned>(r.src_addr_npi) << "]"
+			<< "[src_addr:"<< std::string(r.src_addr, r.src_addr+r.src_addr_len) << "]"
+			<< "[esme_addr_ton:"<< static_cast<unsigned>(r.esme_addr_ton) << "]"
+			<< "[esme_addr_npi:"<< static_cast<unsigned>(r.esme_addr_npi) << "]"
+			<< "[esme_addr:"<< std::string(r.esme_addr, r.esme_addr+r.esme_addr_len) << "]";
+			if (r.ms_availability_status.tag != 0) {
+				L
+				<< "[ms_availability_status:"
+				<< static_cast<unsigned>(r.ms_availability_status.val) << "]";
+			}
 
 			return L;
 		}
@@ -3742,10 +3880,8 @@ namespace mobi { namespace net { namespace smpp {
 				RETURN_NULL_IF(buf + msg.serv_type_len > bend);
 				buf = w::scpy(buf, msg.serv_type, msg.serv_type_len);
 
-				RETURN_NULL_IF(buf + sizeof(msg.src_addr_ton) > bend);
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
 				buf = w::cp_u8(buf, &msg.src_addr_ton);
-
-				RETURN_NULL_IF(buf + sizeof(msg.src_addr_npi) > bend);
 				buf = w::cp_u8(buf, &msg.src_addr_npi);
 
 				RETURN_NULL_IF(buf + msg.src_addr_len > bend);
@@ -4023,6 +4159,95 @@ namespace mobi { namespace net { namespace smpp {
 
 				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
 				buf = write_pdu(buf, msg.command);
+
+				return buf;
+			}
+
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
+					, const replace_sm & msg) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				RETURN_NULL_IF(buf + msg.msg_id_len > bend);
+				buf = w::scpy(buf, msg.msg_id, msg.msg_id_len);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
+				buf = w::cp_u8(buf, ascbuf(msg.src_addr_ton));
+				buf = w::cp_u8(buf, ascbuf(msg.src_addr_npi));
+				RETURN_NULL_IF(buf + msg.src_addr_len > bend);
+				buf = w::scpy(buf, msg.src_addr, msg.src_addr_len);
+
+				RETURN_NULL_IF(buf + msg.schedule_delivery_time_len > bend);
+				buf = w::scpy(buf, msg.schedule_delivery_time, msg.schedule_delivery_time_len);
+
+				RETURN_NULL_IF(buf + msg.validity_period_len > bend);
+				buf = w::scpy(buf, msg.validity_period, msg.validity_period_len);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*3 > bend);
+				buf = w::cp_u8(buf, ascbuf(msg.registered_delivery));
+				buf = w::cp_u8(buf, ascbuf(msg.sm_default_msg_id));
+				buf = w::cp_u8(buf, ascbuf(msg.short_msg_len));
+
+				RETURN_NULL_IF(buf + msg.short_msg_len > bend);
+				buf = w::scpy(buf, msg.short_msg, msg.short_msg_len);
+
+				return buf;
+			}
+
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
+					, const replace_sm_r & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				return buf;
+			}
+
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
+					, const enquire_link & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				return buf;
+			}
+
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
+					, const enquire_link_r & msg) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				return buf;
+			}
+
+			bin::u8_t * write(bin::u8_t * buf, const bin::u8_t * bend
+					, const alert_notification & msg) {
+
+				using namespace bin;
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = write_pdu(buf, msg.command);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
+				buf = w::cp_u8(buf, ascbuf(msg.src_addr_ton));
+				buf = w::cp_u8(buf, ascbuf(msg.src_addr_npi));
+				RETURN_NULL_IF(buf + msg.src_addr_len > bend);
+				buf = w::scpy(buf, msg.src_addr, msg.src_addr_len);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
+				buf = w::cp_u8(buf, ascbuf(msg.esme_addr_ton));
+				buf = w::cp_u8(buf, ascbuf(msg.esme_addr_npi));
+				RETURN_NULL_IF(buf + msg.esme_addr_len > bend);
+				buf = w::scpy(buf, msg.esme_addr, msg.esme_addr_len);
+
+				if (msg.ms_availability_status.tag == option::ms_availability_status) {
+					RETURN_NULL_IF(buf + msg.ms_availability_status.raw_size() > bend);
+					buf = write_tlv_u8(buf, msg.ms_availability_status);
+				}
 
 				return buf;
 			}
@@ -4306,6 +4531,11 @@ namespace mobi { namespace net { namespace smpp {
 			virtual action on_query_sm_r(const query_sm_r & msg) = 0;
 			virtual action on_cancel_sm(const cancel_sm & msg) = 0;
 			virtual action on_cancel_sm_r(const cancel_sm_r & msg) = 0;
+			virtual action on_replace_sm(const replace_sm & msg) = 0;
+			virtual action on_replace_sm_r(const replace_sm_r & msg) = 0;
+			virtual action on_enquire_link(const enquire_link & msg) = 0;
+			virtual action on_enquire_link_r(const enquire_link_r & msg) = 0;
+			virtual action on_alert_notification(const alert_notification & msg) = 0;
 
 		private:
 
@@ -4351,7 +4581,6 @@ namespace mobi { namespace net { namespace smpp {
 							RETURN_NULL_IF(cur == nullptr);
 							continue;
 						case command::bind_receiver_r:
-							std::cout << "accepted" << std::endl;
 							cur = parse_bind_receiver_r(cur, cur + len);
 							RETURN_NULL_IF(cur == nullptr);
 							continue;
@@ -4414,9 +4643,27 @@ namespace mobi { namespace net { namespace smpp {
 							cur = parse_cancel_sm_r(cur, cur + len);
 							RETURN_NULL_IF(cur == nullptr);
 							continue;
+						case command::replace_sm:
+							cur = parse_replace_sm(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
+							continue;
+						case command::replace_sm_r:
+							cur = parse_replace_sm_r(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
+							continue;
+						case command::enquire_link:
+							cur = parse_enquire_link(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
+							continue;
+						case command::enquire_link_r:
+							cur = parse_enquire_link_r(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
+							continue;
+						case command::alert_notification:
+							cur = parse_alert_notification(cur, cur + len);
+							RETURN_NULL_IF(cur == nullptr);
+							continue;
 						default:
-							/* TODO: implement other parsers */
-							L << "DEFAULT" << std::endl;
 							return nullptr;
 					}
 				}
@@ -4752,7 +4999,6 @@ namespace mobi { namespace net { namespace smpp {
 							buf = parse_tlv_s1(msg.ussd_serv_op, buf);
 							break;
 						default:
-							L << "parse_submit_sm default" << std::endl;
 							return nullptr;
 					}
 				}
@@ -5403,6 +5649,147 @@ namespace mobi { namespace net { namespace smpp {
 				buf = parse_pdu(msg.command, buf);
 
 				if (on_cancel_sm_r(msg) == resume) {
+					return buf;
+				} else {
+					return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_replace_sm(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+
+				using namespace bin;
+
+				replace_sm msg;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = parse_pdu(msg.command, buf);
+
+				buf = p::scpyl(msg.msg_id, buf, bend
+						, sizeof(msg.msg_id), msg.msg_id_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
+				buf = p::cp_u8(asbuf(msg.src_addr_ton), buf);
+				buf = p::cp_u8(asbuf(msg.src_addr_npi), buf);
+				buf = p::scpyl(msg.src_addr, buf, bend
+						, sizeof (msg.src_addr), msg.src_addr_len);
+
+				RETURN_NULL_IF(buf == nullptr);
+				buf = p::scpyl(msg.schedule_delivery_time , buf, bend
+						, sizeof(msg.schedule_delivery_time)
+						, msg.schedule_delivery_time_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = p::scpyl(msg.validity_period, buf, bend
+						, sizeof(msg.validity_period)
+						, msg.validity_period_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*3 > bend);
+				buf = p::cp_u8(asbuf(msg.registered_delivery), buf);
+				buf = p::cp_u8(asbuf(msg.sm_default_msg_id), buf);
+				buf = p::cp_u8(asbuf(msg.short_msg_len), buf);
+
+				buf = p::scpyl(msg.short_msg, buf, bend
+						, sizeof(msg.short_msg), msg.short_msg_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				if (on_replace_sm(msg) == resume) {
+					return buf;
+				} else {
+					return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_replace_sm_r(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+
+				using namespace bin;
+
+				replace_sm_r msg;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = parse_pdu(msg.command, buf);
+
+				if (on_replace_sm_r(msg) == resume) {
+					return buf;
+				} else {
+					return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_enquire_link(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+
+				using namespace bin;
+				enquire_link msg;
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = parse_pdu(msg.command, buf);
+
+				if (on_enquire_link(msg) == resume) {
+					return buf;
+				} else {
+					return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_enquire_link_r(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+
+				using namespace bin;
+				enquire_link_r msg;
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = parse_pdu(msg.command, buf);
+				if (on_enquire_link_r(msg) == resume) {
+					return buf;
+				} else {
+					return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_alert_notification(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+
+				using namespace bin;
+				bin::u16_t optid, len;
+				alert_notification msg;
+
+				RETURN_NULL_IF(buf + sizeof(msg.command) > bend);
+				buf = parse_pdu(msg.command, buf);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
+				buf = p::cp_u8(asbuf(msg.src_addr_ton), buf);
+				buf = p::cp_u8(asbuf(msg.src_addr_npi), buf);
+				buf = p::scpyl(msg.src_addr, buf, bend
+						, sizeof (msg.src_addr), msg.src_addr_len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				RETURN_NULL_IF(buf + sizeof(bin::u8_t)*2 > bend);
+				buf = p::cp_u8(asbuf(msg.esme_addr_ton), buf);
+				buf = p::cp_u8(asbuf(msg.esme_addr_npi), buf);
+				buf = p::scpyl(msg.esme_addr, buf, bend
+						, sizeof (msg.esme_addr), msg.esme_addr_len);
+
+				const bin::u8_t * cur;
+				while (buf + sizeof(bin::u16_t)*2 <= bend) {
+					cur = buf;
+					cur = p::cp_u16(asbuf(optid), cur);
+					cur = p::cp_u16(asbuf(len), cur);
+
+					switch (optid) {
+						case option::ms_availability_status:
+							buf = parse_tlv_u8(msg.ms_availability_status, buf);
+							break;
+
+						default:
+							return nullptr;
+					}
+				}
+
+				RETURN_NULL_IF(buf == nullptr);
+
+				if (on_alert_notification(msg) == resume) {
 					return buf;
 				} else {
 					return nullptr;

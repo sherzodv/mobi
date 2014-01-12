@@ -270,6 +270,31 @@ class smpp_parser : public smpp::parser<std::ostream> {
 			std::cout << msg << std::endl;
 			return resume;
 		}
+
+		virtual action on_replace_sm(const smpp::replace_sm & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_replace_sm_r(const smpp::replace_sm_r & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_enquire_link(const smpp::enquire_link & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_enquire_link_r(const smpp::enquire_link_r & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
+
+		virtual action on_alert_notification(const smpp::alert_notification & msg) {
+			std::cout << msg << std::endl;
+			return resume;
+		}
 };
 
 #if 0
@@ -730,7 +755,7 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 	*/
 	BOOST_CHECK(w.write(buf, bend, msg) != nullptr);
-	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	std::cout << std::endl;
 	BOOST_CHECK(p.parse(buf, bend) != nullptr);
 }
 BOOST_AUTO_TEST_CASE( test_pw_submit_sm_r )
@@ -928,7 +953,7 @@ BOOST_AUTO_TEST_CASE( test_pw_data_sm_r )
 
 	const void * ptr;
 	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
-	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	std::cout << std::endl;
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_query_sm )
@@ -952,7 +977,7 @@ BOOST_AUTO_TEST_CASE( test_pw_query_sm )
 
 	const void * ptr;
 	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
-	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	std::cout << std::endl;
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_query_sm_r )
@@ -976,7 +1001,7 @@ BOOST_AUTO_TEST_CASE( test_pw_query_sm_r )
 
 	const void * ptr;
 	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
-	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	std::cout << std::endl;
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_cancel_sm )
@@ -1005,7 +1030,7 @@ BOOST_AUTO_TEST_CASE( test_pw_cancel_sm )
 
 	const void * ptr;
 	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
-	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	std::cout << std::endl;
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 BOOST_AUTO_TEST_CASE( test_pw_cancel_sm_r )
@@ -1025,7 +1050,125 @@ BOOST_AUTO_TEST_CASE( test_pw_cancel_sm_r )
 
 	const void * ptr;
 	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
-	std::cout << bin::hex_str_ref(buf, bend-buf) << std::endl;
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_replace_sm )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	replace_sm msg;
+
+	SET_STRING(msg.msg_id,		"RPL");
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"REPLACE_SM");
+	SET_STRING(msg.schedule_delivery_time,	"DELIVERY_TIME");
+	SET_STRING(msg.validity_period,			"VALIDITY");
+	msg.registered_delivery		= 0x10;
+	msg.sm_default_msg_id		= 0x10;
+	SET_STRING(msg.short_msg,	"REPLACE_SM_SHORT_MSG");
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_replace_sm_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	replace_sm_r msg;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_enquire_link )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	enquire_link msg;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_enquire_link_r )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	enquire_link_r msg;
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
+	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
+}
+BOOST_AUTO_TEST_CASE( test_pw_alert_notification )
+{
+	using namespace smpp;
+	using namespace bin;
+
+	writer<std::ostream>	w(std::cout);
+	smpp_parser				p(std::cout);
+
+	alert_notification msg;
+
+	msg.src_addr_ton			= 0x10;
+	msg.src_addr_npi			= 0x10;
+	SET_STRING(msg.src_addr,	"ALERT");
+	msg.esme_addr_ton			= 0x10;
+	msg.esme_addr_npi			= 0x10;
+	SET_STRING(msg.esme_addr,	"ALERT");
+	msg.ms_availability_status.set(0x10);
+	msg.command.len				= msg.raw_size();
+
+	bin::u8_t _buf[0x100];
+	bin::u8_t * buf = _buf;
+	bin::u8_t * bend = _buf + msg.command.len;
+
+	const void * ptr;
+	BOOST_CHECK((ptr = w.write(buf, bend, msg)) != nullptr && ptr == bend);
+	std::cout << std::endl;
 	BOOST_CHECK((ptr = p.parse(buf, bend)) != nullptr && ptr == bend);
 }
 
