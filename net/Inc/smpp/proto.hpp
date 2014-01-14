@@ -847,12 +847,38 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t addr_npi;
 			bin::u8_t addr_range[41];
 
+			/* this values will not be writed to buffer */
+			std::size_t sys_id_len;
+			std::size_t password_len;
+			std::size_t sys_type_len;
+			std::size_t addr_range_len;
+
 			bind_transmitter(): command(command::bind_transmitter)
 				, sys_id_len(0)
 				, password_len(0)
 				, sys_type_len(0)
 				, addr_range_len(0)
 			{}
+
+			void set_sys_id(const std::string & v) {
+				sys_id_len = v.length();
+				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
+			}
+
+			void set_password(const std::string & v) {
+				password_len = v.length();
+				bin::w::scpy(password, bin::ascbuf(v.c_str()), password_len);
+			}
+
+			void set_sys_type(const std::string & v) {
+				sys_type_len = v.length();
+				bin::w::scpy(sys_type, bin::ascbuf(v.c_str()), sys_type_len);
+			}
+
+			void set_addr_range(const std::string & v) {
+				addr_range_len = v.length();
+				bin::w::scpy(addr_range, bin::ascbuf(v.c_str()), addr_range_len);
+			}
 
 			bin::sz_t raw_size() const {
 				return	sizeof(command)
@@ -862,12 +888,6 @@ namespace mobi { namespace net { namespace smpp {
 						+ 3
 						+ addr_range_len;
 			}
-
-			/* this values will not be writed to buffer */
-			std::size_t sys_id_len;
-			std::size_t password_len;
-			std::size_t sys_type_len;
-			std::size_t addr_range_len;
 		};
 
 		struct bind_transmitter_r {
@@ -1882,86 +1902,6 @@ namespace mobi { namespace net { namespace smpp {
 
 			inline bin::sz_t raw_size() const {
 				return sizeof(command);
-			}
-		};
-	}
-
-	/* TYPE TRAITS */
-	namespace {
-
-		/* Generic type trait */
-		template <class T>
-		struct the {};
-
-		/* Fields prefixed with r_ represent properties
-		 * of corresponding resp PDUs
-		 */
-
-		template <>
-		struct the<bind_receiver> {
-			/* Corresponding resp type */
-			typedef bind_receiver_r r_type;
-
-			/* Corresponding resp command id */
-			static const bin::u32_t r_id = command::bind_receiver_r;
-
-			/* Response overall msg len */
-			static std::size_t r_size(const r_type & r) {
-				return sizeof(pdu)
-					+ (r.sc_interface_version.tag != 0)
-						? sizeof(tlv_sc_interface_version) : 0
-					+ r.sys_id_len;
-			}
-		};
-
-		template <>
-		struct the<bind_transmitter> {
-			/* Corresponding resp type */
-			typedef bind_transmitter_r r_type;
-
-			/* Corresponding resp command id */
-			static const bin::u32_t r_id = command::bind_transmitter_r;
-
-			/* Response overall msg len */
-			static std::size_t r_size(const r_type & r) {
-				return sizeof(pdu)
-					+ (r.sc_interface_version.tag != 0)
-						? sizeof(tlv_sc_interface_version) : 0
-					+ r.sys_id_len;
-			}
-		};
-
-		template <>
-		struct the<bind_transceiver> {
-			/* Corresponding resp type */
-			typedef bind_transceiver_r r_type;
-
-			/* Corresponding resp command id */
-			static const bin::u32_t r_id = command::bind_transceiver_r;
-
-			/* Response overall msg len */
-			static std::size_t r_size(const r_type & r) {
-				return sizeof(pdu)
-					+ ((r.sc_interface_version.tag != 0)
-						? sizeof(tlv_sc_interface_version) : 0)
-					+ r.sys_id_len;
-			}
-		};
-
-		template <>
-		struct the<submit_sm> {
-			typedef submit_sm type;
-			static const bin::u32_t id = command::submit_sm;
-
-			/* Corresponding resp type */
-			typedef submit_sm_r r_type;
-
-			/* Corresponding resp command id */
-			static const bin::u32_t r_id = command::submit_sm_r;
-
-			/* Response overall msg len */
-			static std::size_t r_size(const r_type & r) {
-				return sizeof(pdu) + r.msg_id_len;
 			}
 		};
 	}
