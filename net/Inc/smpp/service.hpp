@@ -19,13 +19,13 @@ template <class ProtoT, class AllocatorT, class LogT>
 class service
 	: private parser<LogT>
 	, private writer<LogT>
-	, private toolbox::service<ProtoT, AllocatorT, LogT, bin::u32_t> {
+	, private toolbox::service<ProtoT, AllocatorT, LogT, pdu> {
 
 	typedef service<ProtoT, AllocatorT, LogT>	service_t;
 
 	protected:
 
-	typedef toolbox::service<ProtoT, AllocatorT, LogT, bin::u32_t>
+	typedef toolbox::service<ProtoT, AllocatorT, LogT, pdu>
 						service_base;
 
 	typedef typename service_base::log_t			log_t;

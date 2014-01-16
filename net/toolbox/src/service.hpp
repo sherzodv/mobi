@@ -16,18 +16,18 @@ namespace mobi { namespace net { namespace toolbox {
 namespace ba = boost::asio;
 namespace bs = boost::system;
 
-template <class ProtoT, class AllocatorT, class LogT, typename LenT>
+template <class ProtoT, class AllocatorT, class LogT, typename HdrT>
 class service {
 
 	protected:
 
-	typedef service<ProtoT, AllocatorT, LogT, LenT>	service_t;
+	typedef service<ProtoT, AllocatorT, LogT, HdrT>	service_t;
 	typedef LogT								log_t;
 	typedef ProtoT								proto_t;
 	typedef AllocatorT							allocator_t;
 	typedef ba::basic_stream_socket<proto_t>	sock_t;
 	typedef ba::basic_socket_acceptor<proto_t>	acpt_t;
-	typedef channel<service_t, LenT>			channel_t;
+	typedef channel<service_t, HdrT>			channel_t;
 
 	friend channel_t;
 

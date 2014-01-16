@@ -14,7 +14,7 @@ using boost::bind;
 namespace ba = boost::asio;
 namespace bs = boost::system;
 
-template <class ServiceT, typename LenT>
+template <class ServiceT, typename HdrT>
 class channel {
 
 	typedef ServiceT service_t;
@@ -136,7 +136,7 @@ class channel {
 		struct inbuf {
 			bool ready;
 			bin::buffer buf;
-			LenT msglen;
+			HdrT hdr;
 			/* Total bytes received */
 			bin::sz_t total_bytes;
 		} in;
@@ -187,8 +187,8 @@ class channel {
 				return;
 			}
 			in.ready = false;
-			m_sock.async_receive(ba::buffer(asbuf(in.msglen)
-				, sizeof(in.msglen))
+			m_sock.async_receive(ba::buffer(asbuf(in.hdr)
+				, sizeof(in.hdr))
 				, bind(&channel::on_in_bytes, this, &channel::on_recv_len
 					, ba::placeholders::error
 					, ba::placeholders::bytes_transferred));
@@ -196,11 +196,12 @@ class channel {
 
 		void on_recv_len(const bs::error_code & ec) {
 			if (!ec) {
-				in.msglen = bin::bo::to_host(in.msglen);
-				in.buf.len = in.msglen;
-				in.buf.data = static_cast<bin::u8_t *>(S.A.alloc(in.msglen));
-				/* Parser expects network byte order in buffer */
-				bin::w::cp_u32(in.buf.data, bin::ascbuf(in.msglen));
+				in.hdr.len = bin::bo::to_host(in.hdr.len);
+				in.buf.len = in.hdr.len;
+				in.buf.data = static_cast<bin::u8_t *>(S.A.alloc(in.hdr.len));
+				/* Keep initial byte order */
+				in.hdr.len = bin::bo::to_net(in.hdr.len);
+				bin::w::cpy(in.buf.data, bin::ascbuf(in.hdr), in.buf.len);
 				recv_body();
 			} else {
 				lerror(S.L) << "channel::on_recv: " << ec.message();
@@ -214,8 +215,8 @@ class channel {
 		void recv_body() {
 			/* Read the remaining body of a messsage, beyond msg len */
 			m_sock.async_receive(
-				ba::buffer(bin::asbuf(in.buf.data) + sizeof(in.msglen)
-					, in.msglen - sizeof(in.msglen))
+				ba::buffer(bin::asbuf(in.buf.data) + sizeof(in.hdr)
+					, in.buf.len - sizeof(in.hdr))
 					, bind(&channel::on_in_bytes, this, &channel::on_recv_body
 						, ba::placeholders::error
 						, ba::placeholders::bytes_transferred));
