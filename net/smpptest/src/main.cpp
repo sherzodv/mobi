@@ -330,10 +330,10 @@ BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 	r.replace_if_present_flag 		= 0xAD;
 	r.data_coding					= 0x80;
 	r.sm_default_msg_id				= 0x13;
-	SET_STRING(r.short_msg,			"GITHUB");
-	SET_STRING(r.serv_type,			"LINUX");
-	SET_STRING(r.src_addr,			"GNU");
-	SET_STRING(r.dst_addr,			"DP IS POWER");
+	SET_STRING(r.short_msg(		"GITHUB");
+	SET_STRING(r.serv_type(		"LINUX");
+	SET_STRING(r.src_addr(		"GNU");
+	SET_STRING(r.dst_addr(		"DP IS POWER");
 	/* OPTIONAL FIELDS */
 	r.user_msg_reference.tag 		= option::user_msg_reference;
 	r.user_msg_reference.len 		= 2;
@@ -368,20 +368,20 @@ BOOST_AUTO_TEST_CASE( submit_pw_test_1 )
 	BOOST_CHECK(r.esm_class							== r2.esm_class);
 	BOOST_CHECK(r.protocol_id						== r2.protocol_id);
 	BOOST_CHECK(r.priority_flag						== r2.priority_flag);
-	BOOST_CHECK(sncmp(r.schedule_delivery_time,		r2.schedule_delivery_time, 0)==0);
-	BOOST_CHECK(sncmp(r.validity_period,			r2.validity_period, 0)==0);
+	BOOST_CHECK(sncmp(r.schedule_delivery_time(	r2.schedule_delivery_time, 0)==0);
+	BOOST_CHECK(sncmp(r.validity_period(		r2.validity_period, 0)==0);
 	BOOST_CHECK(r.registered_delivery				== r2.registered_delivery);
 	BOOST_CHECK(r.replace_if_present_flag			== r2.replace_if_present_flag);
 	BOOST_CHECK(r.data_coding						== r2.data_coding);
 	BOOST_CHECK(r.sm_default_msg_id					== r2.sm_default_msg_id);
 	BOOST_CHECK(r.short_msg_len						== r2.short_msg_len);
-	BOOST_CHECK(sncmp(r.short_msg,					r2.short_msg, r.short_msg_len)==0);
+	BOOST_CHECK(sncmp(r.short_msg(				r2.short_msg, r.short_msg_len)==0);
 	BOOST_CHECK(r.serv_type_len						== r2.serv_type_len);
-	BOOST_CHECK(sncmp(r.serv_type,					r2.serv_type, r.serv_type_len) == 0);
+	BOOST_CHECK(sncmp(r.serv_type(				r2.serv_type, r.serv_type_len) == 0);
 	BOOST_CHECK(r.src_addr_len						== r2.src_addr_len);
-	BOOST_CHECK(sncmp(r.src_addr,					r2.src_addr, r.src_addr_len) == 0);
+	BOOST_CHECK(sncmp(r.src_addr(				r2.src_addr, r.src_addr_len) == 0);
 	BOOST_CHECK(r.dst_addr_len						== r2.dst_addr_len);
-	BOOST_CHECK(sncmp(r.dst_addr,					r2.dst_addr, r.dst_addr_len) == 0);
+	BOOST_CHECK(sncmp(r.dst_addr(				r2.dst_addr, r.dst_addr_len) == 0);
 	BOOST_CHECK(r.user_msg_reference				== r2.user_msg_reference);
 	BOOST_CHECK(r.src_port							== r2.src_port);
 	BOOST_CHECK(r.src_addr_subunit					== r2.src_addr_subunit);
@@ -423,10 +423,11 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter )
 
 	bind_transmitter msg;
 	/* mandatory fileds */
-	SET_STRING(msg.sys_id,			"MATRIX");
-	SET_STRING(msg.password,		"WRABBIT");
-	SET_STRING(msg.sys_type,		"THRILLER");
-	SET_STRING(msg.addr_range,		"MATRIX_HAS_YOU");
+	//msg.set_sys_id(		"MATRIX");
+	msg.set_sys_id(std::string("MATRIX"));
+	msg.set_password(	"WRABBIT");
+	msg.set_sys_type(	"THRILLER");
+	msg.set_addr_range(	"MATRIX_HAS_YOU");
 	msg.interface_version			= 0x10;
 	msg.addr_ton					= 0x10;
 	msg.addr_npi					= 0x10;
@@ -459,7 +460,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transmitter_r )
 	msg.sc_interface_version.len	= 1;
 	msg.sc_interface_version.val	= 0x10;
 
-	SET_STRING(msg.sys_id,		"LINUX");
+	msg.set_sys_id(	"LINUX");
 	msg.command.id				= command::bind_transmitter_r;
 	msg.command.seqno			= 0x00000010;
 	msg.command.status			= 0x00000010;
@@ -483,8 +484,8 @@ BOOST_AUTO_TEST_CASE( test_pw_outbind )
 	smpp_parser				p(std::cout);
 
 	outbind msg;
-	SET_STRING(msg.password,		"PASSWD");
-	SET_STRING(msg.sys_id,		"LINUX");
+	msg.set_password(	"PASSWD");
+	msg.set_sys_id(	"LINUX");
 	msg.command.id				= command::outbind;
 	msg.command.seqno			= 0x00000010;
 	msg.command.status			= 0x00000010;
@@ -508,13 +509,13 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_receiver )
 	smpp_parser				p(std::cout);
 
 	bind_receiver msg;
-	SET_STRING(msg.password,	"PASSWD");
-	SET_STRING(msg.sys_id,		"BIND_RECEIVER");
-	SET_STRING(msg.sys_type,	"BIND_RECV_T");
+	msg.set_password("PASSWD");
+	msg.set_sys_id(	"BIND_RECEIVER");
+	msg.set_sys_type("BIND_RECV_T");
 	msg.interface_version		= 0x10;
 	msg.addr_ton				= 0x10;
 	msg.addr_npi				= 0x10;
-	SET_STRING(msg.addr_range,	"BIND_RECV_RANGE");
+	msg.set_addr_range("BIND_RECV_RANGE");
 
 	msg.command.id				= command::bind_receiver;
 	msg.command.seqno			= 0x00000010;
@@ -539,7 +540,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_receiver_r )
 	smpp_parser				p(std::cout);
 
 	bind_receiver_r msg;
-	SET_STRING(msg.sys_id,			"BIND_RECV_R");
+	msg.set_sys_id(		"BIND_RECV_R");
 	msg.sc_interface_version.tag	= option::sc_interface_version;
 	msg.sc_interface_version.len	= 1;
 	msg.sc_interface_version.val	= 0x10;
@@ -567,13 +568,13 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver )
 	smpp_parser				p(std::cout);
 
 	bind_transceiver msg;
-	SET_STRING(msg.password,	"PASSWD");
-	SET_STRING(msg.sys_id,		"B_TRANSCEIVER");
-	SET_STRING(msg.sys_type,	"B_TRANSC_T");
+	msg.set_password("PASSWD");
+	msg.set_sys_id(	"B_TRANSCEIVER");
+	msg.set_sys_type("B_TRANSC_T");
 	msg.interface_version		= 0x10;
 	msg.addr_ton				= 0x10;
 	msg.addr_npi				= 0x10;
-	SET_STRING(msg.addr_range,	"RANGE");
+	msg.set_addr_range("RANGE");
 
 	msg.command.id				= command::bind_transceiver;
 	msg.command.seqno			= 0x00000010;
@@ -598,7 +599,7 @@ BOOST_AUTO_TEST_CASE( test_pw_bind_transceiver_r )
 	smpp_parser				p(std::cout);
 
 	bind_transceiver_r msg;
-	SET_STRING(msg.sys_id,		"B_TRANSCEIVER_R");
+	msg.set_sys_id(	"B_TRANSCEIVER_R");
 	msg.sc_interface_version.tag	= option::sc_interface_version;
 	msg.sc_interface_version.len	= 1;
 	msg.sc_interface_version.val	= 0x10;
@@ -696,23 +697,23 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm )
 
 	submit_sm msg;
 	/* mandatory fields */
-	SET_STRING(msg.serv_type,	"SUBS");
+	msg.set_serv_type("SUBS");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"SUBMIT_SM");
+	msg.set_src_addr("SUBMIT_SM");
 	msg.dst_addr_ton			= 0x10;
 	msg.dst_addr_npi			= 0x10;
-	SET_STRING(msg.dst_addr,	"SUBMIT_SM");
+	msg.set_dst_addr("SUBMIT_SM");
 	msg.esm_class				= 0x10;
 	msg.protocol_id				= 0x10;
 	msg.priority_flag			= 0x10;
-	SET_STRING(msg.schedule_delivery_time,	"HELLO");
-	SET_STRING(msg.validity_period,			"HELLO");
+	msg.set_schedule_delivery_time("HELLO");
+	msg.set_validity_period(		"HELLO");
 	msg.registered_delivery		= 0x10;
 	msg.replace_if_present_flag	= 0x10;
 	msg.data_coding				= 0x10;
 	msg.sm_default_msg_id		= 0x10;
-	SET_STRING(msg.short_msg,	"SUBMIT_SM_SHORT_MESSAGE");
+	msg.set_short_msg("SUBMIT_SM_SHORT_MESSAGE");
 	/* optional fields */
 	msg.user_msg_reference.set(0x10);
 	msg.src_port.set(0x10);
@@ -767,7 +768,7 @@ BOOST_AUTO_TEST_CASE( test_pw_submit_sm_r )
 	smpp_parser				p(std::cout);
 
 	submit_sm_r msg;
-	SET_STRING(msg.msg_id,		"MSG_ID");
+	msg.set_msg_id(	"MSG_ID");
 	msg.command.len				= msg.raw_size();
 
 	bin::u8_t _buf[0x200];
@@ -789,23 +790,23 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 
 	deliver_sm msg;
 	/* mandatory fields */
-	SET_STRING(msg.serv_type,	"DELV");
+	msg.set_serv_type("DELV");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"DELV_SM");
+	msg.set_src_addr("DELV_SM");
 	msg.dst_addr_ton			= 0x10;
 	msg.dst_addr_npi			= 0x10;
-	SET_STRING(msg.dst_addr,	"DELV_SM");
+	msg.set_dst_addr("DELV_SM");
 	msg.esm_class				= 0x10;
 	msg.protocol_id				= 0x10;
 	msg.priority_flag			= 0x10;
-	SET_STRING(msg.schedule_delivery_time,	"");
-	SET_STRING(msg.validity_period,			"");
+	msg.set_schedule_delivery_time();
+	msg.set_validity_period();
 	msg.registered_delivery		= 0x10;
 	msg.replace_if_present_flag	= 0x10;
 	msg.data_coding				= 0x10;
 	msg.sm_default_msg_id		= 0x10;
-	SET_STRING(msg.short_msg,	"DELV_SM_SHORT_MESSAGE");
+	msg.set_short_msg("DELV_SM_SHORT_MESSAGE");
 	/* optional fields */
 	msg.user_msg_reference.set(0x10);
 	msg.src_port.set(0x10);
@@ -854,7 +855,7 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm_r )
 
 	const void * ptr;
 	deliver_sm_r msg;
-	SET_STRING(msg.msg_id,		"MSG_ID");
+	msg.set_msg_id(	"MSG_ID");
 	msg.command.len				= msg.raw_size();
 
 	bin::u8_t _buf[0x200];
@@ -875,13 +876,13 @@ BOOST_AUTO_TEST_CASE( test_pw_data_sm )
 
 	data_sm msg;
 	/* mandatory fields */
-	SET_STRING(msg.serv_type,	"DATA");
+	msg.set_serv_type("DATA");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"DATA_SM");
+	msg.set_src_addr("DATA_SM");
 	msg.dst_addr_ton			= 0x10;
 	msg.dst_addr_npi			= 0x10;
-	SET_STRING(msg.dst_addr,	"DATA_SM");
+	msg.set_dst_addr("DATA_SM");
 	msg.esm_class				= 0x10;
 	msg.registered_delivery		= 0x10;
 	msg.data_coding				= 0x10;
@@ -935,7 +936,7 @@ BOOST_AUTO_TEST_CASE( test_pw_data_sm_r )
 
 	data_sm_r msg;
 	/* mandatory fields */
-	SET_STRING(msg.msg_id,		"MSG_ID");
+	msg.set_msg_id(	"MSG_ID");
 
 	msg.delivery_failure_reason.set(0x10);
 	msg.network_error_code.set(STR("Fl"));
@@ -965,10 +966,10 @@ BOOST_AUTO_TEST_CASE( test_pw_query_sm )
 	smpp_parser				p(std::cout);
 
 	query_sm msg;
-	SET_STRING(msg.msg_id,		"QUERY");
+	msg.set_msg_id(	"QUERY");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"QUERY_SM");
+	msg.set_src_addr("QUERY_SM");
 	msg.command.len				= msg.raw_size();
 
 	bin::u8_t _buf[0x100];
@@ -989,8 +990,8 @@ BOOST_AUTO_TEST_CASE( test_pw_query_sm_r )
 	smpp_parser				p(std::cout);
 
 	query_sm_r msg;
-	SET_STRING(msg.msg_id,		"QUERY");
-	SET_STRING(msg.final_date,	"11.01.14");
+	msg.set_msg_id(	"QUERY");
+	msg.set_final_date("11.01.14");
 	msg.msg_state				= 0x10;
 	msg.error_code				= 0x10;
 	msg.command.len				= msg.raw_size();
@@ -1013,14 +1014,14 @@ BOOST_AUTO_TEST_CASE( test_pw_cancel_sm )
 	smpp_parser				p(std::cout);
 
 	cancel_sm msg;
-	SET_STRING(msg.serv_type,	"CNCL");
-	SET_STRING(msg.msg_id,		"CANCEL_SM");
+	msg.set_serv_type("CNCL");
+	msg.set_msg_id(	"CANCEL_SM");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"CANCEL_SM");
+	msg.set_src_addr("CANCEL_SM");
 	msg.dst_addr_ton			= 0x10;
 	msg.dst_addr_npi			= 0x10;
-	SET_STRING(msg.dst_addr,	"CANCEL_SM");
+	msg.set_dst_addr("CANCEL_SM");
 
 	msg.command.len				= msg.raw_size();
 
@@ -1063,15 +1064,15 @@ BOOST_AUTO_TEST_CASE( test_pw_replace_sm )
 
 	replace_sm msg;
 
-	SET_STRING(msg.msg_id,		"RPL");
+	msg.set_msg_id(	"RPL");
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"REPLACE_SM");
-	SET_STRING(msg.schedule_delivery_time,	"DELIVERY_TIME");
-	SET_STRING(msg.validity_period,			"VALIDITY");
+	msg.set_src_addr("REPLACE_SM");
+	msg.set_schedule_delivery_time("DELIVERY_TIME");
+	msg.set_validity_period(		"VALIDITY");
 	msg.registered_delivery		= 0x10;
 	msg.sm_default_msg_id		= 0x10;
-	SET_STRING(msg.short_msg,	"REPLACE_SM_SHORT_MSG");
+	msg.set_short_msg("REPLACE_SM_SHORT_MSG");
 	msg.command.len				= msg.raw_size();
 
 	bin::u8_t _buf[0x100];
@@ -1155,10 +1156,10 @@ BOOST_AUTO_TEST_CASE( test_pw_alert_notification )
 
 	msg.src_addr_ton			= 0x10;
 	msg.src_addr_npi			= 0x10;
-	SET_STRING(msg.src_addr,	"ALERT");
+	msg.set_src_addr("ALERT");
 	msg.esme_addr_ton			= 0x10;
 	msg.esme_addr_npi			= 0x10;
-	SET_STRING(msg.esme_addr,	"ALERT");
+	msg.set_esme_addr("ALERT");
 	msg.ms_availability_status.set(0x10);
 	msg.command.len				= msg.raw_size();
 
