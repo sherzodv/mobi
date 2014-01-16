@@ -861,22 +861,22 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 
 			void set_password(const std::string & v) {
-				password_len = v.length();
+				password_len = v.size();
 				bin::w::scpy(password, bin::ascbuf(v.c_str()), password_len);
 			}
 
 			void set_sys_type(const std::string & v) {
-				sys_type_len = v.length();
+				sys_type_len = v.size();
 				bin::w::scpy(sys_type, bin::ascbuf(v.c_str()), sys_type_len);
 			}
 
 			void set_addr_range(const std::string & v) {
-				addr_range_len = v.length();
+				addr_range_len = v.size();
 				bin::w::scpy(addr_range, bin::ascbuf(v.c_str()), addr_range_len);
 			}
 
@@ -898,7 +898,7 @@ namespace mobi { namespace net { namespace smpp {
 			std::size_t sys_id_len;
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 
@@ -940,22 +940,22 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 
 			void set_password(const std::string & v) {
-				password_len = v.length();
+				password_len = v.size();
 				bin::w::scpy(password, bin::ascbuf(v.c_str()), password_len);
 			}
 
 			void set_sys_type(const std::string & v) {
-				sys_type_len = v.length();
+				sys_type_len = v.size();
 				bin::w::scpy(sys_type, bin::ascbuf(v.c_str()), sys_type_len);
 			}
 
 			void set_addr_range(const std::string & v) {
-				addr_range_len = v.length();
+				addr_range_len = v.size();
 				bin::w::scpy(addr_range, bin::ascbuf(v.c_str()), addr_range_len);
 			}
 
@@ -975,7 +975,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_sc_interface_version sc_interface_version;
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 			std::size_t sys_id_len;
@@ -1006,19 +1006,19 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t addr_range[41];
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 			void set_password(const std::string & v) {
-				password_len = v.length();
+				password_len = v.size();
 				bin::w::scpy(password, bin::ascbuf(v.c_str()), password_len);
 			}
 			void set_sys_type(const std::string & v) {
-				sys_type_len = v.length();
+				sys_type_len = v.size();
 				bin::w::scpy(sys_type, bin::ascbuf(v.c_str()), sys_type_len);
 			}
 			void set_addr_range(const std::string & v) {
-				addr_range_len = v.length();
+				addr_range_len = v.size();
 				bin::w::scpy(addr_range, bin::ascbuf(v.c_str()), addr_range_len);
 			}
 			bind_transceiver()
@@ -1050,7 +1050,7 @@ namespace mobi { namespace net { namespace smpp {
 			tlv_sc_interface_version sc_interface_version;
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 			bind_transceiver_r()
@@ -1076,11 +1076,11 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t password[9];
 
 			void set_sys_id(const std::string & v) {
-				sys_id_len = v.length();
+				sys_id_len = v.size();
 				bin::w::scpy(sys_id, bin::ascbuf(v.c_str()), sys_id_len);
 			}
 			void set_password(const std::string & v) {
-				password_len = v.length();
+				password_len = v.size();
 				bin::w::scpy(password, bin::ascbuf(v.c_str()), password_len);
 			}
 			outbind()
@@ -1152,27 +1152,27 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t short_msg_len;
 			bin::u8_t short_msg[254];
 			void set_serv_type(const std::string & v) {
-				serv_type_len = v.length();
+				serv_type_len = v.size();
 				bin::w::scpy(serv_type, bin::ascbuf(v.c_str()), serv_type_len);
 			}
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			void set_dst_addr(const std::string & v) {
-				dst_addr_len = v.length();
+				dst_addr_len = v.size();
 				bin::w::scpy(dst_addr, bin::ascbuf(v.c_str()), dst_addr_len);
 			}
 			void set_schedule_delivery_time(const std::string & v) {
-				schedule_delivery_time_len = v.length();
+				schedule_delivery_time_len = v.size();
 				bin::w::scpy(schedule_delivery_time, bin::ascbuf(v.c_str()), schedule_delivery_time_len);
 			}
 			void set_validity_period(const std::string & v) {
-				validity_period_len = v.length();
+				validity_period_len = v.size();
 				bin::w::scpy(validity_period, bin::ascbuf(v.c_str()), validity_period_len);
 			}
 			void set_short_msg(const std::string & v) {
-				short_msg_len = v.length();
+				short_msg_len = v.size();
 				bin::w::scpy(short_msg, bin::ascbuf(v.c_str()), short_msg_len);
 			}
 
@@ -1299,7 +1299,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t msg_id[65];
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			submit_sm_r()
@@ -1472,7 +1472,7 @@ namespace mobi { namespace net { namespace smpp {
 			/* TODO: 4.5.2 unsuccess_sme(s) */
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 
@@ -1542,19 +1542,19 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_serv_type(const std::string & v) {
-				serv_type_len = v.length();
+				serv_type_len = v.size();
 				bin::w::scpy(serv_type, bin::ascbuf(v.c_str()), serv_type_len);
 			}
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			void set_dst_addr(const std::string & v) {
-				dst_addr_len = v.length();
+				dst_addr_len = v.size();
 				bin::w::scpy(dst_addr, bin::ascbuf(v.c_str()), dst_addr_len);
 			}
 			void set_short_msg(const std::string & v) {
-				short_msg_len = v.length();
+				short_msg_len = v.size();
 				bin::w::scpy(short_msg, bin::ascbuf(v.c_str()), short_msg_len);
 			}
 
@@ -1597,7 +1597,7 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	msg_id[65];
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			bin::sz_t raw_size() const {
@@ -1680,15 +1680,15 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_serv_type(const std::string & v) {
-				serv_type_len = v.length();
+				serv_type_len = v.size();
 				bin::w::scpy(serv_type, bin::ascbuf(v.c_str()), serv_type_len);
 			}
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			void set_dst_addr(const std::string & v) {
-				dst_addr_len = v.length();
+				dst_addr_len = v.size();
 				bin::w::scpy(dst_addr, bin::ascbuf(v.c_str()), dst_addr_len);
 			}
 
@@ -1797,7 +1797,7 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			bin::sz_t raw_size() const {
@@ -1835,11 +1835,11 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			bin::sz_t raw_size() const {
@@ -1859,11 +1859,11 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	error_code;
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			void set_final_date(const std::string & v) {
-				final_date_len = v.length();
+				final_date_len = v.size();
 				bin::w::scpy(final_date, bin::ascbuf(v.c_str()), final_date_len);
 			}
 			std::size_t msg_id_len;
@@ -1905,19 +1905,19 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_serv_type(const std::string & v) {
-				serv_type_len = v.length();
+				serv_type_len = v.size();
 				bin::w::scpy(serv_type, bin::ascbuf(v.c_str()), serv_type_len);
 			}
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			void set_dst_addr(const std::string & v) {
-				dst_addr_len = v.length();
+				dst_addr_len = v.size();
 				bin::w::scpy(dst_addr, bin::ascbuf(v.c_str()), dst_addr_len);
 			}
 			bin::sz_t raw_size() const {
@@ -1969,23 +1969,23 @@ namespace mobi { namespace net { namespace smpp {
 			{}
 
 			void set_msg_id(const std::string & v) {
-				msg_id_len = v.length();
+				msg_id_len = v.size();
 				bin::w::scpy(msg_id, bin::ascbuf(v.c_str()), msg_id_len);
 			}
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			void set_schedule_delivery_time(const std::string & v) {
-				schedule_delivery_time_len = v.length();
+				schedule_delivery_time_len = v.size();
 				bin::w::scpy(schedule_delivery_time, bin::ascbuf(v.c_str()), schedule_delivery_time_len);
 			}
 			void set_validity_period(const std::string & v) {
-				validity_period_len = v.length();
+				validity_period_len = v.size();
 				bin::w::scpy(validity_period, bin::ascbuf(v.c_str()), validity_period_len);
 			}
 			void set_short_msg(const std::string & v) {
-				short_msg_len = v.length();
+				short_msg_len = v.size();
 				bin::w::scpy(short_msg, bin::ascbuf(v.c_str()), short_msg_len);
 			}
 			bin::sz_t raw_size() const {
@@ -2051,11 +2051,11 @@ namespace mobi { namespace net { namespace smpp {
 			bin::u8_t	esme_addr[65];
 
 			void set_src_addr(const std::string & v) {
-				src_addr_len = v.length();
+				src_addr_len = v.size();
 				bin::w::scpy(src_addr, bin::ascbuf(v.c_str()), src_addr_len);
 			}
 			void set_esme_addr(const std::string & v) {
-				esme_addr_len = v.length();
+				esme_addr_len = v.size();
 				bin::w::scpy(esme_addr, bin::ascbuf(v.c_str()), esme_addr_len);
 			}
 			std::size_t src_addr_len;
