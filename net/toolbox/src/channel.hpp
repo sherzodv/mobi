@@ -45,6 +45,7 @@ class channel {
 		void close() {
 			m_sock.get_io_service().post([this] {
 				ltrace(S.L) << "closing channel #" << m_id;
+				m_sock.shutdown(sock_t::shutdown_both);
 				m_sock.close();
 				ltrace(S.L) << "canceling pending send messages for channel #" << m_id;
 				cancel_all();
@@ -62,14 +63,21 @@ class channel {
 			std::lock_guard<std::mutex> lock(out.mtx);
 			out.last_seqno++;
 			if (out.ready) {
+				out.ready = false;
 				out.msg = outmsg(out.last_seqno, buf);
 				m_sock.get_io_service().post([this] () {
-					ba::async_write(m_sock
-						, ba::buffer(out.msg.buf.data, out.msg.buf.len)
-						, bind(&channel::on_out_bytes, this
-							, &channel::on_send
-							, ba::placeholders::error
-							, ba::placeholders::bytes_transferred));
+					if (m_sock.is_open()) {
+						ba::async_write(m_sock
+							, ba::buffer(out.msg.buf.data, out.msg.buf.len)
+							, bind(&channel::on_out_bytes, this
+								, &channel::on_send
+								, ba::placeholders::error
+								, ba::placeholders::bytes_transferred));
+					} else {
+						std::lock_guard<std::mutex> lock(out.mtx);
+						out.ready = true;
+						S.on_send_error(this, out.last_seqno, out.msg.buf);
+					}
 				});
 			} else {
 				out.que.push(outmsg(out.last_seqno, buf));
@@ -91,13 +99,20 @@ class channel {
 			}
 			out.msg = out.que.front();
 			out.que.pop();
+			out.ready = false;
 			m_sock.get_io_service().post([this] () {
-				ba::async_write(m_sock
-					, ba::buffer(out.msg.buf.data, out.msg.buf.len)
-					, bind(&channel::on_out_bytes, this
-						, &channel::on_send
-						, ba::placeholders::error
-						, ba::placeholders::bytes_transferred));
+				if (m_sock.is_open()) {
+					ba::async_write(m_sock
+						, ba::buffer(out.msg.buf.data, out.msg.buf.len)
+						, bind(&channel::on_out_bytes, this
+							, &channel::on_send
+							, ba::placeholders::error
+							, ba::placeholders::bytes_transferred));
+				} else {
+					std::lock_guard<std::mutex> lock(out.mtx);
+					out.ready = true;
+					S.on_send_error(this, out.last_seqno, out.msg.buf);
+				}
 			});
 		}
 
@@ -143,17 +158,16 @@ class channel {
 			/* io thread */
 			using namespace bin;
 			std::lock_guard<std::mutex> lock(out.mtx);
+			outmsg msg;
 			while (!out.que.empty()) {
-				out.msg = out.que.front();
+				msg = out.que.front();
 				out.que.pop();
-				S.on_send_error(this, out.msg.seqno, out.msg.buf);
+				S.on_send_error(this, msg.seqno, msg.buf);
 			}
 		}
 
 		void on_in_bytes(cb_t cb, const bs::error_code & ec, bin::sz_t bytes) {
 			in.total_bytes += bytes;
-			ltrace(S.L) << "channel #" << m_id
-				<< " in: " << bytes << " bytes";
 			/* !!! It's crucial to call callback at the very end of this
 			 * member function, since callback may delete this */
 			(this->*cb)(ec);
@@ -161,8 +175,6 @@ class channel {
 
 		void on_out_bytes(cb_t cb, const bs::error_code & ec, bin::sz_t bytes) {
 			out.total_bytes += bytes;
-			ltrace(S.L) << "channel #" << m_id
-				<< " out: " << bytes << " bytes";
 			/* !!! It's crucial to call callback at the very end of this
 			 * member function, since callback may delete this */
 			(this->*cb)(ec);
@@ -191,6 +203,7 @@ class channel {
 				bin::w::cp_u32(in.buf.data, bin::ascbuf(in.msglen));
 				recv_body();
 			} else {
+				lerror(S.L) << "channel::on_recv: " << ec.message();
 				in.ready = true;
 				/* !!! callback may delete this channel */
 				S.on_recv_error(this);
@@ -222,11 +235,10 @@ class channel {
 		}
 
 		void on_send(const bs::error_code & ec) {
-			outmsg msg;
+			outmsg msg = out.msg;
 			{
 				std::lock_guard<std::mutex> lock(out.mtx);
 				out.ready = true;
-				msg = out.msg;
 				/* One should release lock before any call to callbacks
 				 * as they may call send of flush leading to deadlock */
 			}
@@ -240,6 +252,7 @@ class channel {
 				/* !!! It's crucial to call callback at the very end of this
 				 * member function, since callback may delete this */
 				S.on_send_error(this, msg.seqno, msg.buf);
+				flush();
 			}
 		}
 };

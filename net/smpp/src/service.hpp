@@ -56,7 +56,7 @@ class service
 
 		using service_base::start;
 		using service_base::stop;
-		using service_base::close_channel;
+		using service_base::close;
 
 	protected:
 		template <typename MsgT>
@@ -84,6 +84,19 @@ class service
 		virtual void on_submit_sm_r(bin::sz_t channel_id, const submit_sm_r & msg) = 0;
 		virtual void on_submit_multi_sm(bin::sz_t channel_id, const submit_multi_sm & msg) = 0;
 		virtual void on_submit_multi_r(bin::sz_t channel_id, const submit_multi_r & msg) = 0;
+		virtual void on_deliver_sm(bin::sz_t channel_id, const deliver_sm & msg) = 0;
+		virtual void on_deliver_sm_r(bin::sz_t channel_id, const deliver_sm_r & msg) = 0;
+		virtual void on_data_sm(bin::sz_t channel_id, const data_sm & msg) = 0;
+		virtual void on_data_sm_r(bin::sz_t channel_id, const data_sm_r & msg) = 0;
+		virtual void on_query_sm(bin::sz_t channel_id, const query_sm & msg) = 0;
+		virtual void on_query_sm_r(bin::sz_t channel_id, const query_sm_r & msg) = 0;
+		virtual void on_cancel_sm(bin::sz_t channel_id, const cancel_sm & msg) = 0;
+		virtual void on_cancel_sm_r(bin::sz_t channel_id, const cancel_sm_r & msg) = 0;
+		virtual void on_replace_sm(bin::sz_t channel_id, const replace_sm & msg) = 0;
+		virtual void on_replace_sm_r(bin::sz_t channel_id, const replace_sm_r & msg) = 0;
+		virtual void on_enquire_link(bin::sz_t channel_id, const enquire_link & msg) = 0;
+		virtual void on_enquire_link_r(bin::sz_t channel_id, const enquire_link_r & msg) = 0;
+		virtual void on_alert_notification(bin::sz_t channel_id, const alert_notification & msg) = 0;
 		virtual void on_parse_error(bin::sz_t channel_id) = 0;
 
 	private:
@@ -170,6 +183,71 @@ class service
 
 		action on_submit_multi_r(const submit_multi_r & msg) {
 			on_submit_multi_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_deliver_sm(const deliver_sm & msg) {
+			on_deliver_sm(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_deliver_sm_r(const deliver_sm_r & msg) {
+			on_deliver_sm_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_data_sm(const data_sm & msg) {
+			on_data_sm(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_data_sm_r(const data_sm_r & msg) {
+			on_data_sm_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_query_sm(const query_sm & msg) {
+			on_query_sm(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_query_sm_r(const query_sm_r & msg) {
+			on_query_sm_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_cancel_sm(const cancel_sm & msg) {
+			on_cancel_sm(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_cancel_sm_r(const cancel_sm_r & msg) {
+			on_cancel_sm_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_replace_sm(const replace_sm & msg) {
+			on_replace_sm(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_replace_sm_r(const replace_sm_r & msg) {
+			on_replace_sm_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_enquire_link(const enquire_link & msg) {
+			on_enquire_link(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_enquire_link_r(const enquire_link_r & msg) {
+			on_enquire_link_r(m_channel_id, msg);
+			return parser_base::resume;
+		}
+
+		action on_alert_notification(const alert_notification & msg) {
+			on_alert_notification(m_channel_id, msg);
 			return parser_base::resume;
 		}
 };

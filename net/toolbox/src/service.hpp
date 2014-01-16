@@ -43,36 +43,43 @@ class service {
 			, m_acpt(m_io, ep)
 			, A(a)
 		{
-			in.stop = false;
 			m_channel_count = 0;
 		}
 
 		virtual ~service() {
-			for (channel_t * ch: m_book) {
-				if (ch != nullptr) {
-					ch->close();
-					delete ch;
-				}
+			if (m_pm_thread.joinable()) {
+				m_pm_thread.join();
 			}
-			m_book.clear();
-			std::stack<bin::sz_t>().swap(m_hole);
+			if (m_io_thread.joinable()) {
+				m_io_thread.join();
+			}
 		}
 
 		void start() {
-			std::thread iorunner([this] {
+			m_pm_thread = std::thread([this] {
+				process_messages();
+			});
+			m_io_thread = std::thread([this] {
 				m_acpt.async_accept(m_sock
 					, boost::bind(&service::on_accept
 						, this, ba::placeholders::error));
 				m_io.run();
 			});
-			iorunner.detach();
-			process_messages();
 		}
 
 		void stop() {
-			std::lock_guard<std::mutex> lock(in.mtx);
-			in.stop = true;
-			in.cond.notify_one();
+			ltrace(L) << "stopping service";
+			{
+				std::lock_guard<std::mutex> lock(in.mtx);
+				in.que.push(inmsg(inmsg::stop));
+				in.cond.notify_one();
+			}
+			if (m_pm_thread.joinable()) {
+				m_pm_thread.join();
+			}
+			if (m_io_thread.joinable()) {
+				m_io_thread.join();
+			}
 		}
 
 	protected:
@@ -81,7 +88,7 @@ class service {
 		virtual void on_recv(bin::sz_t channel_id, bin::buffer buf) = 0;
 		virtual void on_recv_error(bin::sz_t channel_id) = 0;
 
-		void close_channel(bin::sz_t channel_id) {
+		void close(bin::sz_t channel_id) {
 			channel_t * ch = get_channel(channel_id);
 			if (ch == nullptr) {
 				lerror(L) << "service::close: wrong channel id: " << channel_id;
@@ -94,6 +101,7 @@ class service {
 			channel_t * ch = get_channel(channel_id);
 			if (ch == nullptr) {
 				lerror(L) << "service::send: wrong channel id: " << channel_id;
+				A.dealloc(buf.data);
 				return 0;
 			}
 			return ch->send(buf);
@@ -110,25 +118,34 @@ class service {
 
 		bin::sz_t m_channel_count;
 
+		std::thread m_io_thread;
+		std::thread m_pm_thread;
+
 		struct inmsg {
-			enum type_t { unknown, recv, recv_error, send, send_error, close } type;
+			enum type_t { unknown, recv, recv_error, send, send_error, destroy, stop } type;
 			bin::sz_t ch_id;
 			bin::sz_t msg_id;
 			bin::buffer buf;
 			inmsg()
 				: type(unknown), ch_id(0), msg_id(0), buf(){}
-			inmsg(type_t t, bin::sz_t chid, bin::sz_t mid, bin::buffer b)
-				: type(t), ch_id(chid), msg_id(mid), buf(b) {}
-			inmsg(type_t t, bin::sz_t chid, bin::buffer b)
-				: type(t), ch_id(chid), msg_id(0), buf(b) {}
-			inmsg(type_t t, bin::sz_t chid, bin::sz_t mid)
-				: type(t), ch_id(chid), msg_id(mid), buf() {}
+
+			inmsg(type_t t)
+				: type(t), ch_id(0), msg_id(0), buf() {}
+
 			inmsg(type_t t, bin::sz_t chid)
 				: type(t), ch_id(chid), msg_id(0), buf() {}
+
+			inmsg(type_t t, bin::sz_t chid, bin::buffer b)
+				: type(t), ch_id(chid), msg_id(0), buf(b) {}
+
+			inmsg(type_t t, bin::sz_t chid, bin::sz_t mid)
+				: type(t), ch_id(chid), msg_id(mid), buf() {}
+
+			inmsg(type_t t, bin::sz_t chid, bin::sz_t mid, bin::buffer b)
+				: type(t), ch_id(chid), msg_id(mid), buf(b) {}
 		};
 
 		struct inque {
-			bool stop;
 			std::mutex mtx;
 			std::queue<inmsg> que;
 			std::condition_variable cond;
@@ -138,7 +155,9 @@ class service {
 			if (!ec) {
 				channel_t * ch = create(m_sock, *this);
 				ch->recv();
-				start();
+				m_acpt.async_accept(m_sock
+					, boost::bind(&service::on_accept
+						, this, ba::placeholders::error));
 			} else {
 				lerror(L) << ec.message();
 			}
@@ -150,18 +169,21 @@ class service {
 					ch->close();
 				}
 			}
+			m_io.post([this] {
+				m_acpt.close();
+			});
 		}
 
 		void process_messages() {
+			bool stop = false;
 			inmsg msg;
 			while (true) {
 				try {
 					std::unique_lock<std::mutex> lock(in.mtx);
-					in.cond.wait(lock, [this] {
-						return !in.que.empty() || in.stop;
-					});
-					if (in.stop) {
-						cancel_all();
+					in.cond.wait(lock, [this, stop] { return !in.que.empty() || (!m_channel_count && stop); });
+					if (in.que.empty() && !m_channel_count && stop) {
+						ltrace(L) << "service::process_messages: end of processing loop";
+						return;
 					}
 					msg = in.que.front();
 					in.que.pop();
@@ -183,7 +205,7 @@ class service {
 					case inmsg::send_error:
 						on_send_error(msg.ch_id, msg.msg_id);
 						break;
-					case inmsg::close: {
+					case inmsg::destroy: {
 						channel_t * ch = get_channel(msg.ch_id);
 						if (ch != nullptr) {
 							destroy(ch);
@@ -192,6 +214,11 @@ class service {
 								<< "service::process_messages"
 								<< " on_close with wrong channel id";
 						}
+						break;
+					}
+					case inmsg::stop: {
+						cancel_all();
+						stop = true;
 						break;
 					}
 					case inmsg::unknown:
@@ -233,12 +260,15 @@ class service {
 			A.dealloc(buf.data);
 			in.que.push(inmsg(inmsg::send_error, ch->id(), msg_id));
 			in.cond.notify_one();
+			ltrace(L) << "channel #" << ch->id()
+				<< " error msg out # " << msg_id << ": " << buf.len << " bytes";
 		}
 
 		void on_close(channel_t * ch) {
 			std::lock_guard<std::mutex> lock(in.mtx);
-			in.que.push(inmsg(inmsg::close, ch->id()));
+			in.que.push(inmsg(inmsg::destroy, ch->id()));
 			in.cond.notify_one();
+			ltrace(L) << "service::on_close: " << ch->id();
 		}
 
 		template<typename ... Args>

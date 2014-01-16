@@ -12,6 +12,7 @@ find_package(Boost 1.54.0 COMPONENTS
 	filesystem
 	system
 	thread
+	program_options
 	log-mt
 	log_setup-mt)
 
