@@ -2966,7 +2966,7 @@ namespace mobi { namespace net { namespace smpp {
 		std::basic_ostream<CharT, TraitsT>&
 		operator<<(std::basic_ostream<CharT, TraitsT> &L
 				, const submit_sm & r) {
-			L	<< "submit_sm: "
+			L	<< "submit_sm HIHIHI: "
 				<< r.command
 				<< "[serv_type:"				<< r.serv_type													<< "]"
 				<< "[src_addr_ton:"			<< std::bitset<8>(r.src_addr_ton)								<< "]"

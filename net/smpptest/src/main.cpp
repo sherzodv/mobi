@@ -823,7 +823,6 @@ BOOST_AUTO_TEST_CASE( test_pw_deliver_sm )
 	msg.lang_ind.set(0x10);
 	msg.its_session_info.set(STR("H"));
 
-	msg.command.id				= command::submit_sm;
 	msg.command.seqno			= 0x00000010;
 	msg.command.status			= 0x00000010;
 	msg.command.len				= msg.raw_size();
