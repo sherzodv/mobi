@@ -409,31 +409,75 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 	using namespace mobi::net;
 	using namespace mobi::net::toolbox;
 
-	class writer: public asn::ber::writer<std::ostream> {
+	class writer: public asn::ber::writer<std::ostream>,
+		public asn::ber::parser<std::ostream> {
 
 		typedef asn::ber::writer<std::ostream> base;
+		typedef asn::ber::parser<std::ostream> parser_base;
 
 		using base::L;
 
+		action on_primitive(asn::ber::tag tag, const bin::u8_t * data) {
+			(void)(tag);
+			(void)(data);
+			return parser_base::resume;
+		}
+
+		action on_constructor_start(asn::ber::tag tag, const bin::u8_t * data) {
+			(void)(tag);
+			(void)(data);
+			return parser_base::resume;
+		}
+
+		action on_constructor_end() {
+			return parser_base::resume;
+		}
+
 		public:
-			writer(std::ostream & out): base(out) {}
+			writer(std::ostream & out): base(out), parser_base(out) {}
 			~writer() {}
 
 			void test() {
+				using asn::ber::operator<<;
+
+				const bin::sz_t bsize = sizeof(bin::u64_t) + 1;
+
 				bin::u64_t len = 0xFF2347623480;
-				bin::u8_t buf[sizeof(bin::u64_t) + 1];
-				bin::u8_t *cur = nullptr;
+				bin::u64_t netlen = bin::bo::to_net(len);
+				bin::u8_t buf[bsize];
+				bin::u8_t *bend = buf + bsize;
+				const bin::u8_t *cur = nullptr;
 
-				std::memset(buf, 0, sizeof(bin::u64_t) + 1);
+				std::memset(buf, 0, bsize);
 
-				cur = base::write_len(buf, buf + sizeof(bin::u64_t) + 1, len);
+				L << bin::hex_str_ref(bin::asbuf(len), sizeof(len)) << std::endl;
+				L << bin::hex_str_ref(bin::asbuf(netlen), sizeof(netlen)) << std::endl;
+
+				cur = base::write_len(buf, bend, len);
 				if (cur == nullptr) {
 					L << "write_len error" << std::endl;
 					return;
 				}
+				L << bin::hex_str_ref(buf, bsize) << std::endl;
 
-				L << bin::hex_str_ref(bin::asbuf(len), sizeof(len)) << std::endl;
-				L << bin::hex_str_ref(buf, sizeof(bin::u64_t) + 1) << std::endl;
+				std::memset(buf, 0, bsize);
+				cur = base::write_tag(buf, bend, asn::ber::tagclass_private
+						, asn::ber::tagform_primitive, 0x20C3, 0x55);
+				if (cur == nullptr) {
+					L << "write_tag error" << std::endl;
+					return;
+				}
+				L << bin::bin_str_ref(buf, bsize).delimit(" ") << std::endl;
+
+				asn::ber::tag t;
+				cur = parser_base::parse_tag(t, buf, bend);
+				if (cur == nullptr) {
+					L << "parse_tag error" << std::endl;
+					return;
+				}
+				L << t << std::endl;
+
+				L << std::hex << (0x4143 >> 8) << std::endl;
 			}
 
 	} w(std::cout);

@@ -157,6 +157,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 
 	/* Defines the identification octect, the first octet of an element which
 	 * identifies tag class, form and the first 5 bits of a tag code */
+	/* TODO: ifdef bit order by platform */
 	struct raw_tag {
 		bin::u8_t code		: 5;
 		tag_form	form	: 1;
@@ -367,7 +368,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 						/* Code octet count > sizeof(bin::u64_t) is not supported */
 						return nullptr;
 					}
-					t.code <<= 8;
+					t.code <<= 7;
 					t.code |= *buf & 0x7F;
 					/* MSB is 0 - last octet */
 					if (*buf <= 0x7F) {
@@ -411,6 +412,58 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 
 		protected:
 			LogT & L;
+
+			bin::u8_t * write_tag(bin::u8_t * buf, bin::u8_t * bend
+					, tag_class klass, tag_form form
+					, bin::u64_t code, bin::u64_t len) {
+				using namespace bin;
+
+				raw_tag *rt = reinterpret_cast<raw_tag *>(buf);
+
+				RETURN_NULL_IF(buf + 1 > bend);
+
+				rt->klass = klass;
+				rt->form = form;
+
+				if (code < 0x1F) {
+					/* Simple tag code */
+					rt->code = static_cast<bin::u8_t>(code);
+					return write_len(buf + 1, bend, len);
+				} else {
+					/* Extended tag code */
+					bin::u8_t octets, bits;
+					bin::u8_t *end;
+
+					rt->code = 0x1F;
+					++buf;
+
+					/* Find out how many octets do we need to encode tag
+					 * code according to BER extended tag code encoding
+					 * rules */
+
+					for (octets = 1, bits = 7
+							; bits < 8 * sizeof(code); bits += 7) {
+						if (code >> bits != 0) {
+							++octets;
+						} else {
+							break;
+						}
+					}
+
+					RETURN_NULL_IF(buf + octets > bend);
+
+					end = buf + octets - 1;
+					for (bits -= 7; buf < end; bits -= 7, ++buf) {
+						*buf = 0x80 | ((code >> bits) & 0x7F);
+					}
+					*buf = code & 0x7F;
+					++buf;
+
+					return write_len(buf, bend, len);
+				}
+
+				return buf;
+			}
 
 			bin::u8_t * write_len(bin::u8_t * buf, bin::u8_t * bend
 					, bin::u64_t len) {
