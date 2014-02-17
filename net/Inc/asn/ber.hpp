@@ -331,6 +331,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 						return buf;
 					}
 					case len_infinite: {
+						/* FIXME: implement */
 						len = 0;
 						return buf + 1;
 					}
@@ -399,6 +400,44 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 					}
 				}
 				return buf;
+			}
+	};
+
+	template <class LogT>
+	class writer {
+		public:
+			writer(LogT & l): L(l) {}
+			~writer() {}
+
+		protected:
+			LogT & L;
+
+			bin::u8_t * write_len(bin::u8_t * buf, bin::u8_t * bend
+					, bin::u64_t len) {
+				using namespace bin;
+				/* 0x80 0b10000000 */
+				/* 0x7F 0b01111111 */
+				if (len < 0x80) {
+					/* Use short length form */
+					RETURN_NULL_IF(buf >= bend);
+					bin::u8_t l = static_cast<bin::u8_t>(len);
+					return w::cp_u8(buf, ascbuf(l));
+				} else {
+					/* Use long length form */
+					int octets = 0;
+					bin::u64_t l = len;
+					bin::u8_t *cur = asbuf(len);
+					while (l >>= 8) {
+						++octets;
+					}
+					RETURN_NULL_IF(buf + octets + 1 > bend);
+					/* Write number of octets with a MSB set */
+					*buf = static_cast<bin::u8_t>(0x80 & octets);
+					++buf;
+					while (octets--) {
+						*buf++ = *cur++;
+					}
+				}
 			}
 	};
 
