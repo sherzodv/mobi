@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 			~writer() {}
 
 			void test() {
-				bin::u64_t len = 0x80;
+				bin::u64_t len = 0xFF2347623480;
 				bin::u8_t buf[sizeof(bin::u64_t) + 1];
 				bin::u8_t *cur = nullptr;
 

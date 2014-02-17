@@ -421,23 +421,25 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 					/* Use short length form */
 					RETURN_NULL_IF(buf >= bend);
 					bin::u8_t l = static_cast<bin::u8_t>(len);
-					return w::cp_u8(buf, ascbuf(l));
+					return w::cp_u8(buf, l);
 				} else {
 					/* Use long length form */
-					int octets = 0;
+					bin::u8_t octets = sizeof(bin::u64_t);
 					bin::u64_t l = bo::to_net(len);
-					bin::u8_t *cur = asbuf(len);
-					while (l) {
-						++octets;
-						l <<= 8;
+					bin::u8_t *cur = asbuf(l);
+					/* Count the number of significant octets and
+					 * find the first most significant octet */
+					while (*cur == 0) {
+						--octets;
+						++cur;
 					}
 					RETURN_NULL_IF(buf + octets + 1 > bend);
 					/* Write number of octets with a MSB set */
-					*buf = static_cast<bin::u8_t>(0x80 & static_cast<int>(octets));
-					L << "Number of octets: " << octets << std::endl;
+					*buf = static_cast<bin::u8_t>(0x80 | octets);
 					++buf;
-					while (octets--) {
+					while (octets) {
 						*buf++ = *cur++;
+						--octets;
 					}
 					return buf;
 				}
