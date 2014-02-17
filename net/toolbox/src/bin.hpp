@@ -38,8 +38,10 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 	namespace bo {
 		inline u16_t to_host(u16_t v) { return ntohs(v); }
 		inline u32_t to_host(u32_t v) { return ntohl(v); }
+		inline u64_t to_host(u64_t v) { return be64toh(v); }
 		inline u16_t to_net(u16_t v) { return htons(v); }
 		inline u32_t to_net(u32_t v) { return htonl(v); }
+		inline u64_t to_net(u64_t v) { return htobe64(v); }
 	}
 
 	template <typename T>

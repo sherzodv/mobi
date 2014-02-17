@@ -425,18 +425,21 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 				} else {
 					/* Use long length form */
 					int octets = 0;
-					bin::u64_t l = len;
+					bin::u64_t l = bo::to_net(len);
 					bin::u8_t *cur = asbuf(len);
-					while (l >>= 8) {
+					while (l) {
 						++octets;
+						l <<= 8;
 					}
 					RETURN_NULL_IF(buf + octets + 1 > bend);
 					/* Write number of octets with a MSB set */
-					*buf = static_cast<bin::u8_t>(0x80 & octets);
+					*buf = static_cast<bin::u8_t>(0x80 & static_cast<int>(octets));
+					L << "Number of octets: " << octets << std::endl;
 					++buf;
 					while (octets--) {
 						*buf++ = *cur++;
 					}
+					return buf;
 				}
 			}
 	};

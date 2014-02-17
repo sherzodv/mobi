@@ -1,4 +1,7 @@
 
+#define BOOST_TEST_MODULE MobiSS7
+#include <boost/test/unit_test.hpp>
+
 #include <toolbox/bin.hpp>
 #include <asn/ber.hpp>
 
@@ -11,8 +14,42 @@
 #include <iostream>
 #include <cstring>
 
-void test_sccp() {
+BOOST_AUTO_TEST_CASE(test_m3ua) {
+	using namespace mobi::net::ss7;
+	using namespace mobi::net::toolbox;
 
+	bin::u8_t buf[255];
+
+	const bin::u8_t m3ua_raw1[] =
+		"\x01\x00\x01\x01\x00\x00\x00\x68\x00\x06\x00\x08\x00\x00\x00\x01"
+		"\x02\x10\x00\x57\x00\x00\x0f\x57\x00\x00\x0f\x31\x03\x03\x00\x0b"
+		"\x09\x01\x03\x0e\x19\x0b\x12\x06\x00\x11\x04\x99\x63\x93\x68\x11"
+		"\x06\x0b\x12\xee\x00\x11\x04\x99\x63\x95\x99\x99\x01\x29\x62\x27"
+		"\x48\x04\x2b\x00\xda\x99\x6c\x1f\xa1\x1d\x02\x01\x01\x02\x01\x2d"
+		"\x30\x15\x80\x07\x91\x99\x63\x93\x68\x11\xf6\x81\x01\x01\x82\x07"
+		"\x91\x99\x63\x95\x99\x99\xf1\x00";
+
+	(void)(buf);
+	(void)(m3ua_raw1);
+
+	m3ua::message::data msg;
+
+	m3ua::parse(msg, m3ua_raw1, m3ua_raw1 + sizeof(m3ua_raw1)-1, std::cout);
+
+	using m3ua::operator<<;
+
+	std::cout << msg << std::endl;
+	std::cout << bin::hex_str_ref(msg.protocol_data.val.data
+			, msg.protocol_data.val.data_len) << std::endl;
+
+	std::memset(buf, 0, sizeof(buf));
+	m3ua::write(buf, msg, std::cout);
+
+	std::cout << bin::hex_str_ref(m3ua_raw1, sizeof(m3ua_raw1)) << std::endl;
+	std::cout << bin::hex_str_ref(buf, sizeof(m3ua_raw1)) << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(test_sccp) {
 	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
 
@@ -86,43 +123,7 @@ void test_sccp() {
 	std::cout << bin::hex_str_ref(buf, sizeof(sccp_raw4)) << std::endl;
 }
 
-void test_m3ua() {
-
-	using namespace mobi::net::ss7;
-	using namespace mobi::net::toolbox;
-
-	bin::u8_t buf[255];
-
-	const bin::u8_t m3ua_raw1[] =
-		"\x01\x00\x01\x01\x00\x00\x00\x68\x00\x06\x00\x08\x00\x00\x00\x01"
-		"\x02\x10\x00\x57\x00\x00\x0f\x57\x00\x00\x0f\x31\x03\x03\x00\x0b"
-		"\x09\x01\x03\x0e\x19\x0b\x12\x06\x00\x11\x04\x99\x63\x93\x68\x11"
-		"\x06\x0b\x12\xee\x00\x11\x04\x99\x63\x95\x99\x99\x01\x29\x62\x27"
-		"\x48\x04\x2b\x00\xda\x99\x6c\x1f\xa1\x1d\x02\x01\x01\x02\x01\x2d"
-		"\x30\x15\x80\x07\x91\x99\x63\x93\x68\x11\xf6\x81\x01\x01\x82\x07"
-		"\x91\x99\x63\x95\x99\x99\xf1\x00";
-
-	(void)(buf);
-	(void)(m3ua_raw1);
-
-	m3ua::message::data msg;
-
-	m3ua::parse(msg, m3ua_raw1, m3ua_raw1 + sizeof(m3ua_raw1)-1, std::cout);
-
-	using m3ua::operator<<;
-
-	std::cout << msg << std::endl;
-	std::cout << bin::hex_str_ref(msg.protocol_data.val.data
-			, msg.protocol_data.val.data_len) << std::endl;
-
-	std::memset(buf, 0, sizeof(buf));
-	m3ua::write(buf, msg, std::cout);
-
-	std::cout << bin::hex_str_ref(m3ua_raw1, sizeof(m3ua_raw1)) << std::endl;
-	std::cout << bin::hex_str_ref(buf, sizeof(m3ua_raw1)) << std::endl;
-}
-
-void test_tcap() {
+BOOST_AUTO_TEST_CASE(test_tcap) {
 
 	using namespace mobi::net::asn;
 	using namespace mobi::net::ss7;
@@ -238,8 +239,7 @@ void test_tcap() {
 	}
 }
 
-void test_map() {
-
+BOOST_AUTO_TEST_CASE(test_map) {
 	using namespace mobi::net::asn;
 	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
@@ -335,8 +335,7 @@ void test_map() {
 	}
 }
 
-void test_sms() {
-
+BOOST_AUTO_TEST_CASE(test_sms) {
 	using namespace mobi::net;
 	using namespace mobi::net::asn;
 	using namespace mobi::net::ss7;
@@ -405,19 +404,39 @@ void test_sms() {
 	}
 }
 
-int main() {
+BOOST_AUTO_TEST_CASE(test_ber_writer) {
 
-	(void)(test_m3ua);
-	(void)(test_sccp);
-	(void)(test_tcap);
-	(void)(test_map);
-	(void)(test_sms);
+	using namespace mobi::net;
+	using namespace mobi::net::toolbox;
 
-	test_m3ua();
-	test_sccp();
-	test_tcap();
-	test_map();
-	test_sms();
+	class writer: public asn::ber::writer<std::ostream> {
 
-	return 0;
+		typedef asn::ber::writer<std::ostream> base;
+
+		using base::L;
+
+		public:
+			writer(std::ostream & out): base(out) {}
+			~writer() {}
+
+			void test() {
+				bin::u64_t len = 0x80;
+				bin::u8_t buf[sizeof(bin::u64_t) + 1];
+				bin::u8_t *cur = nullptr;
+
+				std::memset(buf, 0, sizeof(bin::u64_t) + 1);
+
+				cur = base::write_len(buf, buf + sizeof(bin::u64_t) + 1, len);
+				if (cur == nullptr) {
+					L << "write_len error" << std::endl;
+					return;
+				}
+
+				L << bin::hex_str_ref(bin::asbuf(len), sizeof(len)) << std::endl;
+				L << bin::hex_str_ref(buf, sizeof(bin::u64_t) + 1) << std::endl;
+			}
+
+	} w(std::cout);
+
+	w.test();
 }
