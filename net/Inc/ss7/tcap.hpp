@@ -76,29 +76,20 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 	void dump(std::basic_ostream< CharT, TraitsT >& L, const bin::u8_t * buf, bin::sz_t len);
 
 	template <class LogT>
-	class parser {
+	class parser: public asn::ber::parser<LogT> {
+
+		typedef asn::ber::parser<LogT> base;
 
 		public:
-			parser(LogT & l): L(l) {}
+			parser(LogT & l): base(l) {}
 			virtual ~parser() {}
 
-			const bin::u8_t * parse(const bin::u8_t * buf
-				, const bin::u8_t * bend) {
-				using namespace asn::ber;
-				buf = parse_message_type(buf, bend);
-				RETURN_NULL_IF(buf == nullptr);
-				return buf;
-			}
-
 		protected:
-			LogT & L;
-
-			enum action {
-				stop		/* Stop parsing immediately */
-				, resume	/* Resume parsing */
-				, skip		/* Skip the value (may be constructor)
-							   of an element */
-			};
+			using base::L;
+			using base::stop;
+			using base::resume;
+			using base::skip;
+			typedef typename base::action action;
 
 			/* TODO: implement skipping */
 
@@ -117,20 +108,20 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 			virtual action on_constructor_end() = 0;
 
 		private:
-			asn::ber::tag m_mtag; /* Message type tag */
-
-			const bin::u8_t * parse_message_type(const bin::u8_t * buf
+			const bin::u8_t * parse_message(const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
-				/* Parse TCAP Message type tag with len */
-				buf = parse_tag(m_mtag, buf, bend, L);
+				tag t;
+
+				/* Parse message type tag */
+				buf = parse_tag(t, buf, bend, L);
 
 				RETURN_NULL_IF(buf == nullptr);
-				RETURN_NULL_IF(m_mtag.klass != tagclass_application);
-				RETURN_NULL_IF(m_mtag.form != tagform_constructor);
+				RETURN_NULL_IF(t.klass != tagclass_application);
+				RETURN_NULL_IF(t.form != tagform_constructor);
 
-				switch (m_mtag.code) {
+				switch (t.code) {
 					case message_type::uni:
 						/* TODO: implement */
 						return nullptr;
@@ -164,7 +155,7 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse OTID value */
-				buf = parse_integer(b.otid, t.len, buf, bend, L);
+				buf = parse_integer(b.otid, t, buf, bend, L);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(on_begin(b) == stop);
 

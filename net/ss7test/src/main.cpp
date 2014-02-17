@@ -144,11 +144,20 @@ void test_tcap() {
 	(void)(tcap_raw2);
 
 	class parser: public tcap::parser<std::ostream> {
+
+		typedef tcap::parser<std::ostream> base;
+
 		public:
-			parser(std::ostream & out): tcap::parser<std::ostream>(out), depth(0) {}
+			parser(std::ostream & out): base(out), depth(0) {}
 			virtual ~parser() {}
 
 		protected:
+
+			using base::L;
+			using base::stop;
+			using base::resume;
+			using base::skip;
+
 			std::size_t depth;
 
 			void indent() {
@@ -263,11 +272,19 @@ void test_map() {
 	(void)(tcap_raw3);
 
 	class parser: public map::parser<std::ostream> {
+
+		typedef map::parser<std::ostream> base;
+
 		public:
-			parser(std::ostream & out): map::parser<std::ostream>(out) {}
+			parser(std::ostream & out): base(out) {}
 			virtual ~parser() {}
 
 		protected:
+			using base::L;
+			using base::stop;
+			using base::resume;
+			using base::skip;
+
 			virtual action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
 				using map::operator<<;
 				L << msg << std::endl;
@@ -390,14 +407,16 @@ void test_sms() {
 
 int main() {
 
-	(void)(test_sccp);
 	(void)(test_m3ua);
+	(void)(test_sccp);
 	(void)(test_tcap);
+	(void)(test_map);
+	(void)(test_sms);
 
-	//test_sccp();
-	//test_m3ua();
-	//test_tcap();
-	//test_map();
+	test_m3ua();
+	test_sccp();
+	test_tcap();
+	test_map();
 	test_sms();
 
 	return 0;

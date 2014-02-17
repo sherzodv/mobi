@@ -155,6 +155,8 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		tagcode_set			= 0x11,
 	};
 
+	/* Defines the identification octect, the first octet of an element which
+	 * identifies tag class, form and the first 5 bits of a tag code */
 	struct raw_tag {
 		bin::u8_t code		: 5;
 		tag_form	form	: 1;
@@ -189,222 +191,216 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		return !(l == r);
 	}
 
-	len_type get_len_type(bin::u8_t first) {
-		/* 0x80 0b10000000 */
-		/* 0x7F 0b01111111 */
-		if (first <= 0x7F) {
-			return len_short;
-		} else if (first == 0x80) {
-			return len_infinite;
-		} else {
-			return len_long;
-		}
-	}
-
-	bin::u8_t get_tag_code(const bin::u8_t * buf) {
-		using namespace bin;
-		raw_tag rt;
-		buf = p::cp_u8(asbuf(rt), buf);
-		return rt.code;
-	}
-
 	template <class LogT>
-	const bin::u8_t * parse_integer(bin::s8_t & val
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
+	class parser {
 
-		if (buf + 1 > bend) {
-			return nullptr;
-		}
+		public:
+			parser(LogT & l): L(l) {}
+			virtual ~parser() {}
 
-		return p::cp_u8(asbuf(val), buf);
-	}
-
-	template <class LogT>
-	const bin::u8_t * parse_integer(bin::u64_t & val
-			, bin::u64_t len
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
-
-		/* Assume we parsed tag-len already */
-		if (len < 1 || len > sizeof(bin::u64_t)) {
-			return nullptr;
-		}
-
-		if (buf + len > bend) {
-			return nullptr;
-		}
-
-		return p::ypc(asbuf(val), buf, len);
-	}
-
-	template <class LogT>
-	const bin::u8_t * parse_integer(bin::u32_t & val
-			, bin::u64_t len
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
-
-		/* Assume we parsed tag-len already */
-		if (len < 1 || len > sizeof(bin::u64_t)) {
-			return nullptr;
-		}
-
-		if (buf + len > bend) {
-			return nullptr;
-		}
-
-		return p::ypc(asbuf(val), buf, len);
-	}
-
-	template <class LogT>
-	const bin::u8_t * parse_len(bin::u64_t & len
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
-
-		if (buf >= bend)
-			return nullptr;
-
-		switch (get_len_type(*buf)) {
-			case len_short: {
-				len = static_cast<bin::u64_t>(*buf & 0x7F);
-				return buf + 1;
+			const bin::u8_t * parse(const bin::u8_t * buf
+				, const bin::u8_t * bend) {
+				return parse_next(buf, bend);
 			}
-			case len_long: {
-				bin::u8_t lenlen;
-				if (++buf >= bend)
+
+		protected:
+			LogT & L;
+
+			enum action {
+				stop		/* Stop parsing immediately */
+				, resume	/* Resume parsing */
+				, skip		/* Skip the value (may be constructor)
+							   of an element */
+			};
+
+			/* TODO: implement skipping */
+			virtual action on_primitive(asn::ber::tag tag, const bin::u8_t * data) = 0;
+			virtual action on_constructor_start(asn::ber::tag tag, const bin::u8_t * data) = 0;
+			virtual action on_constructor_end() = 0;
+
+			const bin::u8_t * parse_boolean(bool & val
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				RETURN_NULL_IF(buf >= bend);
+				return p::cp_u8(asbuf(val), buf);
+			}
+
+			template <typename T>
+			const bin::u8_t * parse_integer(T & val
+					, const tag & t
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				/* Such a large integers are not supported */
+				RETURN_NULL_IF(t.len > 8 || buf + t.len > bend);
+				RETURN_NULL_IF(sizeof(val) < t.len);
+				switch (t.len) {
+					case 0: return nullptr; /* Null value parsed as integer */
+					case 1: return p::cp_u8(asbuf(val), buf);
+					case 2: return p::cp_u16(asbuf(val), buf);
+					case 4: return p::cp_u32(asbuf(val), buf);
+					case 8: return p::cp_u64(asbuf(val), buf);
+					default: /* 3, 5, 6, 7 octects */ {
+						size_t len = t.len;
+						val = 0;
+						while (len) {
+							val <<= 8;
+							len &= *buf;
+							++buf;
+							--len;
+						}
+						return buf;
+					}
+				}
+			}
+
+			template <class StringT>
+			const bin::u8_t * parse_octstring(StringT & val
+					, const tag & t
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				/* Expected StringT interface:
+				 * struct { size_t len, std::uint8_t data[] } */
+				val.len = t.len;
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + val.len > bend);
+				return p::cpy(asbuf(val.data), buf, val.len);
+			}
+
+			template <class StringT>
+			const bin::u8_t * parse_octstring(StringT & val
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				tag t;
+				buf = parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+				return parse_octstring(val, t, buf, bend);
+			}
+
+		protected:
+			tag_class get_tag_class(const bin::u8_t ic) {
+				return reinterpret_cast<raw_tag *>(bin::asbuf(ic))->klass;
+			}
+
+			tag_class get_tag_form(const bin::u8_t ic) {
+				return reinterpret_cast<raw_tag *>(bin::asbuf(ic))->form;
+			}
+
+			len_type get_len_type(bin::u8_t first) {
+				/* 0x80 0b10000000 */
+				/* 0x7F 0b01111111 */
+				if (first <= 0x7F) {
+					return len_short;
+				} else if (first == 0x80) {
+					return len_infinite;
+				} else {
+					return len_long;
+				}
+			}
+
+			const bin::u8_t * parse_len(bin::u64_t & len
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+
+				if (buf >= bend)
 					return nullptr;
-				lenlen = *buf & 0x7F;
-				if (buf + lenlen > bend || lenlen > sizeof(bin::u64_t))
+
+				switch (get_len_type(*buf)) {
+					case len_short: {
+						len = static_cast<bin::u64_t>(*buf & 0x7F);
+						return buf + 1;
+					}
+					case len_long: {
+						bin::u8_t lenlen;
+						if (++buf >= bend)
+							return nullptr;
+						lenlen = *buf & 0x7F;
+						if (buf + lenlen > bend || lenlen > sizeof(bin::u64_t))
+							return nullptr;
+						len = 0L;
+						while (lenlen) {
+							len <<= 8;
+							len &= *buf;
+							++buf;
+							--lenlen;
+						}
+						return buf;
+					}
+					case len_infinite: {
+						len = 0;
+						return buf + 1;
+					}
+					default: return nullptr;
+				}
+			}
+
+			const bin::u8_t * parse_tag(tag & t, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+
+				bin::sz_t count;
+				const raw_tag *rt = reinterpret_cast<const raw_tag *>(buf);
+
+				/* At least 1 octet needed */
+				if (buf + 1 > bend)
 					return nullptr;
-				len = 0L;
-				while (lenlen) {
-					len <<= 8;
-					len &= *buf;
-					++buf;
-					--lenlen;
+
+				t.klass = rt->klass;
+				t.form = rt->form;
+
+				buf += 1;
+
+				/* Simple tag code */
+				if (rt->code < 0x1F) {
+					t.code = rt->code;
+					return parse_len(t.len, buf, bend);
+				}
+
+				/* Extended tag code */
+				for (count = 1, t.code = 0; buf < bend; ++count, ++buf) {
+					if (count > sizeof(bin::u64_t)) {
+						/* Code octet count > sizeof(bin::u64_t) is not supported */
+						return nullptr;
+					}
+					t.code <<= 8;
+					t.code |= *buf & 0x7F;
+					/* MSB is 0 - last octet */
+					if (*buf <= 0x7F) {
+						++buf;
+						return parse_len(t.len, buf, bend);
+					}
+				}
+
+				/* Unexpected end of buffer */
+				return nullptr;
+			}
+
+			const bin::u8_t * parse_next(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace asn::ber;
+				asn::ber::tag t;
+				while (buf < bend) {
+					buf = parse_tag(t, buf, bend);
+					RETURN_NULL_IF(buf == nullptr);
+					if (t.form == tagform_primitive) {
+						RETURN_NULL_IF(on_primitive(t, buf) == stop);
+						buf += t.len;
+					} else if (t.form == tagform_constructor) {
+						RETURN_NULL_IF(on_constructor_start(t, buf) == stop);
+						buf = parse_next(buf, buf + t.len);
+						RETURN_NULL_IF(on_constructor_end() == stop);
+					} else {
+						/* Unknown tag form */
+						return nullptr;
+					}
 				}
 				return buf;
 			}
-			case len_infinite: {
-				len = 0;
-				return buf + 1;
-			}
-			default: return nullptr;
-		}
-	}
-
-	template <class LogT>
-	const bin::u8_t * parse_tag(tag & t
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend
-			, LogT & L) {
-		using namespace bin;
-
-		raw_tag rt;
-		bin::sz_t count;
-
-		/* At least 1 octet needed */
-		if (buf + 1 > bend)
-			return nullptr;
-
-		buf = p::cp_u8(asbuf(rt), buf);
-
-		t.klass = rt.klass;
-		t.form = rt.form;
-
-		/* Simple tag code */
-		if (rt.code < 0x1F) {
-			t.code = rt.code;
-			return parse_len(t.len, buf, bend, L);
-		}
-
-		/* Extended tag code */
-		for (count = 1, rt.code = 0; buf < bend; ++count, ++buf) {
-			if (count > sizeof(bin::u64_t)) {
-				/* Code octet count > sizeof(bin::u64_t) is not supported */
-				return nullptr;
-			}
-			rt.code <<= 8;
-			rt.code |= *buf & 0x7F;
-			/* MSB is 0 - last octet */
-			if (*buf <= 0x7F) {
-				++buf;
-				return parse_len(t.len, buf, bend, L);
-			}
-		}
-
-		/* Unexpected end of buffer */
-		return nullptr;
-	}
-
-	/* Parse BOOLEAN with tag. Don't check for tag
-	 * class as it may be context specific. */
-	template <class ValT, class LogT>
-	const bin::u8_t * parse_el_boolean(ValT & val
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
-
-		tag t;
-
-		buf = parse_tag(t, buf, bend, L);
-
-		RETURN_NULL_IF(buf == nullptr);
-		RETURN_NULL_IF(buf + 1 > bend);
-		RETURN_NULL_IF(t.form != tagform_primitive);
-
-		return p::cp_u8(asbuf(val), buf);
-	}
-
-	/* Parse OCTET STRING with tag. Don't check for tag
-	 * class as it may be context specific. */
-	template <class StringT, class LogT>
-	const bin::u8_t * parse_el_octstring(StringT & val
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
-
-		tag t;
-
-		buf = parse_tag(t, buf, bend, L);
-
-		RETURN_NULL_IF(t.form != tagform_primitive);
-
-		val.len = t.len;
-
-		RETURN_NULL_IF(buf == nullptr);
-		RETURN_NULL_IF(buf + val.len > bend);
-
-		return p::cpy(asbuf(val.data), buf, val.len);
-	}
-
-	/* Parse OCTET STRING using already parsed tag. Intended for use
-	 * in parsing CHOICE fields. */
-	template <class StringT, class LogT>
-	const bin::u8_t * parse_el_octstring(StringT & val
-			, const tag & t
-			, const bin::u8_t * buf
-			, const bin::u8_t * bend, LogT & L) {
-		(void)(L);
-		using namespace bin;
-
-		val.len = t.len;
-
-		RETURN_NULL_IF(buf == nullptr);
-		RETURN_NULL_IF(buf + val.len > bend);
-
-		return p::cpy(asbuf(val.data), buf, val.len);
-	}
+	};
 
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, tag_class tclass) {

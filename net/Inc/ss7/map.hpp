@@ -124,17 +124,19 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 	template <class LogT>
 	class parser: public tcap::parser<LogT> {
+
+		typedef tcap::parser<LogT> base;
+
 		public:
-			parser(LogT & l): tcap::parser<LogT>(l), L(l) {}
+			parser(LogT & l): base(l) {}
 			virtual ~parser() {}
 
 		protected:
-			LogT & L;
-
-			using typename tcap::parser<LogT>::action;
-			using tcap::parser<LogT>::stop;
-			using tcap::parser<LogT>::resume;
-			using tcap::parser<LogT>::skip;
+			using base::L;
+			using base::stop;
+			using base::resume;
+			using base::skip;
+			typedef typename base::action action;
 
 			virtual action on_routing_info_for_sm_arg(const routing_info_for_sm_arg_t & msg) = 0;
 			virtual action on_routing_info_for_sm_res(const routing_info_for_sm_res_t & msg) = 0;
@@ -266,19 +268,19 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				routing_info_for_sm_arg_t ri;
 
 				/* Parse SEQUENCE tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
 
 				/* Parse msisdn */
-				buf = parse_el_octstring(ri.msisdn, buf, bend, L);
+				buf = base::parse_octstring(ri.msisdn, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse sm-RP-PRI */
-				buf = parse_el_boolean(ri.sm_rp_pri, buf, bend, L);
+				buf = base::parse_boolean(ri.sm_rp_pri, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse serviceCentreAddress */
-				buf = parse_el_octstring(ri.sc_address, buf, bend, L);
+				buf = base::parse_octstring(ri.sc_address, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				switch (on_routing_info_for_sm_arg(ri)) {
@@ -306,11 +308,11 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				routing_info_for_sm_res_t ri;
 
 				/* Parse SEQUENCE tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
 
 				/* Parse imsi */
-				buf = parse_el_octstring(ri.imsi, buf, bend, L);
+				buf = base::parse_octstring(ri.imsi, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse locationInfoWithLMSI */
@@ -349,7 +351,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				mo_forward_sm_arg_t ri;
 
 				/* Parse SEQUENCE tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
 
 				buf = parse_sm_rp_da(ri.sm_rp_da, buf, bend);
@@ -358,10 +360,10 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				buf = parse_sm_rp_oa(ri.sm_rp_oa, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				buf = parse_el_octstring(ri.sm_rp_ui, buf, bend, L);
+				buf = base::parse_octstring(ri.sm_rp_ui, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				tmpbuf = parse_el_octstring(ri.imsi, buf, bend, L);
+				tmpbuf = base::parse_octstring(ri.imsi, buf, bend);
 				if (tmpbuf != nullptr) {
 					buf = tmpbuf;
 					ri.has_imsi = true;
@@ -391,10 +393,10 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				mo_forward_sm_res_t ri;
 
 				/* Parse SEQUENCE tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
 
-				buf = parse_el_octstring(ri.sm_rp_ui, buf, bend, L);
+				buf = base::parse_octstring(ri.sm_rp_ui, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				switch (on_mo_forward_sm_res(ri)) {
@@ -436,15 +438,15 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				const bin::u8_t * tmpbuf;
 
 				/* Parse SEQUENCE tag, context-spec, 0 */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr
 						|| t.code != 0 || t.klass != tagclass_contextspec);
 
 				/* Parse networkNodeNumber */
-				buf = parse_el_octstring(linfo.network_node_number, buf, bend, L);
+				buf = base::parse_octstring(linfo.network_node_number, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				tmpbuf = parse_el_octstring(linfo.lmsi, buf, bend, L);
+				tmpbuf = base::parse_octstring(linfo.lmsi, buf, bend);
 				if (tmpbuf == nullptr) {
 					linfo.lmsi.len = 0;
 					return buf;
@@ -468,22 +470,22 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 				tag t;
 
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr
 						|| t.klass != tagclass_contextspec);
 
 				switch (t.code) {
 					case 0:
 						rp.has = sm_rp_da_t::has_imsi;
-						buf = parse_el_octstring(rp.as.imsi, t, buf, bend, L);
+						buf = base::parse_octstring(rp.as.imsi, t, buf, bend);
 						return buf;
 					case 1:
 						rp.has = sm_rp_da_t::has_lmsi;
-						buf = parse_el_octstring(rp.as.lmsi, t, buf, bend, L);
+						buf = base::parse_octstring(rp.as.lmsi, t, buf, bend);
 						return buf;
 					case 4:
 						rp.has = sm_rp_da_t::has_sc;
-						buf = parse_el_octstring(rp.as.sc_address_da, t, buf, bend, L);
+						buf = base::parse_octstring(rp.as.sc_address_da, t, buf, bend);
 						return buf;
 					case 5:
 						buf += t.len;
@@ -508,18 +510,18 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 				tag t;
 
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr
 						|| t.klass != tagclass_contextspec);
 
 				switch (t.code) {
 					case 2:
 						rp.has = sm_rp_oa_t::has_msisdn;
-						buf = parse_el_octstring(rp.as.msisdn, t, buf, bend, L);
+						buf = base::parse_octstring(rp.as.msisdn, t, buf, bend);
 						return buf;
 					case 4:
 						rp.has = sm_rp_oa_t::has_sc;
-						buf = parse_el_octstring(rp.as.sc_address_oa, t, buf, bend, L);
+						buf = base::parse_octstring(rp.as.sc_address_oa, t, buf, bend);
 						return buf;
 					case 5:
 						buf += t.len;
