@@ -14,6 +14,52 @@
 #include <iostream>
 #include <cstring>
 
+BOOST_AUTO_TEST_CASE(test_bcd_coder) {
+
+	using namespace mobi::net::toolbox;
+
+	const bin::sz_t max_sz = 20;
+
+	struct string_t {
+		bin::sz_t len;
+		bin::u8_t data[max_sz];
+
+		string_t(): len(max_sz), data{0} {}
+	};
+
+	const char s1[] = "1234567890";
+	const char s2[] = "12345678901";
+
+	string_t isdn1;
+	string_t isdn2;
+
+	string_t en;
+	string_t de;
+
+	isdn1.len = sizeof(s1) - 1;
+	memcpy(isdn1.data, s1, isdn1.len);
+
+	isdn2.len = sizeof(s2) - 1;
+	memcpy(isdn2.data, s2, isdn2.len);
+
+	bin::bcd_encode(en, isdn1);
+	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09"
+			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+
+	bin::bcd_decode(de, en, true);
+	BOOST_CHECK(std::strncmp(s1
+			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+
+	bin::bcd_encode(en, isdn2);
+	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xF1"
+			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+
+	bin::bcd_decode(de, en, true);
+	BOOST_CHECK(std::strncmp(s2
+			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+
+}
+
 BOOST_AUTO_TEST_CASE(test_m3ua) {
 	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
