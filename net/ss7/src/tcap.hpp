@@ -84,38 +84,14 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 			parser(LogT & l): base(l) {}
 			virtual ~parser() {}
 
-		protected:
-			using base::L;
-			using base::stop;
-			using base::resume;
-			using base::skip;
-			typedef typename base::action action;
-
-			/* TODO: implement skipping */
-
-			virtual action on_uni(const element::uni & el) = 0;
-			virtual action on_begin(const element::begin & el) = 0;
-			virtual action on_end(const element::end & el) = 0;
-			virtual action on_resume(const element::resume & el) = 0;
-			virtual action on_abort(const element::abort & el) = 0;
-
-			virtual action on_invoke(const element::invoke & el) = 0;
-			virtual action on_return_result_last(const element::return_result & el) = 0;
-
-			virtual action on_primitive(asn::ber::tag tag, const bin::u8_t * data) = 0;
-
-			virtual action on_constructor_start(asn::ber::tag tag, const bin::u8_t * data) = 0;
-			virtual action on_constructor_end() = 0;
-
-		private:
-			const bin::u8_t * parse_message(const bin::u8_t * buf
+			virtual const bin::u8_t * parse(const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace asn::ber;
 
 				tag t;
 
 				/* Parse message type tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t.klass != tagclass_application);
@@ -143,6 +119,31 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				}
 			}
 
+		protected:
+			using base::L;
+			using base::stop;
+			using base::resume;
+			using base::skip;
+			typedef typename base::action action;
+
+			/* TODO: implement skipping */
+
+			virtual action on_uni(const element::uni & el) = 0;
+			virtual action on_begin(const element::begin & el) = 0;
+			virtual action on_end(const element::end & el) = 0;
+			virtual action on_resume(const element::resume & el) = 0;
+			virtual action on_abort(const element::abort & el) = 0;
+
+			virtual action on_invoke(const element::invoke & el) = 0;
+			virtual action on_return_result_last(const element::return_result & el) = 0;
+
+			virtual action on_primitive(asn::ber::tag tag, const bin::u8_t * data) = 0;
+
+			virtual action on_constructor_start(asn::ber::tag tag, const bin::u8_t * data) = 0;
+			virtual action on_constructor_end() = 0;
+
+		protected:
+
 			const bin::u8_t * parse_begin(const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace asn::ber;
@@ -151,17 +152,17 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				element::begin b;
 
 				/* Parse OTID tag and len */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse OTID value */
-				buf = parse_integer(b.otid, t, buf, bend, L);
+				buf = base::parse_integer(b.otid, t.len, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(on_begin(b) == stop);
 
 				/* See what is next: dialog or component portion?*/
 
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t.klass != tagclass_application
 						|| t.form != tagform_constructor);
@@ -187,18 +188,14 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				tag t;
 				element::end end;
 
-				/* Parse DTID tag and len */
-				buf = parse_tag(t, buf, bend, L);
-				RETURN_NULL_IF(buf == nullptr);
-
-				/* Parse DTID value */
-				buf = parse_integer(end.dtid, t.len, buf, bend, L);
+				/* Parse DTID */
+				buf = base::parse_integer(end.dtid, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(on_end(end) == stop);
 
 				/* See what is next: dialog or component portion?*/
 
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t.klass != tagclass_application
 						|| t.form != tagform_constructor);
@@ -224,7 +221,7 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				tag t;
 				while (buf < bend) {
 					/* Parse TCAP Component tag with len */
-					buf = parse_tag(t, buf, bend, L);
+					buf = base::parse_tag(t, buf, bend);
 					RETURN_NULL_IF(buf == nullptr);
 					switch (t.code) {
 						case component_type::invoke:
@@ -268,36 +265,31 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				tag t;
 				element::invoke inv;
 
-				/* Parse invokeID tag */
-				buf = parse_tag(t, buf, bend, L);
-				RETURN_NULL_IF(buf == nullptr);
-				RETURN_NULL_IF(t != type::integer);
-
-				/* Parse invokeID value */
-				buf = parse_integer(inv.id, buf, bend, L);
+				/* Parse invokeID */
+				buf = base::parse_integer(inv.id, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				inv.linked_id = 0;
 				inv.op_code = 0;
 
 				/* Now see what is next: linkedID is present or op_code */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				if (t.klass == tagclass_contextspec
 						&& t.form == tagform_primitive
 						&& t.code == 0x00) {
 					/* linkedID is present, parse it */
-					buf = parse_integer(inv.linked_id, buf, bend, L);
+					buf = base::parse_integer(inv.linked_id, t.len, buf, bend);
 					RETURN_NULL_IF(buf == nullptr);
 
 					/* Parse operationCode tag */
-					buf = parse_tag(t, buf, bend, L);
+					buf = base::parse_tag(t, buf, bend);
 					RETURN_NULL_IF(buf == nullptr);
 				}
 
 				/* Parse operationCode value */
-				buf = parse_integer(inv.op_code, t.len, buf, bend, L);
+				buf = base::parse_integer(inv.op_code, t.len, buf, bend);
 
 				inv.data = buf;
 				inv.dend = bend;
@@ -331,26 +323,26 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				rres.op_code = 0;
 
 				/* Parse invokeID tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t != type::integer);
 
 				/* Parse invokeID value */
-				buf = parse_integer(rres.invokeId, buf, bend, L);
+				buf = base::parse_integer(rres.invokeId, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse SEQUENCE tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t != type::sequence);
 
 				/* Parse operationCode tag */
-				buf = parse_tag(t, buf, bend, L);
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse operationCode value */
-				buf = parse_integer(rres.op_code, t.len, buf, bend, L);
+				buf = base::parse_integer(rres.op_code, t.len, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				return buf;
@@ -382,7 +374,7 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				using namespace asn::ber;
 				tag t;
 				while (buf < bend) {
-					buf = parse_tag(t, buf, bend, L);
+					buf = base::parse_tag(t, buf, bend);
 					RETURN_NULL_IF(buf == nullptr);
 					if (t.form == tagform_primitive) {
 						RETURN_NULL_IF(on_primitive(t, buf) == stop);
@@ -397,6 +389,24 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				return buf;
 			}
 
+	};
+
+	template <class LogT>
+	class writer: public asn::ber::writer<LogT> {
+
+		typedef asn::ber::writer<LogT> base;
+
+		public:
+			writer(LogT & l): base(l) {}
+			virtual ~writer() {}
+
+		protected:
+			using base::L;
+
+			bin::u8_t * write_begin(bin::u8_t * buf, bin::u8_t * bend
+					, const element::begin & r) {
+				return nullptr;
+			}
 	};
 
 	template< typename CharT, typename TraitsT >

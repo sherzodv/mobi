@@ -1,5 +1,5 @@
 
-#define BOOST_TEST_MODULE MobiSS7
+#define BOOST_TEST_MODULE mobi_net_ss7
 #include <boost/test/unit_test.hpp>
 
 #include <toolbox/bin.hpp>
@@ -267,10 +267,6 @@ BOOST_AUTO_TEST_CASE(test_map) {
 		"\xd8\xac\x06\x12\x97\xd9\xe7\x34\x3b\x0d\x6a\xd7\xe7\xe4\xb2\x3c"
 		"\x0d\xaa\xb3\xcf\xe1\x36\x39\x0c";
 
-	(void)(tcap_raw1);
-	(void)(tcap_raw2);
-	(void)(tcap_raw3);
-
 	class parser: public map::parser<std::ostream> {
 
 		typedef map::parser<std::ostream> base;
@@ -287,52 +283,41 @@ BOOST_AUTO_TEST_CASE(test_map) {
 
 			virtual action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
 				using map::operator<<;
-				L << msg << std::endl;
+				(void)(msg);
+				//L << msg << std::endl;
 				return resume;
 			}
 			virtual action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
 				using map::operator<<;
-				L << msg << std::endl;
+				(void)(msg);
+				//L << msg << std::endl;
 				return resume;
 			}
 			virtual action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
 				using map::operator<<;
-				L << msg << std::endl;
+				(void)(msg);
+				//L << msg << std::endl;
 				return resume;
 			}
 			virtual action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
 				using map::operator<<;
-				L << msg << std::endl;
+				(void)(msg);
+				//L << msg << std::endl;
 				return resume;
 			}
 	} p(std::cout);
 
-	std::cout << "----------------------------------------" << std::endl;
 	cur = p.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
-	if (cur == nullptr) {
-		std::cout << "parse error" << std::endl;
-	} else {
-		std::cout << static_cast<const void *>(tcap_raw1 + sizeof(tcap_raw1) - 1) << std::endl;
-		std::cout << static_cast<const void *>(cur) << std::endl;
-	}
+	BOOST_CHECK(cur != nullptr);
+	BOOST_CHECK(cur == (tcap_raw1 + sizeof(tcap_raw1) -1));
 
-	std::cout << "----------------------------------------" << std::endl;
 	cur = p.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
-	if (cur == nullptr) {
-		std::cout << "parse error" << std::endl;
-	} else {
-		std::cout << static_cast<const void *>(tcap_raw2 + sizeof(tcap_raw2) - 1) << std::endl;
-		std::cout << static_cast<const void *>(cur) << std::endl;
-	}
+	BOOST_CHECK(cur != nullptr);
+	BOOST_CHECK(cur == (tcap_raw2 + sizeof(tcap_raw2) -1));
 
-	std::cout << "----------------------------------------" << std::endl;
 	cur = p.parse(tcap_raw3, tcap_raw3 + sizeof(tcap_raw3) - 1);
-	if (cur == nullptr) {
-		std::cout << "parse error" << std::endl;
-	} else {
-		std::cout << static_cast<const void *>(tcap_raw3 + sizeof(tcap_raw3) - 1) << std::endl;
-		std::cout << static_cast<const void *>(cur) << std::endl;
-	}
+	BOOST_CHECK(cur != nullptr);
+	BOOST_CHECK(cur == (tcap_raw3 + sizeof(tcap_raw3) -1));
 }
 
 BOOST_AUTO_TEST_CASE(test_sms) {
@@ -478,6 +463,64 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 				L << t << std::endl;
 
 				L << std::hex << (0x4143 >> 8) << std::endl;
+			}
+
+	} w(std::cout);
+
+	w.test();
+}
+
+BOOST_AUTO_TEST_CASE(test_map_writer) {
+
+	using namespace mobi::net;
+	using namespace mobi::net::ss7;
+	using namespace mobi::net::toolbox;
+
+	class writer: public map::writer<std::ostream>,
+		public map::parser<std::ostream> {
+
+		typedef map::writer<std::ostream> base;
+		typedef map::parser<std::ostream> parser_base;
+
+		using base::L;
+
+		action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
+			(void)(msg);
+			return parser_base::resume;
+		}
+		action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
+			(void)(msg);
+			return parser_base::resume;
+		}
+		action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
+			(void)(msg);
+			return parser_base::resume;
+		}
+		action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
+			(void)(msg);
+			return parser_base::resume;
+		}
+
+		public:
+			writer(std::ostream & out): base(out), parser_base(out) {}
+			~writer() {}
+
+			void test() {
+				const bin::sz_t bsize = 1024;
+				bin::u8_t buf[bsize] = { 0 };
+				bin::u8_t *bend = buf + bsize;
+				bin::u8_t *bcur = buf;
+
+				L << "sizeof(map::routing_info_for_sm_arg_t) == "
+					<< sizeof(map::routing_info_for_sm_arg_t) << std::endl;
+
+				map::routing_info_for_sm_arg_t ri;
+				bcur = base::write(buf, bend, ri);
+				if (bcur == nullptr) {
+					L << "write ri error" << std::endl;
+				}
+
+				L << bin::hex_str_ref(buf, bsize) << std::endl;
 			}
 
 	} w(std::cout);

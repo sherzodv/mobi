@@ -92,6 +92,10 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			isdn_address_string_t	msisdn;
 			bool					sm_rp_pri;
 			address_string_t		sc_address;
+
+			bin::sz_t size() const {
+				return msisdn.len + sc_address.len + 1;
+			}
 		};
 
 		struct routing_info_for_sm_res_t {
@@ -152,13 +156,15 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 			action on_begin(const tcap::element::begin & el) {
 				using tcap::operator<<;
-				L << std::hex << el << std::endl;
+				(void)(el);
+				//L << std::hex << el << std::endl;
 				return resume;
 			}
 
 			action on_end(const tcap::element::end & el) {
 				using tcap::operator<<;
-				L << el << std::endl;
+				(void)(el);
+				//L << el << std::endl;
 				return resume;
 			}
 
@@ -532,6 +538,51 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}
 			}
 
+	};
+
+	template <class LogT>
+	class writer: public tcap::writer<LogT> {
+
+		typedef tcap::writer<LogT> base;
+
+		public:
+			writer(LogT & l): base(l) {}
+			virtual ~writer() {}
+
+		protected:
+			using base::L;
+
+			bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
+					, const routing_info_for_sm_arg_t & r) {
+				using namespace asn::ber;
+
+				/* RoutingInfoForSM-Arg SEQUENCE {
+					msisdn						[0] IMPLICIT OCTET STRING ( SIZE( 1 .. 20 ) ) ( SIZE( 1 .. 9 ) )
+					, sm-RP-PRI					[1] IMPLICIT BOOLEAN
+					, serviceCentreAddress		[2] IMPLICIT OCTET STRING ( SIZE( 1 .. 20 ) )
+					, extensionContainer		[6] IMPLICIT SEQUENCE {
+						privateExtensionList	[0] IMPLICIT SEQUENCE  ( SIZE( 1 .. 10 ) ) OF SEQUENCE {
+							extId		MAP-EXTENSION .&extensionId  ( { , ... } )
+							, extType	MAP-EXTENSION .&ExtensionType  ( { , ... } { @extId }  ) OPTIONAL
+						} OPTIONAL
+						, pcs-Extensions		[1] IMPLICIT SEQUENCE { ... } OPTIONAL
+						, ...
+					} OPTIONAL
+					, ...
+					, gprsSupportIndicator		[7] IMPLICIT NULL OPTIONAL
+					, sm-RP-MTI					[8] IMPLICIT INTEGER ( 0 .. 10 ) OPTIONAL
+					, sm-RP-SMEA				[9] IMPLICIT OCTET STRING ( SIZE( 1 .. 12 ) ) OPTIONAL
+				}*/
+
+				buf = base::write_tag(buf, bend, type::sequence, r.size());
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = base::write_octstring(buf, bend
+						, tagclass_application, 0, r.msisdn);
+				RETURN_NULL_IF(buf == nullptr);
+
+				return buf;
+			}
 	};
 
 	template< typename CharT, typename TraitsT >

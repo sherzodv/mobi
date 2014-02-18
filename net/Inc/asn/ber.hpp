@@ -155,7 +155,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		tagcode_set			= 0x11,
 	};
 
-	/* Defines the identification octect, the first octet of an element which
+	/* Defines the identification octet, the first octet of an element which
 	 * identifies tag class, form and the first 5 bits of a tag code */
 	/* TODO: ifdef bit order by platform */
 	struct raw_tag {
@@ -199,7 +199,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 			parser(LogT & l): L(l) {}
 			virtual ~parser() {}
 
-			const bin::u8_t * parse(const bin::u8_t * buf
+			virtual const bin::u8_t * parse(const bin::u8_t * buf
 				, const bin::u8_t * bend) {
 				return parse_next(buf, bend);
 			}
@@ -229,21 +229,20 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 
 			template <typename T>
 			const bin::u8_t * parse_integer(T & val
-					, const tag & t
+					, bin::sz_t len
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace bin;
 				/* Such a large integers are not supported */
-				RETURN_NULL_IF(t.len > 8 || buf + t.len > bend);
-				RETURN_NULL_IF(sizeof(val) < t.len);
-				switch (t.len) {
+				RETURN_NULL_IF(len > 8 || buf + len > bend);
+				RETURN_NULL_IF(sizeof(val) < len);
+				switch (len) {
 					case 0: return nullptr; /* Null value parsed as integer */
 					case 1: return p::cp_u8(asbuf(val), buf);
 					case 2: return p::cp_u16(asbuf(val), buf);
 					case 4: return p::cp_u32(asbuf(val), buf);
 					case 8: return p::cp_u64(asbuf(val), buf);
 					default: /* 3, 5, 6, 7 octects */ {
-						size_t len = t.len;
 						val = 0;
 						while (len) {
 							val <<= 8;
@@ -254,6 +253,16 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 						return buf;
 					}
 				}
+			}
+
+			template <typename T>
+			const bin::u8_t * parse_integer(T & val
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				tag t;
+				buf = parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+				return parse_integer(val, t.len, buf, bend);
 			}
 
 			template <class StringT>
@@ -496,6 +505,12 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 				}
 
 				return buf;
+			}
+
+			bin::u8_t * write_tag(bin::u8_t * buf, bin::u8_t * bend
+					, const tag & t, bin::u64_t len) {
+				return write_tag(buf, bend, t.klass, t.form, t.code
+						, len);
 			}
 
 			template <typename T>
