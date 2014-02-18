@@ -155,7 +155,7 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		tagcode_set			= 0x11,
 	};
 
-	/* Defines the identification octect, the first octet of an element which
+	/* Defines the identification octet, the first octet of an element which
 	 * identifies tag class, form and the first 5 bits of a tag code */
 	/* TODO: ifdef bit order by platform */
 	struct raw_tag {
@@ -413,6 +413,39 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		protected:
 			LogT & L;
 
+			bin::u8_t * write_len(bin::u8_t * buf, bin::u8_t * bend
+					, bin::u64_t len) {
+				using namespace bin;
+				/* 0x80 0b10000000 */
+				/* 0x7F 0b01111111 */
+				if (len < 0x80) {
+					/* Use short length form */
+					RETURN_NULL_IF(buf >= bend);
+					bin::u8_t l = static_cast<bin::u8_t>(len);
+					return w::cp(buf, l);
+				} else {
+					/* Use long length form */
+					bin::u8_t octets = sizeof(bin::u64_t);
+					bin::u64_t l = bo::to_net(len);
+					bin::u8_t *cur = asbuf(l);
+					/* Count the number of significant octets and
+					 * find the first most significant octet */
+					while (*cur == 0) {
+						--octets;
+						++cur;
+					}
+					RETURN_NULL_IF(buf + octets + 1 > bend);
+					/* Write number of octets with a MSB set */
+					*buf = static_cast<bin::u8_t>(0x80 | octets);
+					++buf;
+					while (octets) {
+						*buf++ = *cur++;
+						--octets;
+					}
+					return buf;
+				}
+			}
+
 			bin::u8_t * write_tag(bin::u8_t * buf, bin::u8_t * bend
 					, tag_class klass, tag_form form
 					, bin::u64_t code, bin::u64_t len) {
@@ -465,37 +498,26 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 				return buf;
 			}
 
-			bin::u8_t * write_len(bin::u8_t * buf, bin::u8_t * bend
-					, bin::u64_t len) {
+			template <typename T>
+			bin::u8_t * write_integer(bin::u8_t * buf, bin::u8_t * bend
+					, tag_class klass, bin::u64_t code, T val) {
 				using namespace bin;
-				/* 0x80 0b10000000 */
-				/* 0x7F 0b01111111 */
-				if (len < 0x80) {
-					/* Use short length form */
-					RETURN_NULL_IF(buf >= bend);
-					bin::u8_t l = static_cast<bin::u8_t>(len);
-					return w::cp_u8(buf, l);
-				} else {
-					/* Use long length form */
-					bin::u8_t octets = sizeof(bin::u64_t);
-					bin::u64_t l = bo::to_net(len);
-					bin::u8_t *cur = asbuf(l);
-					/* Count the number of significant octets and
-					 * find the first most significant octet */
-					while (*cur == 0) {
-						--octets;
-						++cur;
-					}
-					RETURN_NULL_IF(buf + octets + 1 > bend);
-					/* Write number of octets with a MSB set */
-					*buf = static_cast<bin::u8_t>(0x80 | octets);
-					++buf;
-					while (octets) {
-						*buf++ = *cur++;
-						--octets;
-					}
-					return buf;
-				}
+				buf = write_tag(buf, bend, klass
+						, tagform_primitive, code, sizeof(T));
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + sizeof(T) > bend);
+				return w::cp(buf, val);
+			}
+
+			template <class StringT>
+			bin::u8_t * write_octstring(bin::u8_t * buf, bin::u8_t * bend
+					, tag_class klass, bin::u64_t code, const StringT & str) {
+				buf = write_tag(buf, bend, klass
+						, tagform_primitive, code, str.len);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + str.len > bend);
+				std::memcpy(buf, str.data, str.len);
+				return buf + str.len;
 			}
 	};
 

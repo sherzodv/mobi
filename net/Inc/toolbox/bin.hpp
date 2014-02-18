@@ -262,21 +262,33 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return dst;
 		}
 
-		inline u8_t * cp_u8(u8_t * dst, u8_t src) {
+		inline u8_t * cp(u8_t * dst, u8_t src) {
 			*dst++ = src;
 			return dst;
 		}
 
-		inline u8_t * cp_u16(u8_t * dst, u16_t src) {
+		inline u8_t * cp(u8_t * dst, u16_t src) {
+#ifdef __GNUC__
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 			src = bo::to_net(src);
+#endif
+#else
+#error "w::cp* Not implemented for non-gcc compilers"
+#endif
 			u8_t *s = reinterpret_cast<u8_t *>(&src);
 			*dst++ = *s++;
 			*dst++ = *s++;
 			return dst;
 		}
 
-		inline u8_t * cp_u32(u8_t * dst, u32_t src) {
+		inline u8_t * cp(u8_t * dst, u32_t src) {
+#ifdef __GNUC__
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 			src = bo::to_net(src);
+#endif
+#else
+#error "w::cp* Not implemented for non-gcc compilers"
+#endif
 			u8_t *s = reinterpret_cast<u8_t *>(&src);
 			*dst++ = *s++;
 			*dst++ = *s++;
@@ -285,8 +297,14 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return dst;
 		}
 
-		inline u8_t * cp_u64(u8_t * dst, u64_t src) {
+		inline u8_t * cp(u8_t * dst, u64_t src) {
+#ifdef __GNUC__
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 			src = bo::to_net(src);
+#endif
+#else
+#error "w::cp* Not implemented for non-gcc compilers"
+#endif
 			u8_t *s = reinterpret_cast<u8_t *>(&src);
 			*dst++ = *s++;
 			*dst++ = *s++;
@@ -344,7 +362,6 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			}
 			return dst;
 		}
-
 	}
 
 	class hex_str_ref {
