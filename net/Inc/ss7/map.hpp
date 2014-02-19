@@ -15,73 +15,98 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 	using namespace toolbox;
 
-	/* Decode BCD string pointed by src to dst, and zt the dst.
-	 * dst must have enough space to hold zero-terminated decoded string */
-	void bcd_decode_z(char * dst, const bin::u8_t * src
-			, bin::sz_t len, bool odd = false) {
-		while (len) {
-			*dst++ = (*src & 0x0F) + 0x30;
-			if (odd && len == 1)
-				break;
-			*dst++ = ((*src & 0xF0) >> 4) + 0x30;
-			src++;
-			len--;
+	template <typename IntT, typename RetT = bin::u8_t>
+	inline RetT bcd_encode(IntT v) {
+		switch (v) {
+			case '0': return 0x00;
+			case '1': return 0x01;
+			case '2': return 0x02;
+			case '3': return 0x03;
+			case '4': return 0x04;
+			case '5': return 0x05;
+			case '6': return 0x06;
+			case '7': return 0x07;
+			case '8': return 0x08;
+			case '9': return 0x09;
+			case '*': return 0x0A;
+			case '#': return 0x0B;
+			case 'a': return 0x0C;
+			case 'b': return 0x0D;
+			case 'c': return 0x0E;
+			case 'd': return 0x0F;
+			default: return 0xFF;
 		}
-		*dst = 0;
 	}
 
-	template <class StringT>
-	void bcd_encode_z(StringT & dst, bin::sz_t maxlen, const char * zts) {
-		bin::u8_t *d = dst.data;
-		bin::sz_t len = strlen(zts);
-		if (len > maxlen) {
-			dst.len = 0;
-			return;
+	template <typename IntT, typename RetT = bin::u8_t>
+	inline RetT bcd_decode(IntT v) {
+		switch (v) {
+			case 0x00: return '0';
+			case 0x01: return '1';
+			case 0x02: return '2';
+			case 0x03: return '3';
+			case 0x04: return '4';
+			case 0x05: return '5';
+			case 0x06: return '6';
+			case 0x07: return '7';
+			case 0x08: return '8';
+			case 0x09: return '9';
+			case 0x0A: return '*';
+			case 0x0B: return '#';
+			case 0x0C: return 'a';
+			case 0x0D: return 'b';
+			case 0x0E: return 'c';
+			case 0x0F: return 'd';
+			default: return '\0';
 		}
-		dst.len = len + (len % 2);
-		len /= 2;
-		while (len) {
-			*d++ = ((*(zts+1) - 0x30) << 4) | (*zts - 0x30);
-			zts += 2;
-			--len;
+	}
+
+	template <typename DU8T, typename SU8T>
+	bin::sz_t bcd_encode(DU8T * dst, const SU8T * src
+			, bin::sz_t len) {
+		bin::sz_t rlen = 0;
+		while (len--) {
+			*dst = bcd_encode(*src++);
+			++rlen;
+			if (len) {
+				*dst |= bcd_encode(*src++) << 4;
+				--len;
+			}
+			++dst;
 		}
-		if (dst.len % 2) {
-			*d = 0xF0 | (*zts - 0x30);
+		return rlen;
+	}
+
+	template <typename DU8T, typename SU8T>
+	bin::sz_t bcd_decode(DU8T * dst, const SU8T * src
+			, bin::sz_t len, bool odd = false) {
+		bin::sz_t rlen = 0;
+		while (len--) {
+			*dst++ = bcd_decode(*src & 0x0F);
+			++rlen;
+			if (odd && len == 1)
+				break;
+			*dst++ = bcd_decode((*src++ & 0xF0) >> 4);
+			++rlen;
 		}
+		return rlen;
 	}
 
 	template <class StringT>
 	void bcd_decode(StringT & dst, const StringT & src, bool odd = false) {
-		bin::sz_t len = src.len;
-		bin::u8_t * d = dst.data;
-		const bin::u8_t * s = src.data;
-		dst.len = 0;
-		while (len) {
-			*d++ = (*s & 0x0F) + 0x30;
-			++dst.len;
-			if (odd && len == 1)
-				break;
-			*d++ = ((*s & 0xF0) >> 4) + 0x30;
-			++dst.len;
-			s++;
-			len--;
-		}
+		dst.len = bcd_decode(dst.data, src.data, src.len, odd);
 	}
 
 	template <class StringT>
 	void bcd_encode(StringT & dst, const StringT & src) {
-		bin::u8_t *d = dst.data;
-		const bin::u8_t *s = src.data;
-		bin::sz_t len = src.len / 2;
-		dst.len = len + (src.len % 2);
-		while (len) {
-			*d++ = ((*(s+1) - 0x30) << 4) | (*s - 0x30);
-			s += 2;
-			--len;
-		}
-		if (src.len % 2) {
-			*d = 0xF0 | (*s - 0x30);
-		}
+		dst.len = bcd_encode(dst.data, src.data, src.len);
+	}
+
+	template <class SU8T>
+	std::string bcd_decode(const SU8T * src, bin::sz_t len, bool odd = false) {
+		SU8T buf[1024];
+		len = bcd_decode(buf, src, len, odd);
+		return std::string(reinterpret_cast<char *>(buf), len);
 	}
 
 	/* TODO: determine needed capacity */
@@ -96,19 +121,11 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		struct isdn_address_string_t {
 			bin::sz_t len;
 			bin::u8_t data[max_isdn_address_string_len];
-
-			void set(const char * zts) {
-				bcd_encode_z(*this, max_address_string_len, zts);
-			}
 		};
 
 		struct address_string_t {
 			bin::sz_t len;
 			bin::u8_t data[max_address_string_len];
-
-			void set(const char * zts) {
-				bcd_encode_z(*this, max_address_string_len, zts);
-			}
 		};
 
 		struct imsi_t {
@@ -663,32 +680,28 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const isdn_address_string_t & n) {
-		char num[50];
-		bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		std::string num = bcd_decode(n.data + 1, n.len - 1, true);
 		L << bin::hex_str_ref(n.data, n.len).prefix("").delimit("") << ":" << num;
 		return L;
 	}
 
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const address_string_t & n) {
-		char num[50];
-		bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		std::string num = bcd_decode(n.data + 1, n.len - 1, true);
 		L << num;
 		return L;
 	}
 
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const imsi_t & n) {
-		char num[50];
-		bcd_decode_z(num, n.data, n.len, true);
+		std::string num = bcd_decode(n.data, n.len, true);
 		L << num;
 		return L;
 	}
 
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const lmsi_t & n) {
-		char num[50];
-		bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		std::string num = bcd_decode(n.data + 1, n.len - 1, true);
 		L << num;
 		return L;
 	}

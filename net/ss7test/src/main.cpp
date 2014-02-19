@@ -14,7 +14,7 @@
 #include <iostream>
 #include <cstring>
 
-BOOST_AUTO_TEST_CASE(test_map_bcd_coder) {
+BOOST_AUTO_TEST_CASE(test_sccp_bcd_coders) {
 
 	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
@@ -28,37 +28,82 @@ BOOST_AUTO_TEST_CASE(test_map_bcd_coder) {
 		string_t(): len(max_sz), data{0} {}
 	};
 
-	const char s1[] = "1234567890";
-	const char s2[] = "12345678901";
+	const char sccp_s1[] = "1234567890ABCDEF";
+	const char sccp_s2[] = "12345678901ABCDEF";
 
-	string_t isdn1;
-	string_t isdn2;
+	string_t sccp_num1;
+	string_t sccp_num2;
 
 	string_t en;
 	string_t de;
 
-	isdn1.len = sizeof(s1) - 1;
-	memcpy(isdn1.data, s1, isdn1.len);
+	sccp_num1.len = sizeof(sccp_s1) - 1;
+	memcpy(sccp_num1.data, sccp_s1, sccp_num1.len);
 
-	isdn2.len = sizeof(s2) - 1;
-	memcpy(isdn2.data, s2, isdn2.len);
+	sccp_num2.len = sizeof(sccp_s2) - 1;
+	memcpy(sccp_num2.data, sccp_s2, sccp_num2.len);
 
-	map::bcd_encode(en, isdn1);
-	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09"
+	sccp::bcd_encode(en, sccp_num1);
+	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xBA\xDC\xFE"
+			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+
+	sccp::bcd_decode(de, en);
+	BOOST_CHECK(std::strncmp(sccp_s1
+			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+
+	sccp::bcd_encode(en, sccp_num2);
+	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
+			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+
+	sccp::bcd_decode(de, en, true);
+	BOOST_CHECK(std::strncmp(sccp_s2
+			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+}
+
+BOOST_AUTO_TEST_CASE(test_map_tbcd_coders) {
+
+	using namespace mobi::net::ss7;
+	using namespace mobi::net::toolbox;
+
+	const bin::sz_t max_sz = 20;
+
+	struct string_t {
+		bin::sz_t len;
+		bin::u8_t data[max_sz];
+
+		string_t(): len(max_sz), data{0} {}
+	};
+
+	const char map_s1[] = "1234567890*#abcd";
+	const char map_s2[] = "12345678901*#abcd";
+
+	string_t map_num1;
+	string_t map_num2;
+
+	string_t en;
+	string_t de;
+
+	map_num1.len = sizeof(map_s1) - 1;
+	memcpy(map_num1.data, map_s1, map_num1.len);
+
+	map_num2.len = sizeof(map_s2) - 1;
+	memcpy(map_num2.data, map_s2, map_num2.len);
+
+	map::bcd_encode(en, map_num1);
+	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xBA\xDC\xFE"
+			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+
+	map::bcd_decode(de, en);
+	BOOST_CHECK(std::strncmp(map_s1
+			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+
+	map::bcd_encode(en, map_num2);
+	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
 			, reinterpret_cast<const char *>(en.data), en.len) == 0);
 
 	map::bcd_decode(de, en, true);
-	BOOST_CHECK(std::strncmp(s1
+	BOOST_CHECK(std::strncmp(map_s2
 			, reinterpret_cast<const char *>(de.data), de.len) == 0);
-
-	map::bcd_encode(en, isdn2);
-	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xF1"
-			, reinterpret_cast<const char *>(en.data), en.len) == 0);
-
-	map::bcd_decode(de, en, true);
-	BOOST_CHECK(std::strncmp(s2
-			, reinterpret_cast<const char *>(de.data), de.len) == 0);
-
 }
 
 BOOST_AUTO_TEST_CASE(test_m3ua) {
