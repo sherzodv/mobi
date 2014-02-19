@@ -14,8 +14,9 @@
 #include <iostream>
 #include <cstring>
 
-BOOST_AUTO_TEST_CASE(test_bcd_coder) {
+BOOST_AUTO_TEST_CASE(test_map_bcd_coder) {
 
+	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
 
 	const bin::sz_t max_sz = 20;
@@ -42,19 +43,19 @@ BOOST_AUTO_TEST_CASE(test_bcd_coder) {
 	isdn2.len = sizeof(s2) - 1;
 	memcpy(isdn2.data, s2, isdn2.len);
 
-	bin::bcd_encode(en, isdn1);
+	map::bcd_encode(en, isdn1);
 	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09"
 			, reinterpret_cast<const char *>(en.data), en.len) == 0);
 
-	bin::bcd_decode(de, en, true);
+	map::bcd_decode(de, en, true);
 	BOOST_CHECK(std::strncmp(s1
 			, reinterpret_cast<const char *>(de.data), de.len) == 0);
 
-	bin::bcd_encode(en, isdn2);
+	map::bcd_encode(en, isdn2);
 	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xF1"
 			, reinterpret_cast<const char *>(en.data), en.len) == 0);
 
-	bin::bcd_decode(de, en, true);
+	map::bcd_decode(de, en, true);
 	BOOST_CHECK(std::strncmp(s2
 			, reinterpret_cast<const char *>(de.data), de.len) == 0);
 
@@ -561,6 +562,7 @@ BOOST_AUTO_TEST_CASE(test_map_writer) {
 					<< sizeof(map::routing_info_for_sm_arg_t) << std::endl;
 
 				map::routing_info_for_sm_arg_t ri;
+
 				bcur = base::write(buf, bend, ri);
 				if (bcur == nullptr) {
 					L << "write ri error" << std::endl;

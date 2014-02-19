@@ -13,6 +13,75 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 
 	using namespace toolbox;
 
+	/* Decode BCD string pointed by src to dst, and zt the dst.
+	 * dst must have enough space to hold zero-terminated decoded string */
+	void bcd_decode_z(char * dst, const bin::u8_t * src
+			, bin::sz_t len, bool odd = false) {
+		while (len) {
+			*dst++ = (*src & 0x0F) + 0x30;
+			if (odd && len == 1)
+				break;
+			*dst++ = ((*src & 0xF0) >> 4) + 0x30;
+			src++;
+			len--;
+		}
+		*dst = 0;
+	}
+
+	template <class StringT>
+	void bcd_encode_z(StringT & dst, bin::sz_t maxlen, const char * zts) {
+		bin::u8_t *d = dst.data;
+		bin::sz_t len = strlen(zts);
+		if (len > maxlen) {
+			dst.len = 0;
+			return;
+		}
+		dst.len = len + (len % 2);
+		len /= 2;
+		while (len) {
+			*d++ = ((*(zts+1) - 0x30) << 4) | (*zts - 0x30);
+			zts += 2;
+			--len;
+		}
+		if (dst.len % 2) {
+			*d = 0xF0 | (*zts - 0x30);
+		}
+	}
+
+	template <class StringT>
+	void bcd_decode(StringT & dst, const StringT & src, bool odd = false) {
+		bin::sz_t len = src.len;
+		bin::u8_t * d = dst.data;
+		const bin::u8_t * s = src.data;
+		dst.len = 0;
+		while (len) {
+			*d++ = (*s & 0x0F) + 0x30;
+			++dst.len;
+			if (odd && len == 1)
+				break;
+			*d++ = ((*s & 0xF0) >> 4) + 0x30;
+			++dst.len;
+			s++;
+			len--;
+		}
+	}
+
+	template <class StringT>
+	void bcd_encode(StringT & dst, const StringT & src) {
+		bin::u8_t *d = dst.data;
+		const bin::u8_t *s = src.data;
+		bin::sz_t len = src.len / 2;
+		dst.len = len + (src.len % 2);
+		while (len) {
+			*d++ = ((*(s+1) - 0x30) << 4) | (*s - 0x30);
+			s += 2;
+			--len;
+		}
+		if (src.len % 2) {
+			*d = 0xF0 | (*s - 0x30);
+		}
+	}
+
 	/* Generic SCCP message */
 	struct message {
 		bin::u8_t type;
@@ -554,7 +623,7 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 				;
 				break;
 			case gt_has_tt_np_es:
-				bin::bcd_decode_z(number, r.gt.x03.data
+				bcd_decode_z(number, r.gt.x03.data
 					, static_cast<bin::sz_t>(r.gt_len - 2), true);
 				L << "[GT:"
 					<< "[tt: " << static_cast<unsigned>(r.gt.x03.tt) << "]"
@@ -565,7 +634,7 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 				;
 				break;
 			case gt_has_tt_np_es_nai:
-				bin::bcd_decode_z(number, r.gt.x04.data
+				bcd_decode_z(number, r.gt.x04.data
 					, static_cast<bin::sz_t>(r.gt_len - 3), true);
 				L << "[GT:"
 					<< r.gt.x04.nai

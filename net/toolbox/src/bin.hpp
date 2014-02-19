@@ -504,55 +504,6 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			}
 	};
 
-	/* Decode BCD string pointed by src to dst, and zt the dst.
-	 * dst must have enough space to hold zero-terminated decoded string */
-	void bcd_decode_z(char * dst, const u8_t * src
-			, sz_t len, bool odd = false) {
-		while (len) {
-			*dst++ = (*src & 0x0F) + 0x30;
-			if (odd && len == 1)
-				break;
-			*dst++ = ((*src & 0xF0) >> 4) + 0x30;
-			src++;
-			len--;
-		}
-		*dst = 0;
-	}
-
-	template <class StringT>
-	void bcd_decode(StringT & dst, const StringT & src, bool odd = false) {
-		sz_t len = src.len;
-		bin::u8_t * d = dst.data;
-		const bin::u8_t * s = src.data;
-		dst.len = 0;
-		while (len) {
-			*d++ = (*s & 0x0F) + 0x30;
-			++dst.len;
-			if (odd && len == 1)
-				break;
-			*d++ = ((*s & 0xF0) >> 4) + 0x30;
-			++dst.len;
-			s++;
-			len--;
-		}
-	}
-
-	template <class StringT>
-	void bcd_encode(StringT & dst, const StringT & src) {
-		bin::u8_t *d = dst.data;
-		const bin::u8_t *s = src.data;
-		bin::sz_t len = src.len / 2;
-		dst.len = len + (src.len % 2);
-		while (len) {
-			*d++ = ((*(s+1) - 0x30) << 4) | (*s - 0x30);
-			s += 2;
-			--len;
-		}
-		if (src.len % 2) {
-			*d = 0xF0 | (*s - 0x30);
-		}
-	}
-
 } } } }
 
 #endif

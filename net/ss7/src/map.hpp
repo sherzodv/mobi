@@ -15,8 +15,78 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 	using namespace toolbox;
 
+	/* Decode BCD string pointed by src to dst, and zt the dst.
+	 * dst must have enough space to hold zero-terminated decoded string */
+	void bcd_decode_z(char * dst, const bin::u8_t * src
+			, bin::sz_t len, bool odd = false) {
+		while (len) {
+			*dst++ = (*src & 0x0F) + 0x30;
+			if (odd && len == 1)
+				break;
+			*dst++ = ((*src & 0xF0) >> 4) + 0x30;
+			src++;
+			len--;
+		}
+		*dst = 0;
+	}
+
+	template <class StringT>
+	void bcd_encode_z(StringT & dst, bin::sz_t maxlen, const char * zts) {
+		bin::u8_t *d = dst.data;
+		bin::sz_t len = strlen(zts);
+		if (len > maxlen) {
+			dst.len = 0;
+			return;
+		}
+		dst.len = len + (len % 2);
+		len /= 2;
+		while (len) {
+			*d++ = ((*(zts+1) - 0x30) << 4) | (*zts - 0x30);
+			zts += 2;
+			--len;
+		}
+		if (dst.len % 2) {
+			*d = 0xF0 | (*zts - 0x30);
+		}
+	}
+
+	template <class StringT>
+	void bcd_decode(StringT & dst, const StringT & src, bool odd = false) {
+		bin::sz_t len = src.len;
+		bin::u8_t * d = dst.data;
+		const bin::u8_t * s = src.data;
+		dst.len = 0;
+		while (len) {
+			*d++ = (*s & 0x0F) + 0x30;
+			++dst.len;
+			if (odd && len == 1)
+				break;
+			*d++ = ((*s & 0xF0) >> 4) + 0x30;
+			++dst.len;
+			s++;
+			len--;
+		}
+	}
+
+	template <class StringT>
+	void bcd_encode(StringT & dst, const StringT & src) {
+		bin::u8_t *d = dst.data;
+		const bin::u8_t *s = src.data;
+		bin::sz_t len = src.len / 2;
+		dst.len = len + (src.len % 2);
+		while (len) {
+			*d++ = ((*(s+1) - 0x30) << 4) | (*s - 0x30);
+			s += 2;
+			--len;
+		}
+		if (src.len % 2) {
+			*d = 0xF0 | (*s - 0x30);
+		}
+	}
+
+	/* TODO: determine needed capacity */
 	const bin::sz_t max_address_string_len = 20;
-	const bin::sz_t max_isdn_address_string_len = 9;
+	const bin::sz_t max_isdn_address_string_len = 21;
 
 	typedef bin::u8_t address_string[max_address_string_len];
 	typedef bin::u8_t isdn_address_string[max_isdn_address_string_len];
@@ -25,14 +95,20 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 		struct isdn_address_string_t {
 			bin::sz_t len;
-			/* TODO: determine needed capacity */
-			bin::u8_t data[20];
+			bin::u8_t data[max_isdn_address_string_len];
+
+			void set(const char * zts) {
+				bcd_encode_z(*this, max_address_string_len, zts);
+			}
 		};
 
 		struct address_string_t {
 			bin::sz_t len;
-			/* TODO: determine needed capacity */
-			bin::u8_t data[20];
+			bin::u8_t data[max_address_string_len];
+
+			void set(const char * zts) {
+				bcd_encode_z(*this, max_address_string_len, zts);
+			}
 		};
 
 		struct imsi_t {
@@ -588,7 +664,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const isdn_address_string_t & n) {
 		char num[50];
-		bin::bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		bcd_decode_z(num, n.data + 1, n.len - 1, true);
 		L << bin::hex_str_ref(n.data, n.len).prefix("").delimit("") << ":" << num;
 		return L;
 	}
@@ -596,7 +672,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const address_string_t & n) {
 		char num[50];
-		bin::bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		bcd_decode_z(num, n.data + 1, n.len - 1, true);
 		L << num;
 		return L;
 	}
@@ -604,7 +680,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const imsi_t & n) {
 		char num[50];
-		bin::bcd_decode_z(num, n.data, n.len, true);
+		bcd_decode_z(num, n.data, n.len, true);
 		L << num;
 		return L;
 	}
@@ -612,7 +688,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const lmsi_t & n) {
 		char num[50];
-		bin::bcd_decode_z(num, n.data + 1, n.len - 1, true);
+		bcd_decode_z(num, n.data + 1, n.len - 1, true);
 		L << num;
 		return L;
 	}
