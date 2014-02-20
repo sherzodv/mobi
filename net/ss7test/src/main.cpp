@@ -14,6 +14,23 @@
 #include <iostream>
 #include <cstring>
 
+class buffer_base {
+	protected:
+		mobi::net::toolbox::bin::sz_t bsize;
+		mobi::net::toolbox::bin::u8_t *buf;
+		mobi::net::toolbox::bin::u8_t *bend;
+		mobi::net::toolbox::bin::u8_t *bcur;
+	public:
+		buffer_base(): bsize(1024)
+				, buf(new mobi::net::toolbox::bin::u8_t[bsize])
+				, bend(buf + bsize), bcur(nullptr) {}
+		virtual ~buffer_base() { delete buf; }
+};
+
+static inline const char * asstr(const mobi::net::toolbox::bin::u8_t * ptr) {
+	return reinterpret_cast<const char *>(ptr);
+}
+
 BOOST_AUTO_TEST_CASE(test_sccp_bcd_coders) {
 
 	using namespace mobi::net::ss7;
@@ -44,20 +61,18 @@ BOOST_AUTO_TEST_CASE(test_sccp_bcd_coders) {
 	memcpy(sccp_num2.data, sccp_s2, sccp_num2.len);
 
 	sccp::bcd_encode(en, sccp_num1);
-	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xBA\xDC\xFE"
-			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+	BOOST_CHECK(memcmp("\x21\x43\x65\x87\x09\xBA\xDC\xFE"
+				, en.data, en.len) == 0);
 
 	sccp::bcd_decode(de, en);
-	BOOST_CHECK(std::strncmp(sccp_s1
-			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+	BOOST_CHECK(std::memcmp(sccp_s1, de.data, de.len) == 0);
 
 	sccp::bcd_encode(en, sccp_num2);
-	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
-			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+	BOOST_CHECK(std::memcmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
+				, en.data, en.len) == 0);
 
 	sccp::bcd_decode(de, en, true);
-	BOOST_CHECK(std::strncmp(sccp_s2
-			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+	BOOST_CHECK(std::memcmp(sccp_s2, de.data, de.len) == 0);
 }
 
 BOOST_AUTO_TEST_CASE(test_map_tbcd_coders) {
@@ -90,20 +105,18 @@ BOOST_AUTO_TEST_CASE(test_map_tbcd_coders) {
 	memcpy(map_num2.data, map_s2, map_num2.len);
 
 	map::bcd_encode(en, map_num1);
-	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xBA\xDC\xFE"
-			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+	BOOST_CHECK(std::memcmp("\x21\x43\x65\x87\x09\xBA\xDC\xFE"
+				, en.data, en.len) == 0);
 
 	map::bcd_decode(de, en);
-	BOOST_CHECK(std::strncmp(map_s1
-			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+	BOOST_CHECK(std::memcmp(map_s1, de.data, de.len) == 0);
 
 	map::bcd_encode(en, map_num2);
-	BOOST_CHECK(std::strncmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
-			, reinterpret_cast<const char *>(en.data), en.len) == 0);
+	BOOST_CHECK(std::memcmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
+				, en.data, en.len) == 0);
 
 	map::bcd_decode(de, en, true);
-	BOOST_CHECK(std::strncmp(map_s2
-			, reinterpret_cast<const char *>(de.data), de.len) == 0);
+	BOOST_CHECK(std::memcmp(map_s2, de.data, de.len) == 0);
 }
 
 BOOST_AUTO_TEST_CASE(test_m3ua) {
@@ -362,65 +375,120 @@ BOOST_AUTO_TEST_CASE(test_map) {
 		"\xd8\xac\x06\x12\x97\xd9\xe7\x34\x3b\x0d\x6a\xd7\xe7\xe4\xb2\x3c"
 		"\x0d\xaa\xb3\xcf\xe1\x36\x39\x0c";
 
-	class parser: public map::parser<std::ostream> {
+	class mock: public map::parser<std::ostream>
+		, public map::writer<std::ostream>, public buffer_base {
 
-		typedef map::parser<std::ostream> base;
+		typedef map::writer<std::ostream> wbase;
+		typedef map::parser<std::ostream> pbase;
+
+		using pbase::L;
+		using pbase::stop;
+		using pbase::resume;
+		using pbase::skip;
+
+		action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
+			BOOST_CHECK(msg.msisdn.na == map::na_international);
+			BOOST_CHECK(msg.msisdn.np == map::np_isdn_telephony);
+			BOOST_CHECK(msg.msisdn.digits() == "99365625758");
+			BOOST_CHECK(msg.sc_address.na == map::na_international);
+			BOOST_CHECK(msg.sc_address.np == map::np_isdn_telephony);
+			BOOST_CHECK(msg.sc_address.digits() == "99365999991");
+			return resume;
+		}
+		action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
+			BOOST_CHECK(msg.imsi.digits() == "438023000659019");
+			BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.na == map::na_international);
+			BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.np == map::np_isdn_telephony);
+			BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.digits() == "99365999999");
+			return resume;
+		}
+		action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
+			BOOST_CHECK(msg.sm_rp_da.has == map::sm_rp_da_t::has_imsi);
+			BOOST_CHECK(msg.sm_rp_da.as.imsi.digits() == "438022000458450");
+			BOOST_CHECK(msg.sm_rp_oa.has == map::sm_rp_oa_t::has_sc);
+			BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.na == map::na_international);
+			BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.np == map::np_isdn_telephony);
+			BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.digits() == "99365999991");
+			/* TODO: test sm_rp_ui */
+			return resume;
+		}
+		action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
+			/* TODO: test mo_forward_sm_res_t parser */
+			(void)(msg);
+			// L << msg << std::endl;
+			return resume;
+		}
 
 		public:
-			parser(std::ostream & out): base(out) {}
-			virtual ~parser() {}
+			mock(std::ostream & out)
+				: pbase(out), wbase(out), buffer_base() {}
+			~mock() {
+			}
 
-		protected:
-			using base::L;
-			using base::stop;
-			using base::resume;
-			using base::skip;
+			void test_write() {
+				test_address_string();
+				test_routing_info_for_sm_arg();
+			}
 
-			virtual action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
-				BOOST_CHECK(msg.msisdn.na == map::na_international);
-				BOOST_CHECK(msg.msisdn.np == map::np_isdn_telephony);
-				BOOST_CHECK(msg.msisdn.digits() == "99365625758");
-				BOOST_CHECK(msg.sc_address.na == map::na_international);
-				BOOST_CHECK(msg.sc_address.np == map::np_isdn_telephony);
-				BOOST_CHECK(msg.sc_address.digits() == "99365999991");
-				return resume;
-			}
-			virtual action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
-				BOOST_CHECK(msg.imsi.digits() == "438023000659019");
-				BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.na == map::na_international);
-				BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.np == map::np_isdn_telephony);
-				BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.digits() == "99365999999");
-				return resume;
-			}
-			virtual action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
-				BOOST_CHECK(msg.sm_rp_da.has == map::sm_rp_da_t::has_imsi);
-				BOOST_CHECK(msg.sm_rp_da.as.imsi.digits() == "438022000458450");
-				BOOST_CHECK(msg.sm_rp_oa.has == map::sm_rp_oa_t::has_sc);
-				BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.na == map::na_international);
-				BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.np == map::np_isdn_telephony);
-				BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.digits() == "99365999991");
-				/* TODO: test sm_rp_ui */
-				return resume;
-			}
-			virtual action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
-				/* TODO: test mo_forward_sm_res_t parser */
-				(void)(msg);
-				// L << msg << std::endl;
-				return resume;
-			}
-	} p(std::cout);
+			void test_routing_info_for_sm_arg() {
 
-	cur = p.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
+				const bin::u8_t raw1[] =
+					"\x30\x15\x80\x07\x91\x99\x63\x65\x52\x57\xf8\x81\x01\x01"
+					"\x82\x07\x91\x99\x63\x95\x99\x99\xf1";
+
+				map::routing_info_for_sm_arg_t r;
+
+				r.msisdn.ext = 1;
+				r.msisdn.na = map::na_international;
+				r.msisdn.np = map::np_isdn_telephony;
+				r.msisdn.set_digits("99365625758");
+
+				r.sc_address.ext = 1;
+				r.sc_address.na = map::na_international;
+				r.sc_address.np = map::np_isdn_telephony;
+				r.sc_address.set_digits("99365999991");
+
+				bcur = wbase::write_routing_info_for_sm_arg(buf, bend, r);
+				BOOST_CHECK(bcur != nullptr);
+				BOOST_CHECK(static_cast<bin::sz_t>(bcur-buf) == r.size(0));
+				BOOST_CHECK(std::memcmp(raw1, buf, sizeof(raw1)-1) == 0);
+			}
+
+			void test_address_string() {
+				const bin::u8_t addr_raw1[]
+					= "\x80\x07\x91\x99\x63\x65\x52\x57\xF8";
+
+				map::isdn_address_string_t r;
+
+				r.ext = 1;
+				r.na = map::na_international;
+				r.np = map::np_isdn_telephony;
+				r.set_digits("99365625758");
+
+				bcur = wbase::write_address_string(buf, bend
+						, ber::tagclass_contextspec
+						, ber::tagform_primitive, 0, r);
+				BOOST_CHECK(bcur != nullptr);
+				BOOST_CHECK(bcur - buf == sizeof(addr_raw1) - 1);
+				BOOST_CHECK(std::memcmp(addr_raw1
+							, buf, sizeof(addr_raw1)-1) == 0);
+			}
+
+	} m(std::cout);
+
+	cur = m.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
 	BOOST_CHECK(cur != nullptr);
 	BOOST_CHECK(cur == (tcap_raw1 + sizeof(tcap_raw1) - 1));
 
-	cur = p.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
+	cur = m.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
 	BOOST_CHECK(cur != nullptr);
 	BOOST_CHECK(cur == (tcap_raw2 + sizeof(tcap_raw2) - 1));
 
-	cur = p.parse(tcap_raw3, tcap_raw3 + sizeof(tcap_raw3) - 1);
+	cur = m.parse(tcap_raw3, tcap_raw3 + sizeof(tcap_raw3) - 1);
 	BOOST_CHECK(cur != nullptr);
 	BOOST_CHECK(cur == (tcap_raw3 + sizeof(tcap_raw3) - 1));
+
+	m.test_write();
 }
 
 BOOST_AUTO_TEST_CASE(test_sms) {
@@ -497,8 +565,9 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 	using namespace mobi::net;
 	using namespace mobi::net::toolbox;
 
-	class writer: public asn::ber::writer<std::ostream>,
-		public asn::ber::parser<std::ostream> {
+	class mock: public asn::ber::writer<std::ostream>
+		, public asn::ber::parser<std::ostream>
+		, public buffer_base {
 
 		typedef asn::ber::writer<std::ostream> base;
 		typedef asn::ber::parser<std::ostream> parser_base;
@@ -522,10 +591,11 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 		}
 
 		public:
-			writer(std::ostream & out): base(out), parser_base(out) {}
-			~writer() {}
+			mock(std::ostream & out)
+				: base(out), parser_base(out), buffer_base() {}
+			~mock() {}
 
-			void test() {
+			void debug() {
 				using asn::ber::operator<<;
 
 				const bin::sz_t bsize = sizeof(bin::u64_t) + 1;
@@ -568,66 +638,13 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 				L << std::hex << (0x4143 >> 8) << std::endl;
 			}
 
-	} w(std::cout);
-
-	w.test();
-}
-
-BOOST_AUTO_TEST_CASE(test_map_writer) {
-
-	using namespace mobi::net;
-	using namespace mobi::net::ss7;
-	using namespace mobi::net::toolbox;
-
-	class writer: public map::writer<std::ostream>,
-		public map::parser<std::ostream> {
-
-		typedef map::writer<std::ostream> base;
-		typedef map::parser<std::ostream> parser_base;
-
-		using base::L;
-
-		action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
-			(void)(msg);
-			return parser_base::resume;
-		}
-		action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
-			(void)(msg);
-			return parser_base::resume;
-		}
-		action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
-			(void)(msg);
-			return parser_base::resume;
-		}
-		action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
-			(void)(msg);
-			return parser_base::resume;
-		}
-
-		public:
-			writer(std::ostream & out): base(out), parser_base(out) {}
-			~writer() {}
-
 			void test() {
-				const bin::sz_t bsize = 1024;
-				bin::u8_t buf[bsize] = { 0 };
-				bin::u8_t *bend = buf + bsize;
-				bin::u8_t *bcur = buf;
-
-				L << "sizeof(map::routing_info_for_sm_arg_t) == "
-					<< sizeof(map::routing_info_for_sm_arg_t) << std::endl;
-
-				map::routing_info_for_sm_arg_t ri;
-
-				bcur = base::write(buf, bend, ri);
-				if (bcur == nullptr) {
-					L << "write ri error" << std::endl;
-				}
-
-				L << bin::hex_str_ref(buf, bsize) << std::endl;
+				bcur = base::write_boolean(buf, bend
+						, asn::ber::tagclass_contextspec, 1, true);
+				BOOST_CHECK(std::memcmp(buf, "\x81\x01\x01", 3) == 0);
 			}
 
-	} w(std::cout);
+	} m(std::cout);
 
-	w.test();
+	m.test();
 }

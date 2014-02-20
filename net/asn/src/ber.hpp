@@ -192,6 +192,40 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		return !(l == r);
 	}
 
+	/* Calculate the number of octets to hold the tag with the
+	 * given code and content len */
+	inline bin::sz_t tag_size(bin::u64_t code, bin::sz_t len) {
+
+		bin::sz_t total = 2;
+		bin::sz_t bits;
+
+		if (code > 0x1F) {
+			for (bits = 7; bits < 8 * sizeof(code); bits += 7) {
+				if (code >> bits != 0) {
+					++total;
+				} else {
+					break;
+				}
+			}
+		}
+
+		if (len >= 0x80) {
+			for (bits = 8; bits < 8 * sizeof(code); bits += 8) {
+				if (code >> bits != 0) {
+					++total;
+				} else {
+					break;
+				}
+			}
+		}
+
+		return total;
+	}
+
+	inline bin::sz_t element_size(bin::u64_t code, bin::sz_t len) {
+		return tag_size(code, len) + len;
+	}
+
 	template <class LogT>
 	class parser {
 
@@ -528,6 +562,17 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 					, const tag & t, bin::u64_t len) {
 				return write_tag(buf, bend, t.klass, t.form, t.code
 						, len);
+			}
+
+			bin::u8_t * write_boolean(bin::u8_t * buf, bin::u8_t * bend
+					, tag_class klass, bin::u64_t code, bin::u8_t val) {
+				using namespace bin;
+				val = static_cast<bool>(val);
+				buf = write_tag(buf, bend, klass
+						, tagform_primitive, code, 1);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + 1 > bend);
+				return w::cp_u8(buf, ascbuf(val));
 			}
 
 			template <typename T>

@@ -34,7 +34,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			case 'b': return 0x0D;
 			case 'c': return 0x0E;
 			case 'd': return 0x0F;
-			default: return 0xFF;
+			default: return 0x0F;
 		}
 	}
 
@@ -65,12 +65,16 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	bin::sz_t bcd_encode(DU8T * dst, const SU8T * src
 			, bin::sz_t len) {
 		bin::sz_t rlen = 0;
+		if (len == 0)
+			return rlen;
 		while (len--) {
 			*dst = bcd_encode(*src++);
 			++rlen;
 			if (len) {
 				*dst |= bcd_encode(*src++) << 4;
 				--len;
+			} else {
+				*dst |= 0xF0;
 			}
 			++dst;
 		}
@@ -149,6 +153,11 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			np_reserved_for_ext	= 0xF
 		};
 
+		enum sm_rp_mti_t {
+			sms_deliver			= 0x00,
+			sms_status_report	= 0x01
+		};
+
 		template <bin::sz_t MaxLen>
 		struct string_tt {
 			bin::sz_t len;
@@ -156,7 +165,17 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 			string_tt(): len(0), data{0} {}
 
-			constexpr bin::sz_t maxlen() { return MaxLen; }
+			constexpr bin::sz_t maxlen() {
+				return MaxLen;
+			}
+
+			bin::sz_t length() const {
+				return len;
+			}
+
+			bin::sz_t size(bin::sz_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		template <bin::sz_t MaxLen>
@@ -172,13 +191,27 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 			bin::sz_t len;
 
-			address_string_tt(): np(np_unknown), na(na_unknown)
+			address_string_tt(): np(np_unknown), na(na_unknown), ext(1)
 								 , data{0}, len(0) {}
 
-			constexpr bin::sz_t maxlen() { return MaxLen; }
+			constexpr bin::sz_t maxlen() {
+				return MaxLen;
+			}
+
+			bin::sz_t length() const {
+				return len + 1;
+			}
+
+			bin::sz_t size(bin::sz_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 
 			std::string digits() const {
 				return bcd_decode(data, len, false);
+			}
+
+			void set_digits(const std::string & d) {
+				len = bcd_encode(data, d.data(), d.size());
 			}
 		};
 
@@ -194,6 +227,14 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			}
 
 			constexpr bin::sz_t maxlen() { return MaxLen; }
+
+			bin::sz_t length() const {
+				return len + 1;
+			}
+
+			bin::sz_t size(bin::sz_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		/* TS 129 002, 17.7.8: Common data types:
@@ -222,11 +263,6 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		 * -- elements have to be included in the same component.
 		 */
 		typedef string_tt<200> signal_info_t;
-
-		enum sm_rp_mti_t {
-			sms_deliver			= 0x00,
-			sms_status_report	= 0x01
-		};
 
 		struct sm_rp_da_t {
 			enum { has_imsi, has_lmsi, has_sc, has_nothing } has;
@@ -257,8 +293,14 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			bool					sm_rp_pri;
 			address_string_t		sc_address;
 
-			bin::sz_t size() const {
-				return msisdn.len + sc_address.len + 1;
+			bin::sz_t length() const {
+				return msisdn.size(0)
+					+ asn::ber::element_size(1, 1)
+					+ sc_address.size(2);
+			}
+
+			bin::sz_t size(bin::u64_t code) const {
+				return asn::ber::element_size(code, length());
 			}
 		};
 
@@ -791,36 +833,44 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		protected:
 			using base::L;
 
-			bin::u8_t * write(bin::u8_t * buf, bin::u8_t * bend
-					, const routing_info_for_sm_arg_t & r) {
+			bin::u8_t * write_routing_info_for_sm_arg(bin::u8_t * buf
+					, bin::u8_t * bend, const routing_info_for_sm_arg_t & r) {
 				using namespace asn::ber;
 
-				/* RoutingInfoForSM-Arg SEQUENCE {
-					msisdn						[0] IMPLICIT OCTET STRING ( SIZE( 1 .. 20 ) ) ( SIZE( 1 .. 9 ) )
-					, sm-RP-PRI					[1] IMPLICIT BOOLEAN
-					, serviceCentreAddress		[2] IMPLICIT OCTET STRING ( SIZE( 1 .. 20 ) )
-					, extensionContainer		[6] IMPLICIT SEQUENCE {
-						privateExtensionList	[0] IMPLICIT SEQUENCE  ( SIZE( 1 .. 10 ) ) OF SEQUENCE {
-							extId		MAP-EXTENSION .&extensionId  ( { , ... } )
-							, extType	MAP-EXTENSION .&ExtensionType  ( { , ... } { @extId }  ) OPTIONAL
-						} OPTIONAL
-						, pcs-Extensions		[1] IMPLICIT SEQUENCE { ... } OPTIONAL
-						, ...
-					} OPTIONAL
-					, ...
-					, gprsSupportIndicator		[7] IMPLICIT NULL OPTIONAL
-					, sm-RP-MTI					[8] IMPLICIT INTEGER ( 0 .. 10 ) OPTIONAL
-					, sm-RP-SMEA				[9] IMPLICIT OCTET STRING ( SIZE( 1 .. 12 ) ) OPTIONAL
-				}*/
+				RETURN_NULL_IF(r.msisdn.len == 0 || r.sc_address.len == 0);
 
-				buf = base::write_tag(buf, bend, type::sequence, r.size());
+				buf = base::write_tag(buf, bend, type::sequence, r.length());
 				RETURN_NULL_IF(buf == nullptr);
 
-				buf = base::write_octstring(buf, bend
-						, tagclass_application, 0, r.msisdn);
+				buf = write_address_string(buf, bend, tagclass_contextspec
+						, tagform_primitive, 0, r.msisdn);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = base::write_boolean(buf, bend, tagclass_contextspec
+						, 1, r.sm_rp_pri);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = write_address_string(buf, bend, tagclass_contextspec
+						, tagform_primitive, 2, r.sc_address);
 				RETURN_NULL_IF(buf == nullptr);
 
 				return buf;
+			}
+
+			template <class AddressStringT>
+			bin::u8_t * write_address_string(bin::u8_t * buf
+					, bin::u8_t * bend
+					, asn::ber::tag_class klass
+					, asn::ber::tag_form form
+					, bin::u64_t code, const AddressStringT & r) {
+				using namespace bin;
+				using namespace asn::ber;
+
+				buf = base::write_tag(buf, bend
+						, klass, form, code, r.length());
+				RETURN_NULL_IF(buf == nullptr);
+				buf = w::cp_u8(buf, ascbuf(&r));
+				return w::cpy(buf, r.data, r.len);
 			}
 	};
 
