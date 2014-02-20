@@ -332,9 +332,12 @@ BOOST_AUTO_TEST_CASE(test_tcap) {
 }
 
 BOOST_AUTO_TEST_CASE(test_map) {
+
 	using namespace mobi::net::asn;
 	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
+
+	using map::operator<<;
 
 	const bin::u8_t * cur;
 
@@ -374,42 +377,50 @@ BOOST_AUTO_TEST_CASE(test_map) {
 			using base::skip;
 
 			virtual action on_routing_info_for_sm_arg(const map::routing_info_for_sm_arg_t & msg) {
-				using map::operator<<;
-				(void)(msg);
-				//L << msg << std::endl;
+				BOOST_CHECK(msg.msisdn.na == map::na_international);
+				BOOST_CHECK(msg.msisdn.np == map::np_isdn_telephony);
+				BOOST_CHECK(msg.msisdn.digits() == "99365625758");
+				BOOST_CHECK(msg.sc_address.na == map::na_international);
+				BOOST_CHECK(msg.sc_address.np == map::np_isdn_telephony);
+				BOOST_CHECK(msg.sc_address.digits() == "99365999991");
 				return resume;
 			}
 			virtual action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
-				using map::operator<<;
-				(void)(msg);
-				//L << msg << std::endl;
+				BOOST_CHECK(msg.imsi.digits() == "438023000659019");
+				BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.na == map::na_international);
+				BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.np == map::np_isdn_telephony);
+				BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.digits() == "99365999999");
 				return resume;
 			}
 			virtual action on_mo_forward_sm_arg(const map::mo_forward_sm_arg_t & msg) {
-				using map::operator<<;
-				(void)(msg);
-				//L << msg << std::endl;
+				BOOST_CHECK(msg.sm_rp_da.has == map::sm_rp_da_t::has_imsi);
+				BOOST_CHECK(msg.sm_rp_da.as.imsi.digits() == "438022000458450");
+				BOOST_CHECK(msg.sm_rp_oa.has == map::sm_rp_oa_t::has_sc);
+				BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.na == map::na_international);
+				BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.np == map::np_isdn_telephony);
+				BOOST_CHECK(msg.sm_rp_oa.as.sc_address_oa.digits() == "99365999991");
+				/* TODO: test sm_rp_ui */
 				return resume;
 			}
 			virtual action on_mo_forward_sm_res(const map::mo_forward_sm_res_t & msg) {
-				using map::operator<<;
+				/* TODO: test mo_forward_sm_res_t parser */
 				(void)(msg);
-				//L << msg << std::endl;
+				// L << msg << std::endl;
 				return resume;
 			}
 	} p(std::cout);
 
 	cur = p.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
 	BOOST_CHECK(cur != nullptr);
-	BOOST_CHECK(cur == (tcap_raw1 + sizeof(tcap_raw1) -1));
+	BOOST_CHECK(cur == (tcap_raw1 + sizeof(tcap_raw1) - 1));
 
 	cur = p.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
 	BOOST_CHECK(cur != nullptr);
-	BOOST_CHECK(cur == (tcap_raw2 + sizeof(tcap_raw2) -1));
+	BOOST_CHECK(cur == (tcap_raw2 + sizeof(tcap_raw2) - 1));
 
 	cur = p.parse(tcap_raw3, tcap_raw3 + sizeof(tcap_raw3) - 1);
 	BOOST_CHECK(cur != nullptr);
-	BOOST_CHECK(cur == (tcap_raw3 + sizeof(tcap_raw3) -1));
+	BOOST_CHECK(cur == (tcap_raw3 + sizeof(tcap_raw3) - 1));
 }
 
 BOOST_AUTO_TEST_CASE(test_sms) {

@@ -151,12 +151,8 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				tag t;
 				element::begin b;
 
-				/* Parse OTID tag and len */
-				buf = base::parse_tag(t, buf, bend);
-				RETURN_NULL_IF(buf == nullptr);
-
-				/* Parse OTID value */
-				buf = base::parse_integer(b.otid, t.len, buf, bend);
+				/* Parse OTID */
+				buf = base::parse_integer(b.otid, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(on_begin(b) == stop);
 
@@ -322,13 +318,7 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				rres.invokeId = 0;
 				rres.op_code = 0;
 
-				/* Parse invokeID tag */
-				buf = base::parse_tag(t, buf, bend);
-
-				RETURN_NULL_IF(buf == nullptr);
-				RETURN_NULL_IF(t != type::integer);
-
-				/* Parse invokeID value */
+				/* Parse invokeID */
 				buf = base::parse_integer(rres.invokeId, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
@@ -337,12 +327,8 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t != type::sequence);
 
-				/* Parse operationCode tag */
-				buf = base::parse_tag(t, buf, bend);
-				RETURN_NULL_IF(buf == nullptr);
-
-				/* Parse operationCode value */
-				buf = base::parse_integer(rres.op_code, t.len, buf, bend);
+				/* Parse operationCode */
+				buf = base::parse_integer(rres.op_code, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				return buf;

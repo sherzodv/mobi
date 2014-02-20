@@ -81,13 +81,21 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	bin::sz_t bcd_decode(DU8T * dst, const SU8T * src
 			, bin::sz_t len, bool odd = false) {
 		bin::sz_t rlen = 0;
+		if (len == 0)
+			return rlen;
 		while (len--) {
-			*dst++ = bcd_decode(*src & 0x0F);
-			++rlen;
-			if (odd && len == 1)
+			*dst = bcd_decode(*src & 0x0F);
+			if (*dst != 'd') {
+				++dst;
+				++rlen;
+			}
+			if (odd && len == 0)
 				break;
-			*dst++ = bcd_decode((*src++ & 0xF0) >> 4);
-			++rlen;
+			*dst = bcd_decode((*src++ & 0xF0) >> 4);
+			if (*dst != 'd') {
+				++dst;
+				++rlen;
+			}
 		}
 		return rlen;
 	}
@@ -109,45 +117,111 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		return std::string(reinterpret_cast<char *>(buf), len);
 	}
 
-	/* TODO: determine needed capacity */
-	const bin::sz_t max_address_string_len = 20;
-	const bin::sz_t max_isdn_address_string_len = 21;
-
-	typedef bin::u8_t address_string[max_address_string_len];
-	typedef bin::u8_t isdn_address_string[max_isdn_address_string_len];
-
 	namespace {
 
-		struct isdn_address_string_t {
-			bin::sz_t len;
-			bin::u8_t data[max_isdn_address_string_len];
+		enum nature_of_address {
+			na_unknown				= 0x0,
+			na_international		= 0x1,
+			na_national_significant	= 0x2,
+			na_network_specific		= 0x3,
+			na_subscriber			= 0x4,
+			na_reserved				= 0x5,
+			na_abbreviated			= 0x6,
+			na_reserved_for_ext		= 0x7
 		};
 
-		struct address_string_t {
-			bin::sz_t len;
-			bin::u8_t data[max_address_string_len];
+		enum numbering_plan {
+			np_unknown			= 0x0,
+			np_isdn_telephony	= 0x1,
+			np_spare_1			= 0x2,
+			np_data				= 0x3,
+			np_telex			= 0x4,
+			np_spare_2			= 0x5,
+			np_land_mobile		= 0x6,
+			np_spare_3			= 0x7,
+			np_national			= 0x8,
+			np_private			= 0x9,
+			np_reserved_1		= 0xA,
+			np_reserved_2		= 0xB,
+			np_reserved_3		= 0xC,
+			np_reserved_4		= 0xD,
+			np_reserved_5		= 0xE,
+			np_reserved_for_ext	= 0xF
 		};
 
-		struct imsi_t {
-			/* IMSI ::= TBCD-STRING (SIZE (3..8)) */
-			/* Digits of MCC, MNC, MSIN are concatenated in this order */
+		template <bin::sz_t MaxLen>
+		struct string_tt {
 			bin::sz_t len;
-			/* TODO: determine needed capacity */
-			bin::u8_t data[20];
+			bin::u8_t data[MaxLen];
+
+			string_tt(): len(0), data{0} {}
+
+			constexpr bin::sz_t maxlen() { return MaxLen; }
 		};
 
-		struct tmsi_t {
+		template <bin::sz_t MaxLen>
+		struct address_string_tt {
+
+			/* The following fields are packed and aligned correctly
+			 * do not reorder them until you know what you are doing */
+
+			numbering_plan		np: 4;
+			nature_of_address	na: 3;
+			bin::u8_t			ext: 1;
+			bin::u8_t			data[MaxLen - 1];
+
 			bin::sz_t len;
-			/* TODO: determine needed capacity */
-			bin::u8_t data[4];
+
+			address_string_tt(): np(np_unknown), na(na_unknown)
+								 , data{0}, len(0) {}
+
+			constexpr bin::sz_t maxlen() { return MaxLen; }
+
+			std::string digits() const {
+				return bcd_decode(data, len, false);
+			}
 		};
 
-		struct lmsi_t {
-			/* LMSI ::= OCTET STRING (SIZE (4)) */
-			/* len = 0 indicates that lmsi is not set */
+		template <bin::sz_t MaxLen>
+		struct tbcd_string_tt {
 			bin::sz_t len;
-			bin::u8_t data[4];
+			bin::u8_t data[MaxLen];
+
+			tbcd_string_tt(): len(0), data{0} {}
+
+			std::string digits() const {
+				return bcd_decode(data, len, false);
+			}
+
+			constexpr bin::sz_t maxlen() { return MaxLen; }
 		};
+
+		/* TS 129 002, 17.7.8: Common data types:
+		 * See definition in parser */
+		typedef address_string_tt<20> address_string_t;
+		typedef address_string_tt<9> isdn_address_string_t;
+
+		/* TS 129 002, 17.7.8: Common data types
+		 * IMSI ::= TBCD-STRING (SIZE (3..8))
+		 * TMSI ::= TBCD-STRING (SIZE (1..4))
+		 * LMSI ::= TBCD-STRING (SIZE (4))
+		 */
+		typedef tbcd_string_tt<8> imsi_t;
+		typedef tbcd_string_tt<4> tmsi_t;
+		typedef tbcd_string_tt<4> lmsi_t;
+
+		/* TS 129 002, 17.7.8: Common data types
+		 * SignalInfo ::= OCTET STRING (SIZE (1..maxSignalInfoLength))
+		 * maxSignalInfoLength INTEGER ::= 200
+		 * -- This NamedValue represents the theoretical maximum number
+		 * -- of octets which is available to carry a single instance of
+		 * -- the SignalInfo data type, without requiring segmentation
+		 * -- to cope with the network layer service.
+		 * -- However, the actual maximum size available for an instance
+		 * -- of the data type maybe lower, especially when other information
+		 * -- elements have to be included in the same component.
+		 */
+		typedef string_tt<200> signal_info_t;
 
 		enum sm_rp_mti_t {
 			sms_deliver			= 0x00,
@@ -156,24 +230,21 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 		struct sm_rp_da_t {
 			enum { has_imsi, has_lmsi, has_sc, has_nothing } has;
-			union {
+			union sm_rp_da_t_field {
 				imsi_t imsi;
 				lmsi_t lmsi;
 				address_string_t sc_address_da;
+				sm_rp_da_t_field(): imsi() {}
 			} as ;
 		};
 
 		struct sm_rp_oa_t {
 			enum { has_msisdn, has_sc, has_nothing } has;
-			union {
+			union sm_rp_oa_t_as_field {
 				isdn_address_string_t msisdn;
 				address_string_t sc_address_oa;
+				sm_rp_oa_t_as_field(): msisdn() {}
 			} as;
-		};
-
-		struct signal_info_t {
-			bin::sz_t len;
-			bin::u8_t data[200];
 		};
 
 		struct location_info_with_lmsi_t {
@@ -193,7 +264,6 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 		struct routing_info_for_sm_res_t {
 			imsi_t						imsi;
-			bool						has_location_info_with_lmsi;
 			location_info_with_lmsi_t	location_info_with_lmsi;
 		};
 
@@ -346,21 +416,20 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				using namespace asn::ber;
 
 				/* RoutingInfoForSM-Arg SEQUENCE {
-					msisdn						[0] IMPLICIT OCTET STRING ( SIZE( 1 .. 20 ) ) ( SIZE( 1 .. 9 ) )
+					msisdn						[0] ISDN-AddressString
 					, sm-RP-PRI					[1] IMPLICIT BOOLEAN
-					, serviceCentreAddress		[2] IMPLICIT OCTET STRING ( SIZE( 1 .. 20 ) )
-					, extensionContainer		[6] IMPLICIT SEQUENCE {
-						privateExtensionList	[0] IMPLICIT SEQUENCE  ( SIZE( 1 .. 10 ) ) OF SEQUENCE {
-							extId		MAP-EXTENSION .&extensionId  ( { , ... } )
-							, extType	MAP-EXTENSION .&ExtensionType  ( { , ... } { @extId }  ) OPTIONAL
-						} OPTIONAL
-						, pcs-Extensions		[1] IMPLICIT SEQUENCE { ... } OPTIONAL
-						, ...
-					} OPTIONAL
+					, serviceCentreAddress		[2] AddressString
+					, extensionContainer		[6] ExtensionContainer OPTIONAL
 					, ...
-					, gprsSupportIndicator		[7] IMPLICIT NULL OPTIONAL
-					, sm-RP-MTI					[8] IMPLICIT INTEGER ( 0 .. 10 ) OPTIONAL
-					, sm-RP-SMEA				[9] IMPLICIT OCTET STRING ( SIZE( 1 .. 12 ) ) OPTIONAL
+					, gprsSupportIndicator		[7] NULL OPTIONAL
+					-- gprsSupportIndicator is set only if the SMS-GMSC supports
+					-- receiving of two numbers from HLR
+					, sm-RP-MTI					[8] SM-RP-MTI OPTIONAL
+					, sm-RP-SMEA				[9] SM-RP-SMEA OPTIONAL
+					, sm-deliveryNotIntended	[10] SM-DeliveryNotIntended OPTIONAL
+					, ip-sm-gwGuidanceIndicator	[11] NULL OPTIONAL
+					, imsi						[12] IMSI OPTIONAL
+					, t4-Trigger-Indicator		[14] NULL OPTIONAL
 				}*/
 
 				tag t;
@@ -371,7 +440,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
 
 				/* Parse msisdn */
-				buf = base::parse_octstring(ri.msisdn, buf, bend);
+				buf = parse_address_string(ri.msisdn, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse sm-RP-PRI */
@@ -379,7 +448,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse serviceCentreAddress */
-				buf = base::parse_octstring(ri.sc_address, buf, bend);
+				buf = parse_address_string(ri.sc_address, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				switch (on_routing_info_for_sm_arg(ri)) {
@@ -403,7 +472,6 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}*/
 
 				tag t;
-				const bin::u8_t * tmpbuf;
 				routing_info_for_sm_res_t ri;
 
 				/* Parse SEQUENCE tag */
@@ -411,18 +479,12 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				RETURN_NULL_IF(buf == nullptr || t != type::sequence);
 
 				/* Parse imsi */
-				buf = base::parse_octstring(ri.imsi, buf, bend);
+				buf = parse_tbcd_string(ri.imsi, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse locationInfoWithLMSI */
-				tmpbuf = parse_location_info_with_lmsi(ri.location_info_with_lmsi
+				buf = parse_location_info_with_lmsi(ri.location_info_with_lmsi
 						, buf, bend);
-				if (tmpbuf == nullptr) {
-					ri.has_location_info_with_lmsi = false;
-				} else {
-					buf = tmpbuf;
-					ri.has_location_info_with_lmsi = true;
-				}
 
 				switch (on_routing_info_for_sm_res(ri)) {
 					/* We should return bend, as there maybe unparsed optional
@@ -513,7 +575,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				using namespace asn::ber;
 
 				/* LocationInfoWithLMSI :: = SEQUENCE {
-					networkNodeNumber		[1] isdn_address_string_t
+					networkNodeNumber		[1] ISDN-AddressString
 					, lmsi					LMSI OPTIONAL
 					, extensionContainer	ExtensionContainer OPTIONAL
 					, ...
@@ -534,24 +596,28 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}*/
 
 				tag t;
-				const bin::u8_t * tmpbuf;
+				const bin::u8_t * end = buf;
 
-				/* Parse SEQUENCE tag, context-spec, 0 */
+				/* Parse SEQUENCE tag */
 				buf = base::parse_tag(t, buf, bend);
-				RETURN_NULL_IF(buf == nullptr
-						|| t.code != 0 || t.klass != tagclass_contextspec);
-
-				/* Parse networkNodeNumber */
-				buf = base::parse_octstring(linfo.network_node_number, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				tmpbuf = base::parse_octstring(linfo.lmsi, buf, bend);
-				if (tmpbuf == nullptr) {
-					linfo.lmsi.len = 0;
-					return buf;
-				} else {
-					return tmpbuf;
+				/* Remember the the end of the LocationInfoWithLMSI in
+				 * the buffer */
+				end += t.len;
+
+				/* Parse networkNodeNumber */
+				buf = parse_address_string(linfo.network_node_number
+						, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+
+				/* See if LMSI present: OCTET STRING (tag code = 0x04) */
+				buf = base::parse_tag(t, buf, bend);
+				if (buf != nullptr && t == type::octstring) {
+					buf = parse_tbcd_string(linfo.lmsi, buf, bend);
 				}
+
+				return end;
 			}
 
 			const bin::u8_t * parse_sm_rp_da(
@@ -616,11 +682,13 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				switch (t.code) {
 					case 2:
 						rp.has = sm_rp_oa_t::has_msisdn;
-						buf = base::parse_octstring(rp.as.msisdn, t, buf, bend);
+						buf = parse_address_string(rp.as.msisdn
+								, t, buf, bend);
 						return buf;
 					case 4:
 						rp.has = sm_rp_oa_t::has_sc;
-						buf = base::parse_octstring(rp.as.sc_address_oa, t, buf, bend);
+						buf = parse_address_string(rp.as.sc_address_oa
+								, t, buf, bend);
 						return buf;
 					case 5:
 						buf += t.len;
@@ -631,6 +699,84 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}
 			}
 
+			template <class AddressStringT>
+			const bin::u8_t * parse_address_string(AddressStringT & r
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				/*
+				 * AddressString ::= OCTET STRING (SIZE (1..maxAddressLength))
+				 * this type is used to represent a number for addressing
+				 * purposes. It is composed of
+				 *		a) one octet for nature of address, and numbering plan
+				 *		indicator.
+				 *		b) digits of an address encoded as TBCD-STRING.
+				 *
+				 *	a) The first octet includes the one bit extension
+				 *	indicator, a 3 bits nature of address indicator and a 4
+				 *	bits numbering plan indicator, encoded as follows:
+				 *		See enums: nature_of_address, numbering_plan
+				 *
+				 *	b) The following octets representing digits of an
+				 *	address encoded as TBCD-STRING.
+				 *
+				 *	ISDN-AddressString ::= AddressString(SIZE (1..maxISDN-AddressLength))
+				 *	used to represend ISDN numbers
+				 */
+				using namespace asn::ber;
+				using namespace bin;
+
+				tag t;
+
+				buf = base::parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + t.len > bend || t.len > r.maxlen());
+
+				r.len = t.len - 1;
+
+				buf = p::cp_u8(asbuf(&r), buf);
+				return p::cpy(r.data, buf, t.len - 1);
+			}
+
+			template <class AddressStringT>
+			const bin::u8_t * parse_address_string(AddressStringT & r
+					, const asn::ber::tag & t
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + t.len > bend || t.len > r.maxlen());
+				r.len = t.len - 1;
+				buf = p::cp_u8(asbuf(&r), buf);
+				return p::cpy(r.data, buf, t.len - 1);
+			}
+
+			template <class TBCDStringT>
+			const bin::u8_t * parse_tbcd_string(TBCDStringT & r
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				using namespace asn::ber;
+
+				tag t;
+
+				buf = base::parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr || t.form != tagform_primitive);
+				RETURN_NULL_IF(buf + t.len > bend || t.len > r.maxlen());
+
+				r.len = t.len;
+
+				return p::cpy(r.data, buf, t.len);
+			}
+
+			template <class TBCDStringT>
+			const bin::u8_t * parse_tbcd_string(TBCDStringT & r
+					, const asn::ber::tag & t
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + t.len > bend || t.len > r.maxlen());
+				r.len = t.len;
+				return p::cpy(r.data, buf, t.len - 1);
+			}
 	};
 
 	template <class LogT>
@@ -679,16 +825,48 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	};
 
 	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const isdn_address_string_t & n) {
-		std::string num = bcd_decode(n.data + 1, n.len - 1, true);
-		L << bin::hex_str_ref(n.data, n.len).prefix("").delimit("") << ":" << num;
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, nature_of_address na) {
+		L << "[nai:";
+		switch (na) {
+			case na_unknown				: L << "unknown"; break;
+			case na_international		: L << "international"; break;
+			case na_national_significant: L << "national significant"; break;
+			case na_network_specific	: L << "network specific"; break;
+			case na_subscriber			: L << "subscriber"; break;
+			case na_abbreviated			: L << "abbreviated"; break;
+			case na_reserved_for_ext	: L << "reserved for ext"; break;
+			default: L << "reserved:" << static_cast<unsigned>(na); break;
+		}
+		L << "]";
 		return L;
 	}
 
 	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const address_string_t & n) {
-		std::string num = bcd_decode(n.data + 1, n.len - 1, true);
-		L << num;
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, numbering_plan np) {
+		L << "[np:";
+		switch (np) {
+			case np_unknown			: L << "unknown"; break;
+			case np_isdn_telephony	: L << "isdn_telephony"; break;
+			case np_spare_1			: L << "spare_1"; break;
+			case np_data			: L << "data"; break;
+			case np_telex			: L << "telex"; break;
+			case np_spare_2			: L << "spare_2"; break;
+			case np_land_mobile		: L << "land_mobile"; break;
+			case np_spare_3			: L << "spare_3"; break;
+			case np_national		: L << "national"; break;
+			case np_private			: L << "private"; break;
+			case np_reserved_for_ext: L << "reserved for ext"; break;
+			default: L << "reserved:" << static_cast<unsigned>(np); break;
+		}
+		L << "]";
+		return L;
+	}
+
+	template< typename CharT, typename TraitsT, class AddressStringT >
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const AddressStringT & r) {
+		L << r.na;
+		L << r.np;
+		L << "[digits:" << r.digits() << "]";
 		return L;
 	}
 
@@ -734,6 +912,15 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	}
 
 	template< typename CharT, typename TraitsT >
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const location_info_with_lmsi_t & r) {
+		L << "[locationInfoWithLMSI:"
+			<< "[lmsi:" << r.lmsi << "]"
+			<< "[networkNodeNumber:" << r.network_node_number << "]"
+		<< "]";
+		return L;
+	}
+
+	template< typename CharT, typename TraitsT >
 	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_arg_t & el) {
 		L << "[RoutingInfoForSM-Arg:"
 			<< "[msisdn:" << el.msisdn << "]"
@@ -744,9 +931,10 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 	}
 
 	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_res_t & el) {
+	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_res_t & r) {
 		L << "[RoutingInfoForSM-Res:"
-			<< "[imsi:" << el.imsi << "]"
+			<< "[imsi:" << r.imsi << "]"
+			<< r.location_info_with_lmsi
 		<< "]";
 		return L;
 	}

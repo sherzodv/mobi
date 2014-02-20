@@ -223,7 +223,10 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace bin;
-				RETURN_NULL_IF(buf >= bend);
+				tag t;
+				buf = parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + t.len > bend);
 				return p::cp_u8(asbuf(val), buf);
 			}
 
@@ -288,6 +291,20 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 				buf = parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				return parse_octstring(val, t, buf, bend);
+			}
+
+			const bin::u8_t * parse_octstring(bin::u8_t * dst
+					, bin::sz_t & len
+					, bin::sz_t maxlen
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				tag t;
+				buf = parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(t.len > maxlen);
+				len = t.len;
+				return p::cpy(dst, buf, t.len);
 			}
 
 		protected:

@@ -106,12 +106,12 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return src;
 		}
 
-		inline const u8_t * cp_u8(u8_t & dst, const u8_t * src) {
+		inline const u8_t * cp(u8_t & dst, const u8_t * src) {
 			dst = *src++;
 			return src;
 		}
 
-		inline const u8_t * cp_u16(u16_t & dst, const u8_t * src) {
+		inline const u8_t * cp(u16_t & dst, const u8_t * src) {
 			u8_t *d = reinterpret_cast<u8_t *>(&dst);
 			*d++ = *src++;
 			*d++ = *src++;
@@ -119,7 +119,7 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return src;
 		}
 
-		inline const u8_t * cp_u32(u32_t & dst, const u8_t * src) {
+		inline const u8_t * cp(u32_t & dst, const u8_t * src) {
 			u8_t *d = reinterpret_cast<u8_t *>(&dst);
 			*d++ = *src++;
 			*d++ = *src++;
@@ -129,7 +129,7 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			return src;
 		}
 
-		inline const u8_t * cp_u64(u64_t & dst, const u8_t * src) {
+		inline const u8_t * cp(u64_t & dst, const u8_t * src) {
 			u8_t *d = reinterpret_cast<u8_t *>(&dst);
 			*d++ = *src++;
 			*d++ = *src++;
