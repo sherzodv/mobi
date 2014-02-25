@@ -215,7 +215,7 @@ namespace mobi { namespace net { namespace sms {
 	};
 
 	template <bin::sz_t MaxLen>
-	struct string_t {
+	struct string_tt {
 		bin::sz_t len;
 		bin::u8_t data[MaxLen];
 	};
@@ -305,7 +305,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		string_t<200>	ud;		/* User data */
+		string_tt<200>	ud;		/* User data */
 	};
 
 	struct deliver_report_pos_t {
@@ -315,7 +315,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		string_t<200>	ud;		/* User data */
+		string_tt<200>	ud;		/* User data */
 	};
 
 	struct submit_report_neg_t {
