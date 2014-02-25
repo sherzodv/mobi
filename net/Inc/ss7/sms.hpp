@@ -206,12 +206,12 @@ namespace mobi { namespace net { namespace sms {
 
 	/* Address field: TS 23.040, 9.1.2.5 */
 	template <bin::sz_t MaxLen>
-	struct address_t {
+	struct address_tt {
 		numbering_plan	np: 4;
 		type_of_number	ton: 3;
 		bin::u8_t		pad: 1;
 		bin::u8_t		len;
-		bin::u8_t		val[MaxLen];
+		bin::u8_t		data[MaxLen];
 	};
 
 	template <bin::sz_t MaxLen>
@@ -239,7 +239,7 @@ namespace mobi { namespace net { namespace sms {
 		bool			udhi:1;	/* User data header indicator */
 		bool			sri	:1;	/* Status report indicator */
 		bin::u8_t		pad	:1;
-		address_t<12>	oa;		/* Originating address */
+		address_tt<11>	oa;		/* Originating address */
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		scts[7];/* SC timestamp */
@@ -256,7 +256,7 @@ namespace mobi { namespace net { namespace sms {
 		bool			udhi:1;	/* User data header indicator */
 		bool			srr	:1;	/* Status report request */
 		bin::u8_t		mr;		/* Message reference */
-		address_t<12>	da;		/* Destination address */
+		address_tt<11>	da;		/* Destination address */
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		vp[8];	/* Validity period */
@@ -273,7 +273,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		ct;		/* Command type */
 		bin::u8_t		mn;		/* Message number */
-		address_t<12>	da;		/* Destination address */
+		address_tt<11>	da;		/* Destination address */
 		bin::u8_t		cdl;	/* Command data length */
 		bin::u8_t		cd[200];/* User data */
 	};
@@ -286,7 +286,7 @@ namespace mobi { namespace net { namespace sms {
 		bool			srq	:1;	/* Status report qualifier */
 		bin::u8_t		pad	:2;
 		bin::u8_t		mr;		/* Message reference */
-		address_t<12>	ra;		/* Recipient address */
+		address_tt<11>	ra;		/* Recipient address */
 		bin::u8_t		scts[7];/* SC timestamp */
 		bin::u8_t		dt[7];	/* Discharge time */
 		bin::u8_t		st;		/* Status */
@@ -463,8 +463,8 @@ namespace mobi { namespace net { namespace sms {
 				buf = p::cp_u16(asbuf(m.oa), buf);
 
 				/* Parse address value, len is number of useful semi-octets */
-				RETURN_NULL_IF(buf + m.oa.len / 2 + m.oa.len % 2 > bend);
-				buf = p::cpy(m.oa.val, buf, m.oa.len / 2 + m.oa.len % 2);
+				RETURN_NULL_IF(buf + (m.oa.len >> 1) + (m.oa.len % 2) > bend);
+				buf = p::cpy(m.oa.data, buf, (m.oa.len >> 1) + (m.oa.len % 2));
 
 				RETURN_NULL_IF(buf
 					+ sizeof(bin::u8_t)	/* Protocol identifier */
@@ -519,10 +519,8 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse len and type-of-address at once */
 				buf = p::cp_u16(asbuf(m.da), buf);
 
-				RETURN_NULL_IF(buf + m.da.len / 2 + m.da.len % 2 > bend);
-
-				/* Parse address value, len is number of useful semi-octets */
-				buf = p::cpy(m.da.val, buf, m.da.len / 2 + m.da.len % 2);
+				RETURN_NULL_IF(buf + (m.da.len >> 1) + (m.da.len % 2) > bend);
+				buf = p::cpy(m.da.data, buf, (m.da.len >> 1) + (m.da.len % 2));
 
 				RETURN_NULL_IF(buf
 					+ sizeof(bin::u8_t)		/* pid */
@@ -591,10 +589,8 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse len and type-of-address at once */
 				buf = p::cp_u16(asbuf(m.da), buf);
 
-				RETURN_NULL_IF(buf + m.da.len / 2 + m.da.len % 2 > bend);
-
-				/* Parse address value, len is number of useful semi-octets */
-				buf = p::cpy(m.da.val, buf, m.da.len / 2 + m.da.len % 2);
+				RETURN_NULL_IF(buf + (m.da.len >> 1) + (m.da.len % 2) > bend);
+				buf = p::cpy(m.da.data, buf, (m.da.len >> 1) + (m.da.len % 2));
 
 				RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 				/* Parse command data length */
@@ -629,9 +625,8 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse len and type-of-address at once */
 				buf = p::cp_u16(asbuf(m.ra), buf);
 
-				RETURN_NULL_IF(buf + m.ra.len / 2 + m.ra.len % 2 > bend);
-				/* Parse address value, len is number of useful semi-octets */
-				buf = p::cpy(m.ra.val, buf, m.ra.len / 2 + m.ra.len % 2);
+				RETURN_NULL_IF(buf + (m.ra.len >> 1) + (m.ra.len % 2) > bend);
+				buf = p::cpy(m.ra.data, buf, (m.ra.len >> 1) + (m.ra.len % 2));
 
 				RETURN_NULL_IF(buf + 14 > bend);
 				/* Parse sc timestamp */
@@ -992,11 +987,12 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	template <bin::sz_t MaxLen>
-	std::string to_string(const address_t<MaxLen> & r) {
+	std::string to_string(const address_tt<MaxLen> & r) {
 		std::stringstream out;
 		/* TODO: print value */
-		out << "[len:" << static_cast<unsigned>(r.len) << "]"
-			<< to_string(r.np) << to_string(r.ton);
+		out << to_string(r.np) << to_string(r.ton)
+			<< "[val:"
+			<< bin::hex_str_ref(r.data, (r.len >> 1) + (r.len % 2)) << "]";
 		return out.str();
 	}
 
