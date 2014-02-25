@@ -598,12 +598,12 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 
 		protected:
 			virtual action on_sms_deliver(const sms::deliver_t & msg) {
-				L << msg << std::endl;
+				L << to_string(msg) << std::endl;
 				return resume;
 			}
 
 			virtual action on_sms_submit(const sms::submit_t & msg) {
-				L << msg << std::endl;
+				L << to_string(msg) << std::endl;
 				return resume;
 			}
 

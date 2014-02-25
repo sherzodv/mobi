@@ -895,210 +895,253 @@ namespace mobi { namespace net { namespace sms {
 			}
 	};
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const validity_period_format & vpf) {
-		L << "[vp-format:";
-		switch (vpf) {
-			case vpf_not_present: L << "not present"; break;
-			case vpf_enhanced: L << "enhanced"; break;
-			case vpf_relative: L << "relative"; break;
-			case vpf_absolute: L << "absolute"; break;
-			default: L << "wrong"; break;
+	std::string to_string(const validity_period_format & r) {
+		std::stringstream out;
+		out << "[TP-VPF:";
+		switch (r) {
+			case vpf_not_present:
+				out << "not present";
+				break;
+			case vpf_enhanced:
+				out << "enhanced";
+				break;
+			case vpf_relative:
+				out << "relative";
+				break;
+			case vpf_absolute:
+				out << "absolute";
+				break;
+			default:
+				out << "wrong";
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const type_of_number & ton) {
-		L << "[ton:";
-		switch (ton) {
-			case ton_unknown		: L << "unknown"; break;
-			case ton_international	: L << "international"; break;
-			case ton_national		: L << "national"; break;
-			case ton_net_specific	: L << "net-specific"; break;
-			case ton_subscriber		: L << "subscriber-num"; break;
-			case ton_alphanum		: L << "alpha-num"; break;
-			case ton_abbr			: L << "abbr"; break;
-			default: L << "reserved"; break;
+	std::string to_string(const type_of_number & r) {
+		std::stringstream out;
+		out << "[ton:";
+		switch (r) {
+			case ton_unknown:
+				out << "unknown";
+				break;
+			case ton_international:
+				out << "international";
+				break;
+			case ton_national:
+				out << "national";
+				break;
+			case ton_net_specific:
+				out << "net-specific";
+				break;
+			case ton_subscriber:
+				out << "subscriber-num";
+				break;
+			case ton_alphanum:
+				out << "alpha-num";
+				break;
+			case ton_abbr:
+				out << "abbr";
+				break;
+			default:
+				out << "reserved";
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const numbering_plan & np) {
-		L << "[np:";
-		switch (np) {
-			case np_unknown			: L << "unknown"; break;
-			case np_isdn_telephony	: L << "isdn_telephony"; break;
-			case np_data			: L << "data"; break;
-			case np_telex			: L << "telex"; break;
-			case np_sc_specific1	: L << "sc specific 1"; break;
-			case np_sc_specific2	: L << "sc specific 2"; break;
-			case np_national		: L << "national"; break;
-			case np_private			: L << "private"; break;
-			case np_ermes			: L << "ermes"; break;
-			default					: L << "reserved"; break;
+	std::string to_string(const numbering_plan & r) {
+		std::stringstream out;
+		out << "[np:";
+		switch (r) {
+			case np_unknown:
+				out << "unknown";
+				break;
+			case np_isdn_telephony:
+				out << "isdn_telephony";
+				break;
+			case np_data:
+				out << "data";
+				break;
+			case np_telex:
+				out << "telex";
+				break;
+			case np_sc_specific1:
+				out << "sc specific 1";
+				break;
+			case np_sc_specific2:
+				out << "sc specific 2";
+				break;
+			case np_national:
+				out << "national";
+				break;
+			case np_private:
+				out << "private";
+				break;
+			case np_ermes:
+				out << "ermes";
+				break;
+			default:
+				out << "reserved";
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT, bin::sz_t MaxLen >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const address_t<MaxLen> & addr) {
+	template <bin::sz_t MaxLen>
+	std::string to_string(const address_t<MaxLen> & r) {
+		std::stringstream out;
 		/* TODO: print value */
-		L << "[len:" << static_cast<unsigned>(addr.len) << "]"
-			<< addr.np << addr.ton;
-		return L;
+		out << "[len:" << static_cast<unsigned>(r.len) << "]"
+			<< to_string(r.np) << to_string(r.ton);
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const pi_t & pi) {
-		L << "[pi:";
-		if (pi.pid) { L << "[pid]"; }
-		if (pi.dcs) { L << "[dcs]"; }
-		if (pi.udl) { L << "[udl]"; }
-		if (pi.r1) { L << "[r1]"; }
-		if (pi.r2) { L << "[r2]"; }
-		if (pi.r3) { L << "[r3]"; }
-		if (pi.r4) { L << "[r4]"; }
-		if (pi.ext) { L << "[ext]"; }
-		return L;
+	std::string to_string(const pi_t & r) {
+		std::stringstream out;
+		out << "[TP-PI:";
+		if (r.pid) { out << "[pid]"; }
+		if (r.dcs) { out << "[dcs]"; }
+		if (r.udl) { out << "[udl]"; }
+		if (r.r1) { out << "[r1]"; }
+		if (r.r2) { out << "[r2]"; }
+		if (r.r3) { out << "[r3]"; }
+		if (r.r4) { out << "[r4]"; }
+		if (r.ext) { out << "[ext]"; }
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const deliver_t & msg) {
-		L << "[SMS-DELIVER:"
-			<< "[mms:" << msg.mms << "]"
-			<< "[lp:" << msg.lp << "]"
-			<< "[rp:" << msg.rp << "]"
-			<< "[udhi:" << msg.udhi << "]"
-			<< "[sri:" << msg.sri << "]"
-			<< "[oa:" << msg.oa << "]"
-			<< "[pid:" << static_cast<unsigned>(msg.pid) << "]"
-			<< "[dcs:" << bin::bin_str_ref(&msg.dcs, 1) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const deliver_t & r) {
+		/* TODO: decode and print PID */
+		/* TODO: decode and print SCTS */
+		/* TODO: decode and print DCS */
+		std::stringstream out;
+		out << "[SMS-DELIVER:"
+			<< "[MMS:" << r.mms << "]"
+			<< "[LP:" << r.lp << "]"
+			<< "[RP:" << r.rp << "]"
+			<< "[UDHI:" << r.udhi << "]"
+			<< "[SRI:" << r.sri << "]"
+			<< "[OA:" << to_string(r.oa) << "]"
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const submit_t & msg) {
-		L << "[SMS-SUBMIT:"
-			<< "[rd:" << msg.rd << "]"
-			<< msg.vpf
-			<< "[rp:" << msg.rp << "]"
-			<< "[udhi:" << msg.udhi << "]"
-			<< "[srr:" << msg.srr << "]"
-			<< "[mr:" << static_cast<unsigned>(msg.mr) << "]"
-			<< "[da:" << msg.da << "]"
-			<< "[pid:" << static_cast<unsigned>(msg.pid) << "]"
-			<< "[dcs:" << bin::bin_str_ref(&msg.dcs, 1) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const submit_t & r) {
+		/* TODO: decode and print PID */
+		/* TODO: decode and print SCTS */
+		/* TODO: decode and print DCS */
+		std::stringstream out;
+		out << "[SMS-SUBMIT:"
+			<< "[RD:" << r.rd << "]"
+			<< to_string(r.vpf)
+			<< "[RP:" << r.rp << "]"
+			<< "[UDHI:" << r.udhi << "]"
+			<< "[SRR:" << r.srr << "]"
+			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
+			<< "[DA:" << to_string(r.da) << "]"
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const command_t & msg) {
-		L << "[SMS-COMMAND:"
-			<< "[udhi:" << msg.udhi << "]"
-			<< "[srr:" << msg.srr << "]"
-			<< "[mr:" << static_cast<unsigned>(msg.mr) << "]"
-			<< "[pid:" << static_cast<unsigned>(msg.pid) << "]"
-			<< "[ct:" << static_cast<unsigned>(msg.ct) << "]"
-			<< "[mn:" << static_cast<unsigned>(msg.mn) << "]"
-			<< "[da:" << msg.da << "]"
-			<< "[cdl:" << static_cast<unsigned>(msg.cdl) << "]"
-			<< "[cd:" << bin::hex_str_ref(msg.cd, msg.cdl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const command_t & r) {
+		/* TODO: print TP-PID */
+		/* TODO: print TP-CT */
+		std::stringstream out;
+		out << "[SMS-COMMAND:"
+			<< "[UDHI:" << r.udhi << "]"
+			<< "[SRR:" << r.srr << "]"
+			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
+			<< "[MN:" << static_cast<unsigned>(r.mn) << "]"
+			<< "[DA:" << to_string(r.da) << "]"
+			<< "[CDL:" << static_cast<unsigned>(r.cdl) << "]"
+			<< "[CD:" << bin::hex_str_ref(r.cd, r.cdl) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const status_report_t & msg) {
-		L << "[SMS-STATUS-REPORT:"
-			<< "[udhi:" << msg.udhi << "]"
-			<< "[mms:" << msg.mms << "]"
-			<< "[lp:" << msg.lp << "]"
-			<< "[srq:" << msg.srq << "]"
-			<< "[mr:" << static_cast<unsigned>(msg.mr) << "]"
-			<< "[ra:" << msg.ra << "]"
-			/* TODO: L << SC timestamp */
-			/* TODO: L << discharge time */
-			<< "[st:" << static_cast<unsigned>(msg.st) << "]"
-			<< msg.pi
-			<< "[pid:" << static_cast<unsigned>(msg.pid) << "]"
-			<< "[dcs:" << static_cast<unsigned>(msg.dcs) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const status_report_t & r) {
+		/* TODO: decode and print TP-PID */
+		/* TODO: decode and print TP-SCTS */
+		/* TODO: print SCTS */
+		/* TODO: print DT */
+		/* TODO: print ST */
+		std::stringstream out;
+		out << "[SMS-STATUS-REPORT:"
+			<< "[UDHI:" << r.udhi << "]"
+			<< "[MMS:" << r.mms << "]"
+			<< "[LP:" << r.lp << "]"
+			<< "[SRQ:" << r.srq << "]"
+			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
+			<< "[RA:" << to_string(r.ra) << "]"
+			<< to_string(r.pi)
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const deliver_report_neg_t & msg) {
-		L << "[SMS-DELIVER-REPORT(ERR):"
-			<< "[udhi:" << msg.udhi << "]"
-			<< "[fcs:" << static_cast<unsigned>(msg.fcs) << "]"
-			<< msg.pi
-			/* TODO: L << SC timestamp */
-			<< "[dcs:" << static_cast<unsigned>(msg.dcs) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const deliver_report_neg_t & r) {
+		/* TODO: print FC */
+		/* TODO: print SCTS */
+		/* TODO: print DCTS */
+		std::stringstream out;
+		out << "[SMS-DELIVER-REPORT(ERR):"
+			<< "[UDHI:" << r.udhi << "]"
+			<< "[FCS:" << static_cast<unsigned>(r.fcs) << "]"
+			<< to_string(r.pi)
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud.data, r.ud.len) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const deliver_report_pos_t & msg) {
-		L << "[SMS-DELIVER-REPORT(ACK):"
-			<< "[udhi:" << msg.udhi << "]"
-			<< msg.pi
-			/* TODO: L << SC timestamp */
-			<< "[dcs:" << static_cast<unsigned>(msg.dcs) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const deliver_report_pos_t & r) {
+		/* TODO: print SCTS */
+		/* TODO: print DCS */
+		std::stringstream out;
+		out << "[SMS-DELIVER-REPORT(ACK):"
+			<< "[UDHI:" << r.udhi << "]"
+			<< to_string(r.pi)
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud.data, r.ud.len) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const submit_report_neg_t & msg) {
-		L << "[SMS-SUBMIT-REPORT(ERR):"
-			<< "[udhi:" << msg.udhi << "]"
-			<< "[fcs:" << static_cast<unsigned>(msg.fcs) << "]"
-			<< msg.pi
-			/* TODO: L << SC timestamp */
-			<< "[dcs:" << static_cast<unsigned>(msg.dcs) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const submit_report_neg_t & r) {
+		/* TODO: print SCTS */
+		/* TODO: print DCS */
+		/* TODO: print FC */
+		std::stringstream out;
+		out << "[SMS-SUBMIT-REPORT(ERR):"
+			<< "[UDHI:" << r.udhi << "]"
+			<< to_string(r.pi)
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const submit_report_pos_t & msg) {
-		L << "[SMS-SUBMIT-REPORT(ACK):"
-			<< "[udhi:" << msg.udhi << "]"
-			<< msg.pi
-			/* TODO: L << SC timestamp */
-			<< "[dcs:" << static_cast<unsigned>(msg.dcs) << "]"
-			<< "[udl:" << static_cast<unsigned>(msg.udl) << "]"
-			<< "[ud:" << bin::hex_str_ref(msg.ud, msg.udl) << "]"
-		;
-		L << "]";
-		return L;
+	std::string to_string(const submit_report_pos_t & r) {
+		/* TODO: print SCTS */
+		/* TODO: print DCS */
+		std::stringstream out;
+		out << "[SMS-SUBMIT-REPORT(ACK):"
+			<< "[UDHI:" << r.udhi << "]"
+			<< to_string(r.pi)
+			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "]";
+		return out.str();
 	}
 
 } } }
