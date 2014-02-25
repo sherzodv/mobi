@@ -169,17 +169,21 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 		tag_form	form;
 		bin::u64_t	code;
 		bin::u64_t	len;
+
+		tag() {}
+		tag(tag_class k, tag_form f, bin::u64_t c)
+			: klass(k), form(f), code(c), len(0) {}
 	};
 
 	namespace type {
-		const tag boolean		= { tagclass_universal, tagform_primitive, tagcode_boolean, 0x00 };
-		const tag integer		= { tagclass_universal, tagform_primitive, tagcode_integer, 0x00 };
-		const tag bitstring		= { tagclass_universal, tagform_primitive, tagcode_bitstring, 0x00 };
-		const tag octstring		= { tagclass_universal, tagform_primitive, tagcode_octstring, 0x00 };
-		const tag null			= { tagclass_universal, tagform_primitive, tagcode_null, 0x00 };
-		const tag oid			= { tagclass_universal, tagform_primitive, tagcode_oid, 0x00 };
-		const tag sequence		= { tagclass_universal, tagform_constructor, tagcode_sequence, 0x00 };
-		const tag set			= { tagclass_universal, tagform_constructor, tagcode_set, 0x00 };
+		const tag boolean		= { tagclass_universal, tagform_primitive, tagcode_boolean };
+		const tag integer		= { tagclass_universal, tagform_primitive, tagcode_integer };
+		const tag bitstring		= { tagclass_universal, tagform_primitive, tagcode_bitstring };
+		const tag octstring		= { tagclass_universal, tagform_primitive, tagcode_octstring };
+		const tag null			= { tagclass_universal, tagform_primitive, tagcode_null };
+		const tag oid			= { tagclass_universal, tagform_primitive, tagcode_oid };
+		const tag sequence		= { tagclass_universal, tagform_constructor, tagcode_sequence };
+		const tag set			= { tagclass_universal, tagform_constructor, tagcode_set };
 	}
 
 	inline bool operator==(const tag & l, const tag & r) {
@@ -271,25 +275,16 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 					, const bin::u8_t * bend) {
 				using namespace bin;
 				/* Such a large integers are not supported */
-				RETURN_NULL_IF(len > 8 || buf + len > bend);
+				RETURN_NULL_IF(len == 0 || len > 8 || buf + len > bend);
 				RETURN_NULL_IF(sizeof(val) < len);
-				switch (len) {
-					case 0: return nullptr; /* Null value parsed as integer */
-					case 1: return p::cp_u8(asbuf(val), buf);
-					case 2: return p::cp_u16(asbuf(val), buf);
-					case 4: return p::cp_u32(asbuf(val), buf);
-					case 8: return p::cp_u64(asbuf(val), buf);
-					default: /* 3, 5, 6, 7 octects */ {
-						val = 0;
-						while (len) {
-							val <<= 8;
-							len &= *buf;
-							++buf;
-							--len;
-						}
-						return buf;
-					}
+				val = 0;
+				while (len) {
+					val <<= 8;
+					val |= *buf;
+					++buf;
+					--len;
 				}
+				return buf;
 			}
 
 			template <typename T>
@@ -338,6 +333,18 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t.len > maxlen);
 				len = t.len;
+				return p::cpy(dst, buf, t.len);
+			}
+
+			const bin::u8_t * parse_octstring(bin::u8_t * dst
+					, bin::sz_t maxlen
+					, const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+				tag t;
+				buf = parse_tag(t, buf, bend);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(t.len > maxlen);
 				return p::cpy(dst, buf, t.len);
 			}
 

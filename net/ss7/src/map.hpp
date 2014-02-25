@@ -360,14 +360,12 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			}
 
 			action on_begin(const tcap::element::begin & el) {
-				using tcap::operator<<;
 				(void)(el);
 				//L << std::hex << el << std::endl;
 				return resume;
 			}
 
 			action on_end(const tcap::element::end & el) {
-				using tcap::operator<<;
 				(void)(el);
 				//L << el << std::endl;
 				return resume;
@@ -385,55 +383,63 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 			action on_invoke(const tcap::element::invoke & inv) {
 				using namespace asn::ber;
-				using tcap::operator<<;
 
 				const bin::u8_t * buf, * bend;
 
 				buf = inv.data;
 				bend = inv.dend;
 
-				/* Skip payload of an invoke, as we parsed it already */
-				switch (inv.op_code) {
-					case operation::send_routing_info_for_sm:
-						buf = parse_routing_info_for_sm_arg(buf, bend);
-						if (buf == nullptr) {
-							return stop;
-						}
-						return skip;
-					case operation::mo_forward_sm:
-						buf = parse_mo_forward_sm_arg(buf, bend);
-						if (buf == nullptr) {
-							return stop;
-						}
-						return skip;
-					default: return stop; /* not supported */
+				if (inv.op_code.type == tcap::element::operation_code::local) {
+					/* Skip payload of an invoke, as we parsed it already */
+					switch (inv.op_code.as.local) {
+						case operation::send_routing_info_for_sm:
+							buf = parse_routing_info_for_sm_arg(buf, bend);
+							if (buf == nullptr) {
+								return stop;
+							}
+							return skip;
+						case operation::mo_forward_sm:
+							buf = parse_mo_forward_sm_arg(buf, bend);
+							if (buf == nullptr) {
+								return stop;
+							}
+							return skip;
+						default: return stop; /* not supported */
+					}
+				} else {
+					/* TODO: implement working with oids */
+					return stop;
 				}
 			}
 
-			action on_return_result_last(const tcap::element::return_result & rres) {
+			action on_return_result_last(const tcap::element::return_result & r) {
 				using namespace asn::ber;
-				using tcap::operator<<;
 
 				const bin::u8_t * buf, * bend;
 
-				buf = rres.data;
-				bend = rres.dend;
+				buf = r.data;
+				bend = r.dend;
 
-				/* Skip payload of an return_result_last, as we parsed it already */
-				switch (rres.op_code) {
-					case operation::send_routing_info_for_sm:
-						buf = parse_routing_info_for_sm_res(buf, bend);
-						if (buf == nullptr) {
-							return stop;
-						}
-						return skip;
-					case operation::mo_forward_sm:
-						buf = parse_mo_forward_sm_res(buf, bend);
-						if (buf == nullptr) {
-							return stop;
-						}
-						return skip;
-					default: return stop; /* not supported */
+				if (r.op_code.type == tcap::element::operation_code::local) {
+					/* Skip payload of an return_result_last, as we parsed it already */
+					switch (r.op_code.as.local) {
+						case operation::send_routing_info_for_sm:
+							buf = parse_routing_info_for_sm_res(buf, bend);
+							if (buf == nullptr) {
+								return stop;
+							}
+							return skip;
+						case operation::mo_forward_sm:
+							buf = parse_mo_forward_sm_res(buf, bend);
+							if (buf == nullptr) {
+								return stop;
+							}
+							return skip;
+						default: return stop; /* not supported */
+					}
+				} else {
+					/* TODO: implement working with oids */
+					return stop;
 				}
 			}
 
@@ -874,137 +880,195 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			}
 	};
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, nature_of_address na) {
-		L << "[nai:";
-		switch (na) {
-			case na_unknown				: L << "unknown"; break;
-			case na_international		: L << "international"; break;
-			case na_national_significant: L << "national significant"; break;
-			case na_network_specific	: L << "network specific"; break;
-			case na_subscriber			: L << "subscriber"; break;
-			case na_abbreviated			: L << "abbreviated"; break;
-			case na_reserved_for_ext	: L << "reserved for ext"; break;
-			default: L << "reserved:" << static_cast<unsigned>(na); break;
+	std::string to_string(nature_of_address r) {
+		std::stringstream out;
+		out << "[nai:";
+		switch (r) {
+			case na_unknown:
+				out << "unknown";
+				break;
+			case na_international:
+				out << "international";
+				break;
+			case na_national_significant:
+				out << "national significant";
+				break;
+			case na_network_specific:
+				out << "network specific";
+				break;
+			case na_subscriber:
+				out << "subscriber";
+				break;
+			case na_abbreviated:
+				out << "abbreviated";
+				break;
+			case na_reserved_for_ext:
+				out << "reserved for ext";
+				break;
+			default:
+				out << "reserved:" << bin::as<unsigned>(r);
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, numbering_plan np) {
-		L << "[np:";
-		switch (np) {
-			case np_unknown			: L << "unknown"; break;
-			case np_isdn_telephony	: L << "isdn_telephony"; break;
-			case np_spare_1			: L << "spare_1"; break;
-			case np_data			: L << "data"; break;
-			case np_telex			: L << "telex"; break;
-			case np_spare_2			: L << "spare_2"; break;
-			case np_land_mobile		: L << "land_mobile"; break;
-			case np_spare_3			: L << "spare_3"; break;
-			case np_national		: L << "national"; break;
-			case np_private			: L << "private"; break;
-			case np_reserved_for_ext: L << "reserved for ext"; break;
-			default: L << "reserved:" << static_cast<unsigned>(np); break;
+	std::string to_string(numbering_plan r) {
+		std::stringstream out;
+		out << "[np:";
+		switch (r) {
+			case np_unknown:
+				out << "unknown";
+				break;
+			case np_isdn_telephony:
+				out << "isdn_telephony";
+				break;
+			case np_spare_1:
+				out << "spare_1";
+				break;
+			case np_data:
+				out << "data";
+				break;
+			case np_telex:
+				out << "telex";
+				break;
+			case np_spare_2:
+				out << "spare_2";
+				break;
+			case np_land_mobile:
+				out << "land_mobile";
+				break;
+			case np_spare_3:
+				out << "spare_3";
+				break;
+			case np_national:
+				out << "national";
+				break;
+			case np_private:
+				out << "private";
+				break;
+			case np_reserved_for_ext:
+				out << "reserved for ext";
+				break;
+			default:
+				out << "reserved:" << bin::as<unsigned>(r);
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT, class AddressStringT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const AddressStringT & r) {
-		L << r.na;
-		L << r.np;
-		L << "[digits:" << r.digits() << "]";
-		return L;
+	template <bin::sz_t MaxLen>
+	std::string to_string(const address_string_tt<MaxLen> & r) {
+		std::stringstream out;
+		out << to_string(r.na) << to_string(r.np)
+			<< "[digits:" << r.digits() << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const imsi_t & n) {
-		std::string num = bcd_decode(n.data, n.len, true);
-		L << num;
-		return L;
+	std::string to_string(const imsi_t & r) {
+		return bcd_decode(r.data, r.len, true);
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const lmsi_t & n) {
-		std::string num = bcd_decode(n.data + 1, n.len - 1, true);
-		L << num;
-		return L;
+	std::string to_string(const lmsi_t & r) {
+		return bcd_decode(r.data, r.len, true);
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const sm_rp_da_t & rp) {
-		L << "[sm_rp_da:";
-		switch (rp.has) {
-			case sm_rp_da_t::has_imsi: L << "[imsi:" << rp.as.imsi << "]"; break;
-			case sm_rp_da_t::has_lmsi: L << "[lmsi:" << rp.as.lmsi << "]"; break;
-			case sm_rp_da_t::has_sc: L << "[sc-addr:" << rp.as.sc_address_da << "]"; break;
-			case sm_rp_da_t::has_nothing: L << "absent"; break;
-			default: L << "wrong"; break;
+	std::string to_string(const sm_rp_da_t & r) {
+		std::stringstream out;
+		out << "[sm_rp_da:";
+		switch (r.has) {
+			case sm_rp_da_t::has_imsi:
+				out << "[imsi:" << to_string(r.as.imsi) << "]";
+				break;
+			case sm_rp_da_t::has_lmsi:
+				out << "[lmsi:" << to_string(r.as.lmsi) << "]";
+				break;
+			case sm_rp_da_t::has_sc:
+				out << "[sc-addr:" << to_string(r.as.sc_address_da) << "]";
+				break;
+			case sm_rp_da_t::has_nothing:
+				out << "absent";
+				break;
+			default:
+				out << "wrong";
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const sm_rp_oa_t & rp) {
-		L << "[sm_rp_oa:";
-		switch (rp.has) {
-			case sm_rp_oa_t::has_msisdn: L << "[msisdn:" << rp.as.msisdn << "]"; break;
-			case sm_rp_oa_t::has_sc: L << "[sc-addr:" << rp.as.sc_address_oa << "]"; break;
-			case sm_rp_oa_t::has_nothing: L << "absent"; break;
-			default: L << "wrong"; break;
+	std::string to_string(const sm_rp_oa_t & r) {
+		std::stringstream out;
+		out << "[sm_rp_oa:";
+		switch (r.has) {
+			case sm_rp_oa_t::has_msisdn:
+				out << "[msisdn:" << to_string(r.as.msisdn) << "]";
+				break;
+			case sm_rp_oa_t::has_sc:
+				out << "[sc-addr:" << to_string(r.as.sc_address_oa) << "]";
+				break;
+			case sm_rp_oa_t::has_nothing:
+				out << "absent";
+				break;
+			default:
+				out << "wrong";
+				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const location_info_with_lmsi_t & r) {
-		L << "[locationInfoWithLMSI:"
-			<< "[lmsi:" << r.lmsi << "]"
-			<< "[networkNodeNumber:" << r.network_node_number << "]"
+	std::string to_string(const location_info_with_lmsi_t & r) {
+		std::stringstream out;
+		out << "[locationInfoWithLMSI:"
+			<< "[lmsi:" << to_string(r.lmsi) << "]"
+			<< "[networkNodeNumber:" << to_string(r.network_node_number) << "]"
 		<< "]";
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_arg_t & el) {
-		L << "[RoutingInfoForSM-Arg:"
-			<< "[msisdn:" << el.msisdn << "]"
-			<< "[sm_rp_pri:" << el.sm_rp_pri << "]"
-			<< "[sc_address:" << el.sc_address << "]"
+	std::string to_string(const routing_info_for_sm_arg_t & r) {
+		std::stringstream out;
+		out << "[RoutingInfoForSM-Arg:"
+			<< "[msisdn:" << to_string(r.msisdn) << "]"
+			<< "[sm_rp_pri:" << r.sm_rp_pri << "]"
+			<< "[sc_address:" << to_string(r.sc_address) << "]"
 		<< "]";
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const routing_info_for_sm_res_t & r) {
-		L << "[RoutingInfoForSM-Res:"
-			<< "[imsi:" << r.imsi << "]"
-			<< r.location_info_with_lmsi
+	std::string to_string(const routing_info_for_sm_res_t & r) {
+		std::stringstream out;
+		out << "[RoutingInfoForSM-Res:"
+			<< "[imsi:" << to_string(r.imsi) << "]"
+			<< to_string(r.location_info_with_lmsi)
 		<< "]";
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const mo_forward_sm_arg_t & el) {
-		L << "[MO-ForwardSM-Arg:" << el.sm_rp_da << el.sm_rp_oa;
-			if (el.has_imsi)
-				L << "[imsi:" << el.imsi << "]";
-			L << "[sm_rp_ui:" << bin::hex_str_ref(el.sm_rp_ui.data, el.sm_rp_ui.len).delimit("").prefix("") << "]";
-		L << "]";
-		return L;
+	std::string to_string(const mo_forward_sm_arg_t & r) {
+		std::stringstream out;
+		out << "[MO-ForwardSM-Arg:"
+			<< to_string(r.sm_rp_da)
+			<< to_string(r.sm_rp_oa);
+		if (r.has_imsi)
+			out << "[imsi:" << to_string(r.imsi) << "]";
+		out << "[sm_rp_ui:"
+			<< bin::hex_str_ref(r.sm_rp_ui.data, r.sm_rp_ui.len)
+				.delimit("").prefix("") << "]";
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const mo_forward_sm_res_t & el) {
-		L << "[MO-ForwardSM-Res:";
-			L << "[sm_rp_ui:" << bin::hex_str_ref(el.sm_rp_ui.data, el.sm_rp_ui.len).delimit("").prefix("") << "]";
-		L << "]";
-		return L;
+	std::string to_string(const mo_forward_sm_res_t & r) {
+		std::stringstream out;
+		out << "[MO-ForwardSM-Res:";
+		out << "[sm_rp_ui:"
+			<< bin::hex_str_ref(r.sm_rp_ui.data, r.sm_rp_ui.len)
+				.delimit("").prefix("") << "]";
+		out << "]";
+		return out.str();
 	}
 
 } } } }

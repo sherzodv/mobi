@@ -44,6 +44,11 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 		inline u64_t to_net(u64_t v) { return htobe64(v); }
 	}
 
+	template <typename DT, typename ST>
+	inline DT as(ST & v) {
+		return static_cast<DT>(v);
+	}
+
 	template <typename T>
 	inline const u8_t * ascbuf(T & src) {
 		return reinterpret_cast<const u8_t *>(&src);

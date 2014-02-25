@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(test_map_tbcd_coders) {
 	BOOST_CHECK(std::memcmp(map_s1, de.data, de.len) == 0);
 
 	map::bcd_encode(en, map_num2);
-	BOOST_CHECK(std::memcmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\x0F"
+	BOOST_CHECK(std::memcmp("\x21\x43\x65\x87\x09\xA1\xCB\xED\xFF"
 				, en.data, en.len) == 0);
 
 	map::bcd_decode(de, en, true);
@@ -236,6 +236,7 @@ BOOST_AUTO_TEST_CASE(test_tcap) {
 
 	const bin::u8_t * cur;
 
+	/* SendRoutingInfoForSM-Arg */
 	const bin::u8_t tcap_raw1[] =
 		"\x62\x27\x48\x04\x29\x00\x32\xce\x6c\x1f\xa1\x1d\x02\x01\x01\x02"
 		"\x01\x2d\x30\x15\x80\x07\x91\x99\x63\x65\x52\x57\xf8\x81\x01\x01"
@@ -248,6 +249,8 @@ BOOST_AUTO_TEST_CASE(test_tcap) {
 
 	(void)(tcap_raw1);
 	(void)(tcap_raw2);
+
+	using tcap::to_string;
 
 	class parser: public tcap::parser<std::ostream> {
 
@@ -270,20 +273,21 @@ BOOST_AUTO_TEST_CASE(test_tcap) {
 				for (std::size_t i = 0; i < depth; ++i) L << "\t";
 			}
 
-			virtual action on_uni(const tcap::element::uni & el) {
-				(void)(el);
+			virtual action on_uni(const tcap::element::uni & r) {
+				(void)(r);
+				L << std::hex << to_string(r) << std::endl;
 				return stop;
 			}
 
-			virtual action on_begin(const tcap::element::begin & el) {
-				using tcap::operator<<;
-				L << std::hex << el << std::endl;
+			virtual action on_begin(const tcap::element::begin & r) {
+				BOOST_CHECK(std::memcmp(&r.otid
+							, "\x29\x00\x32\xCE", sizeof(r.otid)) == 0);
 				return resume;
 			}
 
-			virtual action on_end(const tcap::element::end & el) {
-				using tcap::operator<<;
-				L << std::hex << el << std::endl;
+			virtual action on_end(const tcap::element::end & r) {
+				BOOST_CHECK(std::memcmp(&r.dtid
+							, "\x2B\x00\xEC\x98", sizeof(r.dtid)) == 0);
 				return resume;
 			}
 
@@ -297,29 +301,42 @@ BOOST_AUTO_TEST_CASE(test_tcap) {
 				return stop;
 			}
 
-			virtual action on_invoke(const tcap::element::invoke & el) {
-				using tcap::operator<<;
-				L << el << std::endl;
+			virtual action on_invoke(const tcap::element::invoke & r) {
+				BOOST_CHECK(r.id == 1);
+				BOOST_CHECK(r.has_linked_id == false);
+				BOOST_CHECK(r.op_code.type
+						== tcap::element::operation_code::local);
+				BOOST_CHECK(r.op_code.as.local
+						== map::operation::send_routing_info_for_sm);
 				return resume;
 			}
 
-			virtual action on_return_result_last(const tcap::element::return_result & el) {
-				using tcap::operator<<;
-				L << el << std::endl;
+			virtual action on_return_result_last(const tcap::element::return_result & r) {
+				BOOST_CHECK(r.invokeId == 1);
+				BOOST_CHECK(r.op_code.type
+						== tcap::element::operation_code::local);
+				BOOST_CHECK(r.op_code.as.local
+						== map::operation::send_routing_info_for_sm);
 				return resume;
 			}
 
-			virtual action on_primitive(ber::tag el, const bin::u8_t * data) {
+			virtual action on_primitive(ber::tag r, const bin::u8_t * data) {
+				(void)(r);
 				(void)(data);
+				/*
 				indent();
-				L << el << std::endl;
+				L << std::hex << el << std::endl;
+				*/
 				return resume;
 			}
 
-			virtual action on_constructor_start(ber::tag el, const bin::u8_t * data) {
+			virtual action on_constructor_start(ber::tag r, const bin::u8_t * data) {
+				(void)(r);
 				(void)(data);
+				/*
 				indent();
-				L << el << std::endl;
+				L << std::hex << el << std::endl;
+				*/
 				depth++;
 				return resume;
 			}
@@ -331,17 +348,13 @@ BOOST_AUTO_TEST_CASE(test_tcap) {
 
 	} p(std::cout);
 
-	std::cout << "----------------------------------------" << std::endl;
 	cur = p.parse(tcap_raw1, tcap_raw1 + sizeof(tcap_raw1) - 1);
-	if (cur == nullptr) {
-		std::cout << "parse error" << std::endl;
-	}
+	BOOST_CHECK(cur != nullptr);
+	BOOST_CHECK(cur == tcap_raw1 + sizeof(tcap_raw1) - 1);
 
-	std::cout << "----------------------------------------" << std::endl;
 	cur = p.parse(tcap_raw2, tcap_raw2 + sizeof(tcap_raw2) - 1);
-	if (cur == nullptr) {
-		std::cout << "parse error" << std::endl;
-	}
+	BOOST_CHECK(cur != nullptr);
+	BOOST_CHECK(cur == tcap_raw2 + sizeof(tcap_raw2) - 1);
 }
 
 BOOST_AUTO_TEST_CASE(test_map) {
@@ -349,8 +362,6 @@ BOOST_AUTO_TEST_CASE(test_map) {
 	using namespace mobi::net::asn;
 	using namespace mobi::net::ss7;
 	using namespace mobi::net::toolbox;
-
-	using map::operator<<;
 
 	const bin::u8_t * cur;
 
@@ -511,13 +522,11 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 
 		protected:
 			virtual action on_sms_deliver(const sms::deliver_t & msg) {
-				using map::operator<<;
 				L << msg << std::endl;
 				return resume;
 			}
 
 			virtual action on_sms_submit(const sms::submit_t & msg) {
-				using map::operator<<;
 				L << msg << std::endl;
 				return resume;
 			}

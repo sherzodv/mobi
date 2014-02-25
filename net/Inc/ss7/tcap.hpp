@@ -38,15 +38,25 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 
 	namespace element {
 
+		struct operation_code {
+			enum { local, global, unknown } type;
+			union {
+				bin::u32_t local;
+				bin::u8_t global[64];/* TODO: implement oid */
+			} as;
+
+			operation_code(): type(unknown) {}
+		};
+
 		struct uni {
 		};
 
 		struct begin {
-			bin::u64_t otid;
+			bin::u32_t otid;
 		};
 
 		struct end {
-			bin::u64_t dtid;
+			bin::u32_t dtid;
 		};
 
 		struct resume {
@@ -58,16 +68,28 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 		struct invoke {
 			bin::s8_t id;
 			bin::s8_t linked_id;
-			bin::u32_t op_code;
+			operation_code op_code;
+
+			bool has_linked_id;
+
 			const bin::u8_t *data;
 			const bin::u8_t *dend;
+
+			enum: bin::u64_t { tag_code = 0x01L };
+
+			invoke()
+				: id(0), linked_id(0), op_code(), has_linked_id(false)
+				, data(nullptr), dend(nullptr) {}
 		};
 
 		struct return_result {
 			bin::s8_t invokeId;
-			bin::u32_t op_code;
+			operation_code op_code;
 			const bin::u8_t *data;
 			const bin::u8_t *dend;
+
+			return_result()
+				: invokeId(0), op_code(), data(nullptr), dend(nullptr) {}
 		};
 
 	}
@@ -152,7 +174,8 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				element::begin b;
 
 				/* Parse OTID */
-				buf = base::parse_integer(b.otid, buf, bend);
+				buf = base::parse_octstring(bin::asbuf(b.otid), sizeof(b.otid)
+						, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(on_begin(b) == stop);
 
@@ -182,12 +205,13 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				using namespace asn::ber;
 
 				tag t;
-				element::end end;
+				element::end r;
 
 				/* Parse DTID */
-				buf = base::parse_integer(end.dtid, buf, bend);
+				buf = base::parse_octstring(bin::asbuf(r.dtid), sizeof(r.dtid)
+						, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
-				RETURN_NULL_IF(on_end(end) == stop);
+				RETURN_NULL_IF(on_end(r) == stop);
 
 				/* See what is next: dialog or component portion?*/
 
@@ -265,16 +289,11 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				buf = base::parse_integer(inv.id, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				inv.linked_id = 0;
-				inv.op_code = 0;
-
 				/* Now see what is next: linkedID is present or op_code */
 				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				if (t.klass == tagclass_contextspec
-						&& t.form == tagform_primitive
-						&& t.code == 0x00) {
+				if (t == tag {tagclass_contextspec, tagform_primitive, 0x00}) {
 					/* linkedID is present, parse it */
 					buf = base::parse_integer(inv.linked_id, t.len, buf, bend);
 					RETURN_NULL_IF(buf == nullptr);
@@ -284,8 +303,16 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 					RETURN_NULL_IF(buf == nullptr);
 				}
 
-				/* Parse operationCode value */
-				buf = base::parse_integer(inv.op_code, t.len, buf, bend);
+				if (t == type::integer) {
+					inv.op_code.type = element::operation_code::local;
+					buf = base::parse_integer(inv.op_code.as.local
+							, t.len, buf, bend);
+				} else if (t == type::oid) {
+					/* TODO: implement oid parser */
+					return nullptr;
+				} else {
+					return nullptr;
+				}
 
 				inv.data = buf;
 				inv.dend = bend;
@@ -298,7 +325,7 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 			}
 
 			const bin::u8_t * parse_return_result(
-					element::return_result & rres
+					element::return_result & r
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace asn::ber;
@@ -315,11 +342,8 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 
 				tag t;
 
-				rres.invokeId = 0;
-				rres.op_code = 0;
-
 				/* Parse invokeID */
-				buf = base::parse_integer(rres.invokeId, buf, bend);
+				buf = base::parse_integer(r.invokeId, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
 				/* Parse SEQUENCE tag */
@@ -327,9 +351,20 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 				RETURN_NULL_IF(buf == nullptr);
 				RETURN_NULL_IF(t != type::sequence);
 
-				/* Parse operationCode */
-				buf = base::parse_integer(rres.op_code, buf, bend);
+				/* Parse operationCode tag */
+				buf = base::parse_tag(t, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
+
+				if (t == type::integer) {
+					r.op_code.type = element::operation_code::local;
+					buf = base::parse_integer(r.op_code.as.local
+							, t.len, buf, bend);
+				} else if (t == type::oid) {
+					/* TODO: implement oid parser */
+					return nullptr;
+				} else {
+					return nullptr;
+				}
 
 				return buf;
 			}
@@ -340,15 +375,15 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 
 				using namespace asn::ber;
 
-				element::return_result rres;
+				element::return_result r;
 
-				buf = parse_return_result(rres, buf, bend);
+				buf = parse_return_result(r, buf, bend);
 				RETURN_NULL_IF(buf == nullptr);
 
-				rres.data = buf;
-				rres.dend = bend;
+				r.data = buf;
+				r.dend = bend;
 
-				switch (on_return_result_last(rres)) {
+				switch (on_return_result_last(r)) {
 					case stop: return nullptr;
 					case skip: return bend;
 					default: return parse_elements(buf, bend);
@@ -390,48 +425,124 @@ namespace mobi { namespace net { namespace ss7 { namespace tcap {
 			using base::L;
 
 			bin::u8_t * write_begin(bin::u8_t * buf, bin::u8_t * bend
-					, const element::begin & r) {
-				return nullptr;
+					, const element::begin & r, bin::sz_t len) {
+
+				using namespace asn::ber;
+
+				RETURN_NULL_IF(buf
+						+ element_size(message_type::begin, len) > bend);
+
+				buf = base::write_tag(buf, bend, tagclass_application
+						, tagform_constructor, message_type::begin, len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = base::write_integer(buf, bend
+						, tagclass_application, tagcode_octstring
+						, r.otid);
+
+				return buf;
+			}
+
+			bin::u8_t * write_component_portion(bin::u8_t * buf
+					, bin::u8_t * bend, bin::sz_t len) {
+
+				using namespace asn::ber;
+
+				RETURN_NULL_IF(buf
+						+ element_size(portion_type::component, len) > bend);
+
+				buf = base::write_tag(buf, bend, tagclass_application
+						, tagform_constructor, portion_type::component, len);
+
+				return buf;
+			}
+
+			bin::u8_t * write_invoke(bin::u8_t * buf, bin::u8_t * bend
+					, const element::invoke & r, bin::sz_t len) {
+				using namespace asn::ber;
+
+				RETURN_NULL_IF(buf
+						+ element_size(component_type::invoke, len) > bend);
+
+				buf = base::write_tag(buf, bend, tagclass_contextspec
+						, tagform_constructor, component_type::invoke, len);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = base::write_integer(buf, bend, tagclass_universal
+						, tagform_primitive, r.id);
+
+				if (r.has_linked_id) {
+					buf = base::write_integer(buf, bend, tagclass_contextspec
+						, tagform_primitive, 0x00);
+				}
+
+				if (r.op_code.type == element::operation_code::local) {
+					buf = base::write_integer(buf, bend, tagclass_universal
+						, tagform_primitive, r.op_code.as.local);
+				} else {
+					/* TODO: implement working with oids */
+					return nullptr;
+				}
+
+				return buf;
 			}
 	};
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const element::begin & b) {
-		using asn::ber::operator<<;
-		L << "[begin:"
-			<< "[otid:" << b.otid << "]"
-		<< "]";
-		return L;
+	std::string to_string(const element::operation_code & r) {
+		std::stringstream out;
+		out << "[op_code:";
+		switch (r.type) {
+			case element::operation_code::local:
+				out << "local:" << r.as.local;
+				break;
+			case element::operation_code::global:
+				out << "global:not implemented";
+				break;
+			default:
+				out << "unknown";
+				break;
+		}
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const element::end & end) {
-		using asn::ber::operator<<;
-		L << "[end:"
-			<< "[dtid:" << end.dtid << "]"
-		<< "]";
-		return L;
+	std::string to_string(const element::uni & r) {
+		std::stringstream out;
+		(void)(r);
+		out << "[uni:]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const element::invoke & inv) {
-		using asn::ber::operator<<;
-		L << "[invoke:"
-			<< "[id:" << static_cast<unsigned>(inv.id) << "]"
-			<< "[linked_id:" << static_cast<unsigned>(inv.linked_id) << "]"
-			<< "[opcode:" << inv.op_code << "]"
-		<< "]";
-		return L;
+	std::string to_string(const element::begin & r) {
+		std::stringstream out;
+		out << "[begin:[otid:"
+			<< bin::hex_str_ref(bin::ascbuf(r.otid), sizeof(r.otid))
+				.delimit("").prefix("") << "]]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const element::return_result & rres) {
-		using asn::ber::operator<<;
-		L << "[return_result:"
-			<< "[id:" << static_cast<unsigned>(rres.invokeId) << "]"
-			<< "[opcode:" << rres.op_code << "]"
-		<< "]";
-		return L;
+	std::string to_string(const element::end & r) {
+		std::stringstream out;
+		out << "[end:[dtid:"
+			<< bin::hex_str_ref(bin::ascbuf(r.dtid), sizeof(r.dtid))
+				.delimit("").prefix("") << "]]";
+		return out.str();
+	}
+
+	std::string to_string(const element::invoke & r) {
+		std::stringstream out;
+		out << "[invoke:[id:" << bin::as<unsigned>(r.id) << "]"
+			<< "[linked_id:" << bin::as<unsigned>(r.linked_id) << "]"
+			<< to_string(r.op_code) << "]";
+		return out.str();
+	}
+
+	std::string to_string(const element::return_result & r) {
+		std::stringstream out;
+		out << "[return_result:"
+			<< "[id:" << bin::as<unsigned>(r.invokeId) << "]"
+			<< to_string(r.op_code) << "]";
+		return out.str();
 	}
 
 } } } }
