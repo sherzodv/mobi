@@ -579,10 +579,19 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 
 	/* SMS-SUBMIT */
 	const bin::u8_t tcap_raw1[] =
+		"\x04\x04\x81\x80\x08\x00\x00\x31\x40\x03\x21\x24\x15\x02\x4c\xc8"
+		"\xb7\xbc\x1d\xa6\xb3\xf3\xa0\x76\x7d\x4e\x2e\xcb\xd3\x2c\xd0\x3c"
+		"\xad\x2f\x83\x56\xb9\xdc\xcc\x36\xab\xd1\x68\xb5\x59\x0d\x24\x2e"
+		"\xb3\xcf\x69\x72\xd9\x0d\x8a\x81\xce\x65\x7d\x79\x0d\x9a\xc1\x5c"
+		"\x30\x1a\x28\x26\xd3\xd1\x64\x20\x75\xd8\x0d\x2a\xd3\xc9\x69\x76"
+		"\x59\x0e";
+		/*
 		"\x31\x12\x0b\x91\x99\x63\x93\x68\x11\xf6\x00\x08\xff\x08\x04\x22"
 		"\x04\x35\x04\x41\x04\x42";
+		*/
 
-	class sms_parser: public sms::parser<std::ostream> {
+	class sms_parser: public sms::parser<std::ostream>
+			, buffer_base {
 		public:
 			sms_parser(std::ostream & out): sms::parser<std::ostream>(out) {}
 			virtual ~sms_parser() {}
@@ -629,11 +638,9 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 			}
 	} p(std::cout);
 
-	cur = p.parse_in(tcap_raw1
+	cur = p.parse_out(tcap_raw1
 		, tcap_raw1 + sizeof(tcap_raw1)-1);
-	if (cur == nullptr) {
-		std::cout << "parse error" << std::endl;
-	}
+	BOOST_CHECK(cur != nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(test_ber_writer) {

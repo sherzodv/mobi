@@ -15,6 +15,39 @@ namespace mobi { namespace net { namespace sms {
 
 	using namespace toolbox;
 
+	enum data_coding_scheme {
+		dcs_general
+		, dcs_auto_deletion
+		, dcs_reserved
+		, dcs_discard
+		, dcs_store
+		, dcs_me_indicator
+		, dcs_store_ucs2
+		, dcs_coding
+		, dcs_special
+	};
+
+	enum character_set {
+		cs_gsm_7bit		= 0x0
+		, cs_8bit		= 0x1
+		, cs_ucs2		= 0x2
+		, cs_reserved	= 0x3
+	};
+
+	enum message_class {
+		mc_class0	= 0x0
+		, mc_class1	= 0x1
+		, mc_class2	= 0x2
+		, mc_class3	= 0x3
+	};
+
+	enum indication_type {
+		indication_voice	= 0x0
+		, indication_fax	= 0x1
+		, indication_email	= 0x2
+		, indication_other	= 0x3
+	};
+
 	enum type_of_number {
 		ton_unknown			= 0x00
 		, ton_international	= 0x01
@@ -45,6 +78,131 @@ namespace mobi { namespace net { namespace sms {
 		, vpf_relative		= 0x02
 		, vpf_absolute		= 0x03
 	};
+
+	struct dc_scheme {
+		data_coding_scheme dcs;
+		character_set cs;
+		message_class klass;
+		indication_type ind;
+		bool indicate;
+		bool compressed;
+		bool has_message_class;
+	};
+
+	dc_scheme decode_dcs(bin::u8_t dcs) {
+		dc_scheme r;
+
+		/* 3GPP TS 23.038 4. SMS Data Coding Scheme */
+
+		if (dcs >> 6 == 0x00 || dcs >> 6 == 0x01) {
+			if (dcs == 0) {
+				r.dcs = dcs_special;
+				r.cs = cs_gsm_7bit;
+			} else {
+				if (dcs >> 6 == 0x01) {
+					r.dcs = dcs_auto_deletion;
+				} else {
+					r.dcs = dcs_general;
+				}
+				r.compressed = dcs & 0x20;
+				r.has_message_class = dcs & 0x10;
+				switch ((dcs & 0x0C) >> 2) {
+					case 0x00:
+						r.cs = cs_gsm_7bit;
+						break;
+					case 0x01:
+						r.cs = cs_8bit;
+						break;
+					case 0x02:
+						r.cs = cs_ucs2;
+						break;
+					case 0x03:
+						r.cs = cs_reserved;
+						break;
+				}
+				switch (dcs & 0x03) {
+					case 0x00:
+						r.klass = mc_class0;
+						break;
+					case 0x01:
+						r.klass = mc_class1;
+						break;
+					case 0x02:
+						r.klass = mc_class2;
+						break;
+					case 0x03:
+						r.klass = mc_class3;
+						break;
+				}
+			}
+		} else {
+			r.cs = cs_gsm_7bit;
+			switch (dcs >> 4) {
+				case 0x08:
+				case 0x09:
+				case 0x0A:
+				case 0x0B:
+					r.dcs = dcs_reserved;
+					break;
+				case 0x0C:
+				case 0x0D:
+				case 0x0E: {
+					switch (dcs >> 4) {
+						case 0x0C:
+							r.dcs = dcs_discard;
+							break;
+						case 0x0D:
+							r.dcs = dcs_store;
+							break;
+						case 0x0E:
+							r.dcs = dcs_store_ucs2;
+							break;
+					}
+					r.cs = cs_gsm_7bit;
+					r.indicate = dcs & 0x08;
+					switch (dcs & 0x03) {
+						case 0x00:
+							r.ind = indication_voice;
+							break;
+						case 0x01:
+							r.ind = indication_fax;
+							break;
+						case 0x02:
+							r.ind = indication_email;
+							break;
+						case 0x03:
+							r.ind = indication_other;
+							break;
+					}
+					break;
+				}
+				case 0x0F:
+					r.dcs = dcs_coding;
+					if ((dcs & 0x04) == 0x01) {
+						r.cs = cs_8bit;
+					} else {
+						r.cs = cs_gsm_7bit;
+					}
+					switch (dcs & 0x03) {
+						case 0x00:
+							r.klass = mc_class0;
+							break;
+						case 0x01:
+							r.klass = mc_class1;
+							break;
+						case 0x02:
+							r.klass = mc_class2;
+							break;
+						case 0x03:
+							r.klass = mc_class3;
+							break;
+					}
+					break;
+			}
+		}
+
+		return r;
+	}
 
 	/* Address field: TS 23.040, 9.1.2.5 */
 	template <bin::sz_t MaxLen>
@@ -87,6 +245,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		scts[7];/* SC timestamp */
 		bin::u8_t		udl;	/* User data length */
 		bin::u8_t		ud[200];/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	struct submit_t {
@@ -323,7 +482,13 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse user data length */
 				buf = p::cp_u8(asbuf(m.udl), buf);
 
-				RETURN_NULL_IF(buf + m.udl > bend);
+				m.dcsd = decode_dcs(m.dcs);
+
+				if (m.dcsd.cs == cs_gsm_7bit) {
+					RETURN_NULL_IF(buf + ((m.udl * 7)>>3) > bend);
+				} else {
+					RETURN_NULL_IF(buf + m.udl > bend);
+				}
 
 				/* Parse user data */
 				buf = p::cpy(asbuf(m.ud), buf, m.udl);
