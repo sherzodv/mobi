@@ -226,10 +226,14 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				return bcd_decode(data, len, false);
 			}
 
+			void set_digits(const std::string & d) {
+				len = bcd_encode(data, d.data(), d.size());
+			}
+
 			constexpr bin::sz_t maxlen() { return MaxLen; }
 
 			bin::sz_t length() const {
-				return len + 1;
+				return len;
 			}
 
 			bin::sz_t size(bin::sz_t code = 0) const {
@@ -286,6 +290,15 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		struct location_info_with_lmsi_t {
 			isdn_address_string_t	network_node_number;
 			lmsi_t					lmsi;
+
+			bin::sz_t length() const {
+				return network_node_number.size(1)
+					+ lmsi.size();
+			}
+
+			bin::sz_t size(bin::u64_t code) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		struct routing_info_for_sm_arg_t {
@@ -307,6 +320,15 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 		struct routing_info_for_sm_res_t {
 			imsi_t						imsi;
 			location_info_with_lmsi_t	location_info_with_lmsi;
+
+			bin::sz_t length() const {
+				return imsi.size()
+					+ location_info_with_lmsi.size(0);
+			}
+
+			bin::sz_t size(bin::u64_t code) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		struct mo_forward_sm_arg_t {
@@ -747,8 +769,8 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				}
 			}
 
-			template <class AddressStringT>
-			const bin::u8_t * parse_address_string(AddressStringT & r
+			template <bin::sz_t MaxLen>
+			const bin::u8_t * parse_address_string(address_string_tt<MaxLen> & r
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				/*
@@ -785,8 +807,8 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				return p::cpy(r.data, buf, t.len - 1);
 			}
 
-			template <class AddressStringT>
-			const bin::u8_t * parse_address_string(AddressStringT & r
+			template <bin::sz_t MaxLen>
+			const bin::u8_t * parse_address_string(address_string_tt<MaxLen> & r
 					, const asn::ber::tag & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -797,8 +819,8 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				return p::cpy(r.data, buf, t.len - 1);
 			}
 
-			template <class TBCDStringT>
-			const bin::u8_t * parse_tbcd_string(TBCDStringT & r
+			template <bin::sz_t MaxLen>
+			const bin::u8_t * parse_tbcd_string(tbcd_string_tt<MaxLen> & r
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace bin;
@@ -815,8 +837,8 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				return p::cpy(r.data, buf, t.len);
 			}
 
-			template <class TBCDStringT>
-			const bin::u8_t * parse_tbcd_string(TBCDStringT & r
+			template <bin::sz_t MaxLen>
+			const bin::u8_t * parse_tbcd_string(tbcd_string_tt<MaxLen> & r
 					, const asn::ber::tag & t
 					, const bin::u8_t * buf
 					, const bin::u8_t * bend) {
@@ -863,12 +885,63 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				return buf;
 			}
 
-			template <class AddressStringT>
+			bin::u8_t * write_routing_info_for_sm_res(bin::u8_t * buf
+					, bin::u8_t * bend, const routing_info_for_sm_res_t & r) {
+				using namespace asn::ber;
+
+				buf = base::write_tag(buf, bend, type::sequence, r.length());
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = base::write_octstring(buf, bend, tagclass_universal
+						, tagcode_octstring, r.imsi);
+				RETURN_NULL_IF(buf == nullptr);
+
+				return write_location_info_with_lmsi(buf, bend
+						, r.location_info_with_lmsi);
+			}
+
+			bin::u8_t * write_location_info_with_lmsi(bin::u8_t * buf
+					, bin::u8_t * bend, const location_info_with_lmsi_t & r) {
+				using namespace asn::ber;
+
+				/* Sequence with tag code = 0x00 */
+				buf = base::write_tag(buf, bend, tagclass_contextspec
+						, tagform_constructor, 0, r.length());
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = write_address_string(buf, bend, tagclass_contextspec
+						, tagform_primitive, 1, r.network_node_number);
+				RETURN_NULL_IF(buf == nullptr);
+
+				if (r.lmsi.len > 0) {
+					return base::write_octstring(buf, bend, tagclass_universal
+							, tagcode_octstring, r.lmsi);
+				} else {
+					return buf;
+				}
+			}
+
+			template <bin::sz_t MaxLen>
+			bin::u8_t * write_tbcd_string(bin::u8_t * buf, bin::u8_t * bend
+					, asn::ber::tag_class klass
+					, bin::u64_t code, const tbcd_string_tt<MaxLen> & r) {
+				using namespace asn::ber;
+
+				RETURN_NULL_IF(buf + element_size(code, r.length()) > bend);
+
+				buf = base::write_tag(buf, bend
+						, klass, tagform_primitive, code, r.length());
+				RETURN_NULL_IF(buf == nullptr);
+
+				return bin::w::cpy(buf, r.data, r.len);
+			}
+
+			template <bin::sz_t MaxLen>
 			bin::u8_t * write_address_string(bin::u8_t * buf
 					, bin::u8_t * bend
 					, asn::ber::tag_class klass
 					, asn::ber::tag_form form
-					, bin::u64_t code, const AddressStringT & r) {
+					, bin::u64_t code, const address_string_tt<MaxLen> & r) {
 				using namespace bin;
 				using namespace asn::ber;
 
@@ -1021,9 +1094,11 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 
 	std::string to_string(const location_info_with_lmsi_t & r) {
 		std::stringstream out;
-		out << "[locationInfoWithLMSI:"
-			<< "[lmsi:" << to_string(r.lmsi) << "]"
-			<< "[networkNodeNumber:" << to_string(r.network_node_number) << "]"
+		out << "[locationInfoWithLMSI:";
+		if (r.lmsi.len > 0) {
+			out << "[lmsi:" << to_string(r.lmsi) << "]";
+		}
+		out << "[networkNodeNumber:" << to_string(r.network_node_number) << "]"
 		<< "]";
 		return out.str();
 	}

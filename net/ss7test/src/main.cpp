@@ -408,6 +408,7 @@ BOOST_AUTO_TEST_CASE(test_map) {
 		}
 		action on_routing_info_for_sm_res(const map::routing_info_for_sm_res_t & msg) {
 			BOOST_CHECK(msg.imsi.digits() == "438023000659019");
+			BOOST_CHECK(msg.location_info_with_lmsi.lmsi.len == 0);
 			BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.na == map::na_international);
 			BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.np == map::np_isdn_telephony);
 			BOOST_CHECK(msg.location_info_with_lmsi.network_node_number.digits() == "99365999999");
@@ -438,7 +439,9 @@ BOOST_AUTO_TEST_CASE(test_map) {
 
 			void test_write() {
 				test_address_string();
+				test_location_info_with_lmsi();
 				test_routing_info_for_sm_arg();
+				test_routing_info_for_sm_res();
 			}
 
 			void test_routing_info_for_sm_arg() {
@@ -459,7 +462,44 @@ BOOST_AUTO_TEST_CASE(test_map) {
 				r.sc_address.np = map::np_isdn_telephony;
 				r.sc_address.set_digits("99365999991");
 
+				r.sm_rp_pri = true;
+
 				bcur = wbase::write_routing_info_for_sm_arg(buf, bend, r);
+				BOOST_CHECK(bcur != nullptr);
+				BOOST_CHECK(static_cast<bin::sz_t>(bcur-buf) == r.size(0));
+				BOOST_CHECK(std::memcmp(raw1, buf, sizeof(raw1)-1) == 0);
+			}
+
+			void test_routing_info_for_sm_res() {
+				const bin::u8_t raw1[] = "\x30\x15\x04\x08\x34\x08\x32\x00\x60"
+					"\x95\x10\xf9\xa0\x09\x81\x07\x91\x99\x63\x95\x99\x99\xf9";
+
+				map::routing_info_for_sm_res_t r;
+
+				r.imsi.set_digits("438023000659019");
+				r.location_info_with_lmsi.lmsi.len = 0;
+				r.location_info_with_lmsi.network_node_number.na = map::na_international;
+				r.location_info_with_lmsi.network_node_number.np = map::np_isdn_telephony;
+				r.location_info_with_lmsi.network_node_number.set_digits("99365999999");
+
+				bcur = wbase::write_routing_info_for_sm_res(buf, bend, r);
+				BOOST_CHECK(bcur != nullptr);
+				BOOST_CHECK(static_cast<bin::sz_t>(bcur-buf) == r.size(0));
+				BOOST_CHECK(std::memcmp(raw1, buf, sizeof(raw1)-1) == 0);
+			}
+
+			void test_location_info_with_lmsi() {
+				const bin::u8_t raw1[]
+					= "\xa0\x09\x81\x07\x91\x99\x63\x95\x99\x99\xf9";
+
+				map::location_info_with_lmsi_t r;
+
+				r.lmsi.len = 0;
+				r.network_node_number.na = map::na_international;
+				r.network_node_number.np = map::np_isdn_telephony;
+				r.network_node_number.set_digits("99365999999");
+
+				bcur = wbase::write_location_info_with_lmsi(buf, bend, r);
 				BOOST_CHECK(bcur != nullptr);
 				BOOST_CHECK(static_cast<bin::sz_t>(bcur-buf) == r.size(0));
 				BOOST_CHECK(std::memcmp(raw1, buf, sizeof(raw1)-1) == 0);

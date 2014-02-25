@@ -227,6 +227,9 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 	}
 
 	inline bin::sz_t element_size(bin::u64_t code, bin::sz_t len) {
+		if (len == 0) {
+			return 0;
+		}
 		return tag_size(code, len) + len;
 	}
 
