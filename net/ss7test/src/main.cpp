@@ -442,6 +442,7 @@ BOOST_AUTO_TEST_CASE(test_map) {
 				test_location_info_with_lmsi();
 				test_routing_info_for_sm_arg();
 				test_routing_info_for_sm_res();
+				test_mo_forward_sm_arg();
 			}
 
 			void test_routing_info_for_sm_arg() {
@@ -488,6 +489,33 @@ BOOST_AUTO_TEST_CASE(test_map) {
 				BOOST_CHECK(std::memcmp(raw1, buf, sizeof(raw1)-1) == 0);
 			}
 
+			void test_mo_forward_sm_arg() {
+
+				const bin::u8_t raw1[] =
+					"\x30\x44\x80\x08\x34\x08\x22\x00\x40\x85\x54\xf0\x84\x07"
+			"\x91\x99\x63\x95\x99\x99\xf1\x04\x2f\x04\x04\x81\x80\x08\x00\x00"
+			"\x31\x40\x03\x21\x14\x85\x02\x24\xab\x5c\x6e\x66\xa3\xcd\x68\x38"
+			"\xd8\xac\x06\x12\x97\xd9\xe7\x34\x3b\x0d\x6a\xd7\xe7\xe4\xb2\x3c"
+			"\x0d\xaa\xb3\xcf\xe1\x36\x39\x0c";
+
+				map::mo_forward_sm_arg_t r;
+
+				r.sm_rp_da.has = map::sm_rp_da_t::has_imsi;
+				r.sm_rp_da.as.imsi.set_digits("438022000458450");
+
+				r.sm_rp_oa.has = map::sm_rp_oa_t::has_sc;
+				r.sm_rp_oa.as.sc_address_oa.na = map::na_international;
+				r.sm_rp_oa.as.sc_address_oa.np = map::np_isdn_telephony;
+				r.sm_rp_oa.as.sc_address_oa.set_digits("99365999991");
+
+				/* TODO: Write remaining fields */
+
+				bcur = wbase::write_mo_forward_sm_arg(buf, bend, r);
+				BOOST_CHECK(bcur != nullptr);
+				BOOST_CHECK(static_cast<bin::sz_t>(bcur-buf) == r.size(0));
+				BOOST_CHECK(std::memcmp(raw1, buf, sizeof(raw1)-1) == 0);
+			}
+
 			void test_location_info_with_lmsi() {
 				const bin::u8_t raw1[]
 					= "\xa0\x09\x81\x07\x91\x99\x63\x95\x99\x99\xf9";
@@ -517,8 +545,7 @@ BOOST_AUTO_TEST_CASE(test_map) {
 				r.set_digits("99365625758");
 
 				bcur = wbase::write_address_string(buf, bend
-						, ber::tagclass_contextspec
-						, ber::tagform_primitive, 0, r);
+						, ber::tagclass_contextspec, 0, r);
 				BOOST_CHECK(bcur != nullptr);
 				BOOST_CHECK(bcur - buf == sizeof(addr_raw1) - 1);
 				BOOST_CHECK(std::memcmp(addr_raw1

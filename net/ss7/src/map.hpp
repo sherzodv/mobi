@@ -276,6 +276,23 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				address_string_t sc_address_da;
 				sm_rp_da_t_field(): imsi() {}
 			} as ;
+
+			bin::sz_t length() const {
+				switch (has) {
+					case has_imsi:
+						return as.imsi.length();
+					case has_lmsi:
+						return as.lmsi.length();
+					case has_sc:
+						return as.sc_address_da.length();
+					default:
+						return 0;
+				}
+			}
+
+			bin::sz_t size(bin::u64_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		struct sm_rp_oa_t {
@@ -285,6 +302,21 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				address_string_t sc_address_oa;
 				sm_rp_oa_t_as_field(): msisdn() {}
 			} as;
+
+			bin::sz_t length() const {
+				switch (has) {
+					case has_msisdn:
+						return as.msisdn.length();
+					case has_sc:
+						return as.sc_address_oa.length();
+					default:
+						return 0;
+				}
+			}
+
+			bin::sz_t size(bin::u64_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		struct location_info_with_lmsi_t {
@@ -296,7 +328,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 					+ lmsi.size();
 			}
 
-			bin::sz_t size(bin::u64_t code) const {
+			bin::sz_t size(bin::u64_t code = 0) const {
 				return asn::ber::element_size(code, length());
 			}
 		};
@@ -312,7 +344,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 					+ sc_address.size(2);
 			}
 
-			bin::sz_t size(bin::u64_t code) const {
+			bin::sz_t size(bin::u64_t code = 0) const {
 				return asn::ber::element_size(code, length());
 			}
 		};
@@ -326,7 +358,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 					+ location_info_with_lmsi.size(0);
 			}
 
-			bin::sz_t size(bin::u64_t code) const {
+			bin::sz_t size(bin::u64_t code = 0) const {
 				return asn::ber::element_size(code, length());
 			}
 		};
@@ -337,10 +369,29 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			signal_info_t	sm_rp_ui;
 			bool			has_imsi;
 			imsi_t			imsi;
+
+			bin::sz_t length() const {
+				return sm_rp_da.size()
+					+ sm_rp_oa.size()
+					+ sm_rp_ui.size()
+					+ (has_imsi ? imsi.size() : 0);
+			}
+
+			bin::sz_t size(bin::u64_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 		struct mo_forward_sm_res_t {
 			signal_info_t	sm_rp_ui;
+
+			bin::sz_t length() const {
+				return sm_rp_ui.size();
+			}
+
+			bin::sz_t size(bin::u64_t code = 0) const {
+				return asn::ber::element_size(code, length());
+			}
 		};
 
 	}
@@ -871,7 +922,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				RETURN_NULL_IF(buf == nullptr);
 
 				buf = write_address_string(buf, bend, tagclass_contextspec
-						, tagform_primitive, 0, r.msisdn);
+						, 0, r.msisdn);
 				RETURN_NULL_IF(buf == nullptr);
 
 				buf = base::write_boolean(buf, bend, tagclass_contextspec
@@ -879,7 +930,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				RETURN_NULL_IF(buf == nullptr);
 
 				buf = write_address_string(buf, bend, tagclass_contextspec
-						, tagform_primitive, 2, r.sc_address);
+						, 2, r.sc_address);
 				RETURN_NULL_IF(buf == nullptr);
 
 				return buf;
@@ -900,6 +951,75 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 						, r.location_info_with_lmsi);
 			}
 
+			bin::u8_t * write_mo_forward_sm_arg(bin::u8_t * buf
+					, bin::u8_t * bend, const mo_forward_sm_arg_t & r) {
+				using namespace asn::ber;
+
+				buf = base::write_tag(buf, bend, type::sequence, r.length());
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = write_sm_rp_da(buf, bend, r.sm_rp_da);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = write_sm_rp_oa(buf, bend, r.sm_rp_oa);
+				RETURN_NULL_IF(buf == nullptr);
+
+				buf = base::write_octstring(buf, bend, tagclass_universal
+						, tagcode_octstring, r.sm_rp_ui);
+				RETURN_NULL_IF(buf == nullptr);
+
+				if (r.imsi.len > 0) {
+					buf = base::write_octstring(buf, bend, tagclass_universal
+							, tagcode_octstring, r.imsi);
+				}
+
+				return buf;
+			}
+
+			bin::u8_t * write_sm_rp_da(bin::u8_t * buf
+					, bin::u8_t * bend, const sm_rp_da_t & r) {
+				using namespace asn::ber;
+
+				switch (r.has) {
+					case sm_rp_da_t::has_imsi:
+						return base::write_octstring(buf, bend
+								, tagclass_contextspec
+								, 0, r.as.imsi);
+					case sm_rp_da_t::has_lmsi:
+						return base::write_octstring(buf, bend
+								, tagclass_contextspec
+								, 1, r.as.lmsi);
+					case sm_rp_da_t::has_sc:
+						return write_address_string(buf, bend
+								, tagclass_contextspec
+								, 4, r.as.sc_address_da);
+					default:
+						return base::write_null(buf, bend
+								, tagclass_contextspec
+								, 5);
+				}
+			}
+
+			bin::u8_t * write_sm_rp_oa(bin::u8_t * buf
+					, bin::u8_t * bend, const sm_rp_oa_t & r) {
+				using namespace asn::ber;
+
+				switch (r.has) {
+					case sm_rp_oa_t::has_msisdn:
+						return write_address_string(buf, bend
+								, tagclass_contextspec
+								, 2, r.as.msisdn);
+					case sm_rp_oa_t::has_sc:
+						return write_address_string(buf, bend
+								, tagclass_contextspec
+								, 4, r.as.sc_address_oa);
+					default:
+						return base::write_null(buf, bend
+								, tagclass_contextspec
+								, 5);
+				}
+			}
+
 			bin::u8_t * write_location_info_with_lmsi(bin::u8_t * buf
 					, bin::u8_t * bend, const location_info_with_lmsi_t & r) {
 				using namespace asn::ber;
@@ -910,7 +1030,7 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 				RETURN_NULL_IF(buf == nullptr);
 
 				buf = write_address_string(buf, bend, tagclass_contextspec
-						, tagform_primitive, 1, r.network_node_number);
+						, 1, r.network_node_number);
 				RETURN_NULL_IF(buf == nullptr);
 
 				if (r.lmsi.len > 0) {
@@ -940,13 +1060,12 @@ namespace mobi { namespace net { namespace ss7 { namespace map {
 			bin::u8_t * write_address_string(bin::u8_t * buf
 					, bin::u8_t * bend
 					, asn::ber::tag_class klass
-					, asn::ber::tag_form form
 					, bin::u64_t code, const address_string_tt<MaxLen> & r) {
 				using namespace bin;
 				using namespace asn::ber;
 
 				buf = base::write_tag(buf, bend
-						, klass, form, code, r.length());
+						, klass, tagform_primitive, code, r.length());
 				RETURN_NULL_IF(buf == nullptr);
 				buf = w::cp_u8(buf, ascbuf(&r));
 				return w::cpy(buf, r.data, r.len);

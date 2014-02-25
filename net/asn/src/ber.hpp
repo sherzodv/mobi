@@ -574,6 +574,17 @@ namespace mobi { namespace net { namespace asn { namespace ber {
 						, len);
 			}
 
+			bin::u8_t * write_null(bin::u8_t * buf, bin::u8_t * bend
+					, tag_class klass, bin::u64_t code) {
+				using namespace bin;
+				bin::u8_t val = 0x00;
+				buf = write_tag(buf, bend, klass
+						, tagform_primitive, code, 0);
+				RETURN_NULL_IF(buf == nullptr);
+				RETURN_NULL_IF(buf + 1 > bend);
+				return w::cp_u8(buf, ascbuf(val));
+			}
+
 			bin::u8_t * write_boolean(bin::u8_t * buf, bin::u8_t * bend
 					, tag_class klass, bin::u64_t code, bin::u8_t val) {
 				using namespace bin;
