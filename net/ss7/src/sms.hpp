@@ -136,12 +136,13 @@ namespace mobi { namespace net { namespace sms {
 	};
 
 	struct submit_t {
+		/* 3GPP 23.040 has wrong placed srr and rp in table */
 		bin::u8_t		mti	:2;	/* Message type indicator */
 		bool			rd	:1;	/* Reject duplicates */
 		validity_period_format vpf	:2;	/* Validity period format */
-		bool			rp	:1;	/* Reply path existance */
-		bool			udhi:1;	/* User data header indicator */
 		bool			srr	:1;	/* Status report request */
+		bool			udhi:1;	/* User data header indicator */
+		bool			rp	:1;	/* Reply path existance */
 		bin::u8_t		mr;		/* Message reference */
 		address_tt<11>	da;		/* Destination address */
 		bin::u8_t		pid;	/* Protocol identifier */
