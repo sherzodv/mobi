@@ -597,8 +597,19 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 			virtual ~sms_parser() {}
 
 		protected:
-			virtual action on_sms_deliver(const sms::deliver_t & msg) {
-				L << to_string(msg) << std::endl;
+			virtual action on_sms_deliver(const sms::deliver_t & r) {
+				/* TODO: check PID */
+				BOOST_CHECK(r.mms == true);
+				BOOST_CHECK(r.lp == false);
+				BOOST_CHECK(r.rp == false);
+				BOOST_CHECK(r.udhi == false);
+				BOOST_CHECK(r.sri == false);
+				BOOST_CHECK(r.oa.len == 0x04);
+				BOOST_CHECK(std::memcmp(r.oa.data, "\x80\x08", 2) == 0);
+				BOOST_CHECK(r.dcsd.dcs == sms::dcs_special);
+				BOOST_CHECK(r.dcsd.cs == sms::cs_gsm_7bit);
+				BOOST_CHECK(r.udl == 0x4C);
+				L << to_string(r) << std::endl;
 				return resume;
 			}
 

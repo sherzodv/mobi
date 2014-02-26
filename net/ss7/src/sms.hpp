@@ -15,6 +15,8 @@ namespace mobi { namespace net { namespace sms {
 
 	using namespace toolbox;
 
+	const bin::sz_t max_udl = 200;
+
 	enum data_coding_scheme {
 		dcs_general
 		, dcs_auto_deletion
@@ -89,121 +91,6 @@ namespace mobi { namespace net { namespace sms {
 		bool has_message_class;
 	};
 
-	dc_scheme decode_dcs(bin::u8_t dcs) {
-		dc_scheme r;
-
-		/* 3GPP TS 23.038 4. SMS Data Coding Scheme */
-
-		if (dcs >> 6 == 0x00 || dcs >> 6 == 0x01) {
-			if (dcs == 0) {
-				r.dcs = dcs_special;
-				r.cs = cs_gsm_7bit;
-			} else {
-				if (dcs >> 6 == 0x01) {
-					r.dcs = dcs_auto_deletion;
-				} else {
-					r.dcs = dcs_general;
-				}
-				r.compressed = dcs & 0x20;
-				r.has_message_class = dcs & 0x10;
-				switch ((dcs & 0x0C) >> 2) {
-					case 0x00:
-						r.cs = cs_gsm_7bit;
-						break;
-					case 0x01:
-						r.cs = cs_8bit;
-						break;
-					case 0x02:
-						r.cs = cs_ucs2;
-						break;
-					case 0x03:
-						r.cs = cs_reserved;
-						break;
-				}
-				switch (dcs & 0x03) {
-					case 0x00:
-						r.klass = mc_class0;
-						break;
-					case 0x01:
-						r.klass = mc_class1;
-						break;
-					case 0x02:
-						r.klass = mc_class2;
-						break;
-					case 0x03:
-						r.klass = mc_class3;
-						break;
-				}
-			}
-		} else {
-			r.cs = cs_gsm_7bit;
-			switch (dcs >> 4) {
-				case 0x08:
-				case 0x09:
-				case 0x0A:
-				case 0x0B:
-					r.dcs = dcs_reserved;
-					break;
-				case 0x0C:
-				case 0x0D:
-				case 0x0E: {
-					switch (dcs >> 4) {
-						case 0x0C:
-							r.dcs = dcs_discard;
-							break;
-						case 0x0D:
-							r.dcs = dcs_store;
-							break;
-						case 0x0E:
-							r.dcs = dcs_store_ucs2;
-							break;
-					}
-					r.cs = cs_gsm_7bit;
-					r.indicate = dcs & 0x08;
-					switch (dcs & 0x03) {
-						case 0x00:
-							r.ind = indication_voice;
-							break;
-						case 0x01:
-							r.ind = indication_fax;
-							break;
-						case 0x02:
-							r.ind = indication_email;
-							break;
-						case 0x03:
-							r.ind = indication_other;
-							break;
-					}
-					break;
-				}
-				case 0x0F:
-					r.dcs = dcs_coding;
-					if ((dcs & 0x04) == 0x01) {
-						r.cs = cs_8bit;
-					} else {
-						r.cs = cs_gsm_7bit;
-					}
-					switch (dcs & 0x03) {
-						case 0x00:
-							r.klass = mc_class0;
-							break;
-						case 0x01:
-							r.klass = mc_class1;
-							break;
-						case 0x02:
-							r.klass = mc_class2;
-							break;
-						case 0x03:
-							r.klass = mc_class3;
-							break;
-					}
-					break;
-			}
-		}
-
-		return r;
-	}
-
 	/* Address field: TS 23.040, 9.1.2.5 */
 	template <bin::sz_t MaxLen>
 	struct address_tt {
@@ -244,7 +131,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		scts[7];/* SC timestamp */
 		bin::u8_t		udl;	/* User data length */
-		bin::u8_t		ud[200];/* User data */
+		string_tt<255>	ud;		/* User data */
 		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
@@ -261,7 +148,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		vp[8];	/* Validity period */
 		bin::u8_t		udl;	/* User data length */
-		bin::u8_t		ud[200];/* User data */
+		string_tt<140>	ud;		/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	struct command_t {
@@ -275,7 +163,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		mn;		/* Message number */
 		address_tt<11>	da;		/* Destination address */
 		bin::u8_t		cdl;	/* Command data length */
-		bin::u8_t		cd[200];/* User data */
+		string_tt<156>	cd;		/* Command data */
 	};
 
 	struct status_report_t {
@@ -294,7 +182,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		bin::u8_t		ud[200];/* User data */
+		string_tt<143>	ud;		/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	struct deliver_report_neg_t {
@@ -305,7 +194,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		string_tt<200>	ud;		/* User data */
+		string_tt<158>	ud;		/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	struct deliver_report_pos_t {
@@ -315,7 +205,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		string_tt<200>	ud;		/* User data */
+		string_tt<159>	ud;		/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	struct submit_report_neg_t {
@@ -328,7 +219,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		bin::u8_t		ud[200];/* User data */
+		string_tt<151>	ud;		/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	struct submit_report_pos_t {
@@ -340,7 +232,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
-		bin::u8_t		ud[200];/* User data */
+		string_tt<152>	ud;		/* User data */
+		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
 	template <class LogT>
@@ -359,6 +252,130 @@ namespace mobi { namespace net { namespace sms {
 				, const bin::u8_t * bend, bool is_err = false) {
 				using namespace asn::ber;
 				return parse_sc2ms_message(buf, bend, is_err);
+			}
+
+			dc_scheme decode_dcs(bin::u8_t dcs) {
+				dc_scheme r;
+
+				/* 3GPP TS 23.038 4. SMS Data Coding Scheme */
+
+				if (dcs >> 6 == 0x00 || dcs >> 6 == 0x01) {
+					if (dcs == 0) {
+						r.dcs = dcs_special;
+						r.cs = cs_gsm_7bit;
+					} else {
+						if (dcs >> 6 == 0x01) {
+							r.dcs = dcs_auto_deletion;
+						} else {
+							r.dcs = dcs_general;
+						}
+						r.compressed = dcs & 0x20;
+						r.has_message_class = dcs & 0x10;
+						switch ((dcs & 0x0C) >> 2) {
+							case 0x00:
+								r.cs = cs_gsm_7bit;
+								break;
+							case 0x01:
+								r.cs = cs_8bit;
+								break;
+							case 0x02:
+								r.cs = cs_ucs2;
+								break;
+							case 0x03:
+								r.cs = cs_reserved;
+								break;
+						}
+						switch (dcs & 0x03) {
+							case 0x00:
+								r.klass = mc_class0;
+								break;
+							case 0x01:
+								r.klass = mc_class1;
+								break;
+							case 0x02:
+								r.klass = mc_class2;
+								break;
+							case 0x03:
+								r.klass = mc_class3;
+								break;
+						}
+					}
+				} else {
+					r.cs = cs_gsm_7bit;
+					switch (dcs >> 4) {
+						case 0x08:
+						case 0x09:
+						case 0x0A:
+						case 0x0B:
+							r.dcs = dcs_reserved;
+							break;
+						case 0x0C:
+						case 0x0D:
+						case 0x0E: {
+							switch (dcs >> 4) {
+								case 0x0C:
+									r.dcs = dcs_discard;
+									break;
+								case 0x0D:
+									r.dcs = dcs_store;
+									break;
+								case 0x0E:
+									r.dcs = dcs_store_ucs2;
+									break;
+							}
+							r.cs = cs_gsm_7bit;
+							r.indicate = dcs & 0x08;
+							switch (dcs & 0x03) {
+								case 0x00:
+									r.ind = indication_voice;
+									break;
+								case 0x01:
+									r.ind = indication_fax;
+									break;
+								case 0x02:
+									r.ind = indication_email;
+									break;
+								case 0x03:
+									r.ind = indication_other;
+									break;
+							}
+							break;
+						}
+						case 0x0F:
+							r.dcs = dcs_coding;
+							if ((dcs & 0x04) == 0x01) {
+								r.cs = cs_8bit;
+							} else {
+								r.cs = cs_gsm_7bit;
+							}
+							switch (dcs & 0x03) {
+								case 0x00:
+									r.klass = mc_class0;
+									break;
+								case 0x01:
+									r.klass = mc_class1;
+									break;
+								case 0x02:
+									r.klass = mc_class2;
+									break;
+								case 0x03:
+									r.klass = mc_class3;
+									break;
+							}
+							break;
+					}
+				}
+
+				return r;
+			}
+
+			bin::sz_t octet_count(const dc_scheme &  dcs
+					, bin::sz_t udl) {
+				if (dcs.cs == cs_gsm_7bit) {
+					return ((udl * 7) >> 3) + (((udl * 7) % 8) != 0);
+				} else {
+					return udl;
+				}
 			}
 
 		protected:
@@ -483,15 +500,10 @@ namespace mobi { namespace net { namespace sms {
 				buf = p::cp_u8(asbuf(m.udl), buf);
 
 				m.dcsd = decode_dcs(m.dcs);
+				m.ud.len = octet_count(m.dcsd, m.udl);
 
-				if (m.dcsd.cs == cs_gsm_7bit) {
-					RETURN_NULL_IF(buf + ((m.udl * 7)>>3) > bend);
-				} else {
-					RETURN_NULL_IF(buf + m.udl > bend);
-				}
-
-				/* Parse user data */
-				buf = p::cpy(asbuf(m.ud), buf, m.udl);
+				RETURN_NULL_IF(buf + m.ud.len > bend);
+				buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 
 				switch (on_sms_deliver(m)) {
 					case resume: return bend;
@@ -547,13 +559,15 @@ namespace mobi { namespace net { namespace sms {
 					default: break;
 				}
 
-				RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 				/* Parse user data length */
+				RETURN_NULL_IF(buf + 1 > bend);
 				buf = p::cp_u8(asbuf(m.udl), buf);
 
-				RETURN_NULL_IF(buf + m.udl > bend);
-				/* Parse user data */
-				buf = p::cpy(asbuf(m.ud), buf, m.udl);
+				m.dcsd = decode_dcs(m.dcs);
+				m.ud.len = octet_count(m.dcsd, m.udl);
+
+				RETURN_NULL_IF(buf + m.ud.len > bend);
+				buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 
 				switch (on_sms_submit(m)) {
 					case resume: return bend;
@@ -592,13 +606,14 @@ namespace mobi { namespace net { namespace sms {
 				RETURN_NULL_IF(buf + (m.da.len >> 1) + (m.da.len % 2) > bend);
 				buf = p::cpy(m.da.data, buf, (m.da.len >> 1) + (m.da.len % 2));
 
-				RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 				/* Parse command data length */
+				RETURN_NULL_IF(buf + 1 > bend);
 				buf = p::cp_u8(asbuf(m.cdl), buf);
 
-				RETURN_NULL_IF(buf + m.cdl > bend);
 				/* Parse command data */
-				buf = p::cpy(asbuf(m.cd), buf, m.cdl);
+				m.cd.len = m.cdl;
+				RETURN_NULL_IF(buf + m.cd.len > bend);
+				buf = p::cpy(asbuf(m.cd), buf, m.cd.len);
 
 				switch (on_sms_command(m)) {
 					case resume: return bend;
@@ -661,12 +676,15 @@ namespace mobi { namespace net { namespace sms {
 				}
 
 				if (m.pi.udl) {
-					RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 					/* Parse user data len */
+					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
-					RETURN_NULL_IF(buf + m.udl > bend);
-					/* Parse user data */
-					buf = p::cpy(asbuf(m.ud), buf, m.udl);
+
+					m.dcsd = decode_dcs(m.dcs);
+					m.ud.len = octet_count(m.dcsd, m.udl);
+
+					RETURN_NULL_IF(buf + m.ud.len > bend);
+					buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 				} else {
 					m.udl = 0;
 				}
@@ -713,12 +731,15 @@ namespace mobi { namespace net { namespace sms {
 				}
 
 				if (m.pi.udl) {
-					RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 					/* Parse user data len */
+					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
-					RETURN_NULL_IF(buf + m.udl > bend);
-					/* Parse user data */
-					buf = p::cpy(asbuf(m.ud), buf, m.udl);
+
+					m.dcsd = decode_dcs(m.dcs);
+					m.ud.len = octet_count(m.dcsd, m.udl);
+
+					RETURN_NULL_IF(buf + m.ud.len > bend);
+					buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 				} else {
 					m.udl = 0;
 				}
@@ -762,12 +783,15 @@ namespace mobi { namespace net { namespace sms {
 				}
 
 				if (m.pi.udl) {
-					RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 					/* Parse user data len */
+					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
-					RETURN_NULL_IF(buf + m.udl > bend);
-					/* Parse user data */
-					buf = p::cpy(asbuf(m.ud), buf, m.udl);
+
+					m.dcsd = decode_dcs(m.dcs);
+					m.ud.len = octet_count(m.dcsd, m.udl);
+
+					RETURN_NULL_IF(buf + m.ud.len > bend);
+					buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 				} else {
 					m.udl = 0;
 				}
@@ -819,12 +843,15 @@ namespace mobi { namespace net { namespace sms {
 				}
 
 				if (m.pi.udl) {
-					RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 					/* Parse user data len */
+					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
-					RETURN_NULL_IF(buf + m.udl > bend);
-					/* Parse user data */
-					buf = p::cpy(asbuf(m.ud), buf, m.udl);
+
+					m.dcsd = decode_dcs(m.dcs);
+					m.ud.len = octet_count(m.dcsd, m.udl);
+
+					RETURN_NULL_IF(buf + m.ud.len > bend);
+					buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 				} else {
 					m.udl = 0;
 				}
@@ -873,12 +900,15 @@ namespace mobi { namespace net { namespace sms {
 				}
 
 				if (m.pi.udl) {
-					RETURN_NULL_IF(buf + sizeof(bin::u8_t) > bend);
 					/* Parse user data len */
+					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
-					RETURN_NULL_IF(buf + m.udl > bend);
-					/* Parse user data */
-					buf = p::cpy(asbuf(m.ud), buf, m.udl);
+
+					m.dcsd = decode_dcs(m.dcs);
+					m.ud.len = octet_count(m.dcsd, m.udl);
+
+					RETURN_NULL_IF(buf + m.ud.len > bend);
+					buf = p::cpy(asbuf(m.ud.data), buf, m.ud.len);
 				} else {
 					m.udl = 0;
 				}
@@ -1024,7 +1054,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[SRI:" << r.sri << "]"
 			<< "[OA:" << to_string(r.oa) << "]"
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1043,7 +1073,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
 			<< "[DA:" << to_string(r.da) << "]"
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1059,7 +1089,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[MN:" << static_cast<unsigned>(r.mn) << "]"
 			<< "[DA:" << to_string(r.da) << "]"
 			<< "[CDL:" << static_cast<unsigned>(r.cdl) << "]"
-			<< "[CD:" << bin::hex_str_ref(r.cd, r.cdl) << "]"
+			<< "[CD:" << bin::hex_str_ref(r.cd) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1080,7 +1110,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[RA:" << to_string(r.ra) << "]"
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1095,7 +1125,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[FCS:" << static_cast<unsigned>(r.fcs) << "]"
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud.data, r.ud.len) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1108,7 +1138,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[UDHI:" << r.udhi << "]"
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud.data, r.ud.len) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1122,7 +1152,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[UDHI:" << r.udhi << "]"
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}
@@ -1135,7 +1165,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[UDHI:" << r.udhi << "]"
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
-			<< "[UD:" << bin::hex_str_ref(r.ud, r.udl) << "]"
+			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
 		return out.str();
 	}

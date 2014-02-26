@@ -380,6 +380,14 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 		const char * m_prefix;
 
 		public:
+			template <class StringT>
+			hex_str_ref(const StringT & str)
+				: m_buf(reinterpret_cast<const u8_t *>(str.data))
+				, m_len(str.len)
+				, m_delimiter(" ")
+				, m_prefix("0x")
+			{}
+
 			hex_str_ref(const u8_t * buf, sz_t len)
 				: m_buf(reinterpret_cast<const u8_t *>(buf))
 				, m_len(len)
@@ -397,20 +405,6 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 			hex_str_ref(const char * buf, sz_t len)
 				: m_buf(reinterpret_cast<const u8_t *>(buf))
 				, m_len(len)
-				, m_delimiter(" ")
-				, m_prefix("0x")
-			{}
-
-			hex_str_ref(const buffer & buf)
-				: m_buf(reinterpret_cast<const u8_t *>(buf.data))
-				, m_len(buf.len)
-				, m_delimiter(" ")
-				, m_prefix("0x")
-			{}
-
-			hex_str_ref(const const_buffer & buf)
-				: m_buf(reinterpret_cast<const u8_t *>(buf.data))
-				, m_len(buf.len)
 				, m_delimiter(" ")
 				, m_prefix("0x")
 			{}
