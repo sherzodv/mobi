@@ -81,6 +81,57 @@ namespace mobi { namespace net { namespace sms {
 		, vpf_absolute		= 0x03
 	};
 
+	enum protocol_identifier {
+		pi_telematic_implicit			= 0x20
+		, pi_telematic_telex			= 0x21
+		, pi_telematic_group3_telefax	= 0x22
+		, pi_telematic_group4_telefax	= 0x23
+		, pi_telematic_voice_telephone	= 0x24
+		, pi_telematic_ermes			= 0x25
+		, pi_telematic_national_paging	= 0x26
+		, pi_telematic_videotex			= 0x27
+		, pi_telematic_telex_no_carrier	= 0x28
+		, pi_telematic_telex_pspdn		= 0x29
+		, pi_telematic_telex_cspdn		= 0x2A
+		, pi_telematic_telex_pstn		= 0x2B
+		, pi_telematic_telex_isdn		= 0x2C
+		, pi_telematic_telex_uci		= 0x2D
+		, pi_telematic_reserved1		= 0x2E
+		, pi_telematic_reserved2		= 0x2F
+		, pi_telematic_msg_handling		= 0x30
+		, pi_telematic_x400_msg_handling= 0x31
+		, pi_telematic_email			= 0x32
+		, pi_telematic_reserved3		= 0x33
+		, pi_telematic_reserved4		= 0x34
+		, pi_telematic_reserved5		= 0x35
+		, pi_telematic_reserved6		= 0x36
+		, pi_telematic_reserved7		= 0x37
+		, pi_telematic_sc_specific1		= 0x38
+		, pi_telematic_sc_specific2		= 0x39
+		, pi_telematic_sc_specific3		= 0x3A
+		, pi_telematic_sc_specific4		= 0x3B
+		, pi_telematic_sc_specific5		= 0x3C
+		, pi_telematic_sc_specific6		= 0x3D
+		, pi_telematic_sc_specific7		= 0x3E
+		, pi_telematic_mobile_station	= 0x3F
+
+		, pi_sms_type_0				= 0x40
+		, pi_replace_sms_type_1		= 0x41
+		, pi_replace_sms_type_2		= 0x42
+		, pi_replace_sms_type_3		= 0x43
+		, pi_replace_sms_type_4		= 0x44
+		, pi_replace_sms_type_5		= 0x45
+		, pi_replace_sms_type_6		= 0x46
+		, pi_replace_sms_type_7		= 0x47
+		, pi_device_trigger_sms		= 0x48
+		, pi_enhanced_msg_service	= 0x5E
+		, pi_return_call_msg		= 0x5F
+		, pi_ansi_136_r_data		= 0x7C
+		, pi_me_data_download		= 0x7D
+		, pi_me_depers_sms			= 0x7E
+		, pi_sim_data_download		= 0x7F
+	};
+
 	struct dc_scheme {
 		data_coding_scheme dcs;
 		character_set cs;
@@ -1017,6 +1068,149 @@ namespace mobi { namespace net { namespace sms {
 		return out.str();
 	}
 
+	std::string pid_to_string(bin::u8_t r) {
+		std::stringstream out;
+		out << "[PID:";
+		switch (r & 0xC0) {
+			case 0x00:
+				if ((r & 0x20) == 0x20) {
+					/* telematic internetworking */
+					out << "telematic:";
+					switch (r & 0x1F) {
+						case 0x00:
+							out << "implicit";
+							break;
+						case 0x01:
+							out << "telex";
+							break;
+						case 0x02:
+							out << "group3_telefax";
+							break;
+						case 0x03:
+							out << "group4_telefax";
+							break;
+						case 0x04:
+							out << "voice_telephone";
+							break;
+						case 0x05:
+							out << "ermes";
+							break;
+						case 0x06:
+							out << "national_paging";
+							break;
+						case 0x07:
+							out << "videotex";
+							break;
+						case 0x08:
+							out << "telex_no_carrier";
+							break;
+						case 0x09:
+							out << "telex_pspdn";
+							break;
+						case 0x0A:
+							out << "telex_cspdn";
+							break;
+						case 0x0B:
+							out << "telex_pstn";
+							break;
+						case 0x0C:
+							out << "telex_isdn";
+							break;
+						case 0x0D:
+							out << "telex_uci";
+							break;
+						case 0x10:
+							out << "msg_handling";
+							break;
+						case 0x11:
+							out << "x400_msg_handling";
+							break;
+						case 0x12:
+							out << "email";
+							break;
+						case 0x1F:
+							out << "mobile_station";
+							break;
+						case 0x0E:
+						case 0x0F:
+						case 0x13:
+						case 0x14:
+						case 0x15:
+						case 0x16:
+						case 0x17:
+							out << "reserved";
+							break;
+						default:
+							out << "sc specific";
+							break;
+					}
+				} else {
+					out << "SME-to-SME:" << static_cast<bin::sz_t>(r & 0x1F);
+				}
+				break;
+			case 0x01:
+				switch (r & 0x3F) {
+					case 0x00:
+						out << "sms_type_0";
+						break;
+					case 0x01:
+						out << "replace_sms_type_1";
+						break;
+					case 0x02:
+						out << "replace_sms_type_2";
+						break;
+					case 0x03:
+						out << "replace_sms_type_3";
+						break;
+					case 0x04:
+						out << "replace_sms_type_4";
+						break;
+					case 0x05:
+						out << "replace_sms_type_5";
+						break;
+					case 0x06:
+						out << "replace_sms_type_6";
+						break;
+					case 0x07:
+						out << "replace_sms_type_7";
+						break;
+					case 0x08:
+						out << "device_trigger_sms";
+						break;
+					case 0x1E:
+						out << "enhanced_msg_service";
+						break;
+					case 0x1F:
+						out << "return_call_msg";
+						break;
+					case 0x3C:
+						out << "ansi_136_r_data";
+						break;
+					case 0x3D:
+						out << "me_data_download";
+						break;
+					case 0x3E:
+						out << "me_depers_sms";
+						break;
+					case 0x3F:
+						out << "sim_data_download";
+						break;
+					default:
+						out << "reserved";
+						break;
+				}
+				break;
+			case 0x02:
+				out << "reserved";
+				break;
+			case 0x03:
+				out << "sc-specific:" << static_cast<bin::sz_t>(r & 0x3F);
+				break;
+		}
+		out << "]";
+		return out.str();
+	}
+
 	template <bin::sz_t MaxLen>
 	std::string to_string(const address_tt<MaxLen> & r) {
 		std::stringstream out;
@@ -1054,6 +1248,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[UDHI:" << r.udhi << "]"
 			<< "[SRI:" << r.sri << "]"
 			<< "[OA:" << to_string(r.oa) << "]"
+			<< pid_to_string(r.pid)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1073,6 +1268,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[SRR:" << r.srr << "]"
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
 			<< "[DA:" << to_string(r.da) << "]"
+			<< pid_to_string(r.pid)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1087,6 +1283,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[UDHI:" << r.udhi << "]"
 			<< "[SRR:" << r.srr << "]"
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
+			<< pid_to_string(r.pid)
 			<< "[MN:" << static_cast<unsigned>(r.mn) << "]"
 			<< "[DA:" << to_string(r.da) << "]"
 			<< "[CDL:" << static_cast<unsigned>(r.cdl) << "]"
@@ -1109,6 +1306,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[SRQ:" << r.srq << "]"
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
 			<< "[RA:" << to_string(r.ra) << "]"
+			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
@@ -1124,6 +1322,7 @@ namespace mobi { namespace net { namespace sms {
 		out << "[SMS-DELIVER-REPORT(ERR):"
 			<< "[UDHI:" << r.udhi << "]"
 			<< "[FCS:" << static_cast<unsigned>(r.fcs) << "]"
+			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
@@ -1137,6 +1336,7 @@ namespace mobi { namespace net { namespace sms {
 		std::stringstream out;
 		out << "[SMS-DELIVER-REPORT(ACK):"
 			<< "[UDHI:" << r.udhi << "]"
+			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
@@ -1151,6 +1351,7 @@ namespace mobi { namespace net { namespace sms {
 		std::stringstream out;
 		out << "[SMS-SUBMIT-REPORT(ERR):"
 			<< "[UDHI:" << r.udhi << "]"
+			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
@@ -1164,6 +1365,7 @@ namespace mobi { namespace net { namespace sms {
 		std::stringstream out;
 		out << "[SMS-SUBMIT-REPORT(ACK):"
 			<< "[UDHI:" << r.udhi << "]"
+			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"

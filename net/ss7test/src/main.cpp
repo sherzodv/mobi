@@ -605,6 +605,7 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				BOOST_CHECK(r.udhi == false);
 				BOOST_CHECK(r.sri == false);
 				BOOST_CHECK(r.oa.len == 0x04);
+				BOOST_CHECK(r.pid == 0x00);
 				BOOST_CHECK(std::memcmp(r.oa.data, "\x80\x08", 2) == 0);
 				BOOST_CHECK(r.dcsd.dcs == sms::dcs_special);
 				BOOST_CHECK(r.dcsd.cs == sms::cs_gsm_7bit);
@@ -619,6 +620,7 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				BOOST_CHECK(r.udhi == false);
 				BOOST_CHECK(r.srr == true);
 				BOOST_CHECK(r.mr == 0x12);
+				BOOST_CHECK(r.pid == 0x00);
 				BOOST_CHECK(std::memcmp(r.da.data, "\x99\x63\x93\x68\x11\xf6", 2) == 0);
 				BOOST_CHECK(r.dcsd.dcs == sms::dcs_general);
 				BOOST_CHECK(r.dcsd.cs == sms::cs_ucs2);
