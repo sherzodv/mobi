@@ -12,8 +12,8 @@ find_package(Boost 1.54.0 COMPONENTS
 	filesystem
 	system
 	thread
-	log-mt
-	log_setup-mt)
+	log
+	log_setup)
 
 if (NOT Boost_FOUND)
 	message (FATAL_ERROR "boost not found")
