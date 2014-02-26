@@ -1068,6 +1068,100 @@ namespace mobi { namespace net { namespace sms {
 		return out.str();
 	}
 
+	std::string to_string(const dc_scheme & r) {
+		std::stringstream out;
+		out << "[DCS:";
+
+		switch (r.dcs) {
+			case dcs_general:
+				out << "general";
+				break;
+			case dcs_auto_deletion:
+				out << "auto-deletion";
+				break;
+			case dcs_reserved:
+				out << "reserved";
+				break;
+			case dcs_discard:
+				out << "discard";
+				break;
+			case dcs_store:
+				out << "store";
+				break;
+			case dcs_me_indicator:
+				out << "me-indicator";
+				break;
+			case dcs_store_ucs2:
+				out << "store-ucs2";
+				break;
+			case dcs_coding:
+				out << "coding";
+				break;
+			case dcs_special:
+				out << "special";
+				break;
+		}
+
+		out << ":";
+		switch (r.cs) {
+			case cs_gsm_7bit:
+				out << "cs-gsm-7-bit";
+				break;
+			case cs_8bit:
+				out << "cs-8-bit";
+				break;
+			case cs_ucs2:
+				out << "cs-ucs2";
+				break;
+			default:
+				out << "reserved";
+				break;
+		}
+
+		if (r.has_message_class) {
+			out << ":";
+			switch (r.klass) {
+				case mc_class0:
+					out << "class-0";
+					break;
+				case mc_class1:
+					out << "class-1";
+					break;
+				case mc_class2:
+					out << "class-2";
+					break;
+				case mc_class3:
+					out << "class-3";
+					break;
+			}
+		}
+
+		if (r.compressed) {
+			out << ":compressed";
+		}
+
+		if (r.indicate) {
+			out << ":";
+			switch (r.ind) {
+				case indication_voice:
+					out << "ind-voice";
+					break;
+				case indication_fax:
+					out << "ind-fax";
+					break;
+				case indication_email:
+					out << "ind-email";
+					break;
+				case indication_other:
+					out << "ind-other";
+					break;
+			}
+		}
+
+		out << "]";
+		return out.str();
+	}
+
 	std::string pid_to_string(bin::u8_t r) {
 		std::stringstream out;
 		out << "[PID:";
@@ -1237,9 +1331,7 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const deliver_t & r) {
-		/* TODO: decode and print PID */
 		/* TODO: decode and print SCTS */
-		/* TODO: decode and print DCS */
 		std::stringstream out;
 		out << "[SMS-DELIVER:"
 			<< "[MMS:" << r.mms << "]"
@@ -1249,6 +1341,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[SRI:" << r.sri << "]"
 			<< "[OA:" << to_string(r.oa) << "]"
 			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1256,9 +1349,7 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const submit_t & r) {
-		/* TODO: decode and print PID */
 		/* TODO: decode and print SCTS */
-		/* TODO: decode and print DCS */
 		std::stringstream out;
 		out << "[SMS-SUBMIT:"
 			<< "[RD:" << r.rd << "]"
@@ -1269,6 +1360,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
 			<< "[DA:" << to_string(r.da) << "]"
 			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1276,7 +1368,6 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const command_t & r) {
-		/* TODO: print TP-PID */
 		/* TODO: print TP-CT */
 		std::stringstream out;
 		out << "[SMS-COMMAND:"
@@ -1293,7 +1384,6 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const status_report_t & r) {
-		/* TODO: decode and print TP-PID */
 		/* TODO: decode and print TP-SCTS */
 		/* TODO: print SCTS */
 		/* TODO: print DT */
@@ -1306,8 +1396,9 @@ namespace mobi { namespace net { namespace sms {
 			<< "[SRQ:" << r.srq << "]"
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
 			<< "[RA:" << to_string(r.ra) << "]"
-			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
+			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1322,8 +1413,9 @@ namespace mobi { namespace net { namespace sms {
 		out << "[SMS-DELIVER-REPORT(ERR):"
 			<< "[UDHI:" << r.udhi << "]"
 			<< "[FCS:" << static_cast<unsigned>(r.fcs) << "]"
-			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
+			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1332,12 +1424,12 @@ namespace mobi { namespace net { namespace sms {
 
 	std::string to_string(const deliver_report_pos_t & r) {
 		/* TODO: print SCTS */
-		/* TODO: print DCS */
 		std::stringstream out;
 		out << "[SMS-DELIVER-REPORT(ACK):"
 			<< "[UDHI:" << r.udhi << "]"
-			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
+			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1346,13 +1438,13 @@ namespace mobi { namespace net { namespace sms {
 
 	std::string to_string(const submit_report_neg_t & r) {
 		/* TODO: print SCTS */
-		/* TODO: print DCS */
 		/* TODO: print FC */
 		std::stringstream out;
 		out << "[SMS-SUBMIT-REPORT(ERR):"
 			<< "[UDHI:" << r.udhi << "]"
-			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
+			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1361,12 +1453,12 @@ namespace mobi { namespace net { namespace sms {
 
 	std::string to_string(const submit_report_pos_t & r) {
 		/* TODO: print SCTS */
-		/* TODO: print DCS */
 		std::stringstream out;
 		out << "[SMS-SUBMIT-REPORT(ACK):"
 			<< "[UDHI:" << r.udhi << "]"
-			<< pid_to_string(r.pid)
 			<< to_string(r.pi)
+			<< pid_to_string(r.pid)
+			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
