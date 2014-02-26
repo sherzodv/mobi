@@ -609,7 +609,15 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				BOOST_CHECK(std::memcmp(r.oa.data, "\x80\x08", 2) == 0);
 				BOOST_CHECK(r.dcsd.dcs == sms::dcs_special);
 				BOOST_CHECK(r.dcsd.cs == sms::cs_gsm_7bit);
+				BOOST_CHECK(r.scts.year == 0x31);
+				BOOST_CHECK(r.scts.month == 0x40);
+				BOOST_CHECK(r.scts.day == 0x03);
+				BOOST_CHECK(r.scts.hour == 0x21);
+				BOOST_CHECK(r.scts.minute == 0x24);
+				BOOST_CHECK(r.scts.second == 0x15);
+				BOOST_CHECK(r.scts.zone == 0x02);
 				BOOST_CHECK(r.udl == 0x4C);
+				// L << sms::to_string(r) << std::endl;
 				return resume;
 			}
 
@@ -626,6 +634,7 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				BOOST_CHECK(r.dcsd.cs == sms::cs_ucs2);
 				BOOST_CHECK(r.dcsd.compressed == false);
 				BOOST_CHECK(r.udl == 0x08);
+				// L << sms::to_string(r) << std::endl;
 				return resume;
 			}
 

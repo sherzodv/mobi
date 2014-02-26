@@ -17,6 +17,52 @@ namespace mobi { namespace net { namespace sms {
 
 	const bin::sz_t max_udl = 200;
 
+	template <typename IntT, typename RetT = bin::u8_t>
+	inline RetT bcd_encode(IntT v) {
+		switch (v) {
+			case '0': return 0x00;
+			case '1': return 0x01;
+			case '2': return 0x02;
+			case '3': return 0x03;
+			case '4': return 0x04;
+			case '5': return 0x05;
+			case '6': return 0x06;
+			case '7': return 0x07;
+			case '8': return 0x08;
+			case '9': return 0x09;
+			case '*': return 0x0A;
+			case '#': return 0x0B;
+			case 'a': return 0x0C;
+			case 'b': return 0x0D;
+			case 'c': return 0x0E;
+			case 'd': return 0x0F;
+			default: return 0x0F;
+		}
+	}
+
+	template <typename IntT, typename RetT = bin::u8_t>
+	inline RetT bcd_decode(IntT v) {
+		switch (v) {
+			case 0x00: return '0';
+			case 0x01: return '1';
+			case 0x02: return '2';
+			case 0x03: return '3';
+			case 0x04: return '4';
+			case 0x05: return '5';
+			case 0x06: return '6';
+			case 0x07: return '7';
+			case 0x08: return '8';
+			case 0x09: return '9';
+			case 0x0A: return '*';
+			case 0x0B: return '#';
+			case 0x0C: return 'a';
+			case 0x0D: return 'b';
+			case 0x0E: return 'c';
+			case 0x0F: return 'd';
+			default: return '\0';
+		}
+	}
+
 	enum data_coding_scheme {
 		dcs_general
 		, dcs_auto_deletion
@@ -142,6 +188,16 @@ namespace mobi { namespace net { namespace sms {
 		bool has_message_class;
 	};
 
+	struct timestamp {
+		bin::u8_t year;
+		bin::u8_t month;
+		bin::u8_t day;
+		bin::u8_t hour;
+		bin::u8_t minute;
+		bin::u8_t second;
+		bin::u8_t zone;
+	};
+
 	/* Address field: TS 23.040, 9.1.2.5 */
 	template <bin::sz_t MaxLen>
 	struct address_tt {
@@ -180,7 +236,7 @@ namespace mobi { namespace net { namespace sms {
 		address_tt<11>	oa;		/* Originating address */
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
-		bin::u8_t		scts[7];/* SC timestamp */
+		timestamp		scts;	/* SC timestamp */
 		bin::u8_t		udl;	/* User data length */
 		string_tt<255>	ud;		/* User data */
 		dc_scheme		dcsd;	/* Decoded data coding scheme */
@@ -227,8 +283,8 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pad	:2;
 		bin::u8_t		mr;		/* Message reference */
 		address_tt<11>	ra;		/* Recipient address */
-		bin::u8_t		scts[7];/* SC timestamp */
-		bin::u8_t		dt[7];	/* Discharge time */
+		timestamp		scts;	/* SC timestamp */
+		timestamp		dt;		/* Discharge time */
 		bin::u8_t		st;		/* Status */
 		pi_t			pi;		/* Parameter indicator */
 		bin::u8_t		pid;	/* Protocol identifier */
@@ -267,7 +323,7 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pad	:5;
 		bin::u8_t		fcs;	/* Failure cause */
 		pi_t			pi;		/* Parameter indicator */
-		bin::u8_t		scts[7];/* SC timestamp */
+		timestamp		scts;	/* SC timestamp */
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
@@ -280,7 +336,7 @@ namespace mobi { namespace net { namespace sms {
 		bool			udhi:1;	/* User data header indicator */
 		bin::u8_t		pad	:5;
 		pi_t			pi;		/* Parameter indicator */
-		bin::u8_t		scts[7];/* SC timestamp */
+		timestamp		scts;	/* SC timestamp */
 		bin::u8_t		pid;	/* Protocol identifier */
 		bin::u8_t		dcs;	/* Data coding scheme */
 		bin::u8_t		udl;	/* User data length */
@@ -1162,6 +1218,18 @@ namespace mobi { namespace net { namespace sms {
 		return out.str();
 	}
 
+	std::string to_string(const timestamp & r) {
+		std::stringstream out;
+		out << bcd_decode(r.year & 0x0F) << bcd_decode(r.year >> 4);
+		out << "-" << bcd_decode(r.month & 0x0F) << bcd_decode(r.month >> 4);
+		out << "-" << bcd_decode(r.day & 0x0F) << bcd_decode(r.day >> 4);
+		out << ":" << bcd_decode(r.hour & 0x0F) << bcd_decode(r.hour >> 4);
+		out << "-" << bcd_decode(r.minute & 0x0F) << bcd_decode(r.minute >> 4);
+		out << "-" << bcd_decode(r.second & 0x0F) << bcd_decode(r.second >> 4);
+		out << ":" << bcd_decode(r.zone & 0x0F) << bcd_decode(r.zone >> 4);
+		return out.str();
+	}
+
 	std::string pid_to_string(bin::u8_t r) {
 		std::stringstream out;
 		out << "[PID:";
@@ -1331,7 +1399,6 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const deliver_t & r) {
-		/* TODO: decode and print SCTS */
 		std::stringstream out;
 		out << "[SMS-DELIVER:"
 			<< "[MMS:" << r.mms << "]"
@@ -1342,6 +1409,7 @@ namespace mobi { namespace net { namespace sms {
 			<< "[OA:" << to_string(r.oa) << "]"
 			<< pid_to_string(r.pid)
 			<< to_string(r.dcsd)
+			<< "[SCTS:" << to_string(r.scts) << "]"
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
 			<< "[UD:" << bin::hex_str_ref(r.ud) << "]"
 			<< "]";
@@ -1349,7 +1417,6 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const submit_t & r) {
-		/* TODO: decode and print SCTS */
 		std::stringstream out;
 		out << "[SMS-SUBMIT:"
 			<< "[RD:" << r.rd << "]"
@@ -1384,9 +1451,6 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const status_report_t & r) {
-		/* TODO: decode and print TP-SCTS */
-		/* TODO: print SCTS */
-		/* TODO: print DT */
 		/* TODO: print ST */
 		std::stringstream out;
 		out << "[SMS-STATUS-REPORT:"
@@ -1396,6 +1460,8 @@ namespace mobi { namespace net { namespace sms {
 			<< "[SRQ:" << r.srq << "]"
 			<< "[MR:" << static_cast<unsigned>(r.mr) << "]"
 			<< "[RA:" << to_string(r.ra) << "]"
+			<< "[SCTS:" << to_string(r.scts) << "]"
+			<< "[DT:" << to_string(r.dt) << "]"
 			<< to_string(r.pi)
 			<< pid_to_string(r.pid)
 			<< to_string(r.dcsd)
@@ -1407,8 +1473,6 @@ namespace mobi { namespace net { namespace sms {
 
 	std::string to_string(const deliver_report_neg_t & r) {
 		/* TODO: print FC */
-		/* TODO: print SCTS */
-		/* TODO: print DCTS */
 		std::stringstream out;
 		out << "[SMS-DELIVER-REPORT(ERR):"
 			<< "[UDHI:" << r.udhi << "]"
@@ -1423,7 +1487,6 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const deliver_report_pos_t & r) {
-		/* TODO: print SCTS */
 		std::stringstream out;
 		out << "[SMS-DELIVER-REPORT(ACK):"
 			<< "[UDHI:" << r.udhi << "]"
@@ -1437,12 +1500,12 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const submit_report_neg_t & r) {
-		/* TODO: print SCTS */
 		/* TODO: print FC */
 		std::stringstream out;
 		out << "[SMS-SUBMIT-REPORT(ERR):"
 			<< "[UDHI:" << r.udhi << "]"
 			<< to_string(r.pi)
+			<< "[SCTS:" << to_string(r.scts) << "]"
 			<< pid_to_string(r.pid)
 			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
@@ -1452,11 +1515,11 @@ namespace mobi { namespace net { namespace sms {
 	}
 
 	std::string to_string(const submit_report_pos_t & r) {
-		/* TODO: print SCTS */
 		std::stringstream out;
 		out << "[SMS-SUBMIT-REPORT(ACK):"
 			<< "[UDHI:" << r.udhi << "]"
 			<< to_string(r.pi)
+			<< "[SCTS:" << to_string(r.scts) << "]"
 			<< pid_to_string(r.pid)
 			<< to_string(r.dcsd)
 			<< "[UDL:" << static_cast<unsigned>(r.udl) << "]"
