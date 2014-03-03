@@ -692,30 +692,34 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 		return out.str();
 	}
 
+	template <typename ValueT>
 	std::string to_string(const tlv<ValueT> & t) {
 		std::stringstream out;
 		out << "[tlv:"
-			<< t.tag
+			<< t.tag;
+
+		/* TODO:
 			<< "[len:" << t.len << "]"
 			<< "[val:" << t.val << "]"
 		<< "]";
-		return out;
+		*/
+		return out.str();
 	}
 
 	std::string to_string(const message::data & r) {
 		std::stringstream out;
 		out << "[M3UA_DATA:"
-			<< r.header;
+			<< to_string(r.header);
 		if (r.network_appearance.tag != tag_reserved)
-			out << r.network_appearance;
+			out << to_string(r.network_appearance);
 		if (r.routing_ctxt.tag != tag_reserved)
-			out << r.routing_ctxt;
+			out << to_string(r.routing_ctxt);
 		if (r.protocol_data.tag != tag_reserved)
-			out << r.protocol_data;
+			out << to_string(r.protocol_data);
 		if (r.correlation_id.tag != tag_reserved)
-			out << r.correlation_id;
+			out << to_string(r.correlation_id);
 		out << "]";
-		return out;
+		return out.str();
 	}
 
 } } } }

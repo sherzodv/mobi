@@ -621,7 +621,7 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 				break;
 		}
 		out << "]";
-		return out;
+		return out.str();
 	}
 
 	std::string to_string(numbering_plan np) {
@@ -735,11 +735,13 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 	std::string to_string(const unitdata & r) {
 		std::stringstream out;
 		out << "[UNITDATA:[proto class: " << r.pclass << "]"
+			<< "]"
+		;
+		/* TODO:
 			<< "[calling party:" << r.dst_addr << "]"
 			<< "[called party:" << r.src_addr << "]"
-			<< "]"
-			// << " " << std::string(r.data, r.data_len)
-		;
+			<< " " << std::string(r.data, r.data_len)
+		*/
 		return out.str();
 	}
 
