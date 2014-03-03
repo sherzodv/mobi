@@ -206,6 +206,10 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		pad: 1;
 		bin::u8_t		len;
 		bin::u8_t		data[MaxLen];
+
+		bin::sz_t length() const {
+			return (len >> 1) + (len % 2);
+		}
 	};
 
 	template <bin::sz_t MaxLen>
@@ -588,8 +592,8 @@ namespace mobi { namespace net { namespace sms {
 				buf = p::cp_u16(asbuf(m.oa), buf);
 
 				/* Parse address value, len is number of useful semi-octets */
-				RETURN_NULL_IF(buf + (m.oa.len >> 1) + (m.oa.len % 2) > bend);
-				buf = p::cpy(m.oa.data, buf, (m.oa.len >> 1) + (m.oa.len % 2));
+				RETURN_NULL_IF(buf + m.oa.length() > bend);
+				buf = p::cpy(m.oa.data, buf, m.oa.length());
 
 				RETURN_NULL_IF(buf
 					+ sizeof(bin::u8_t)	/* Protocol identifier */
@@ -639,8 +643,8 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse len and type-of-address at once */
 				buf = p::cp_u16(asbuf(m.da), buf);
 
-				RETURN_NULL_IF(buf + (m.da.len >> 1) + (m.da.len % 2) > bend);
-				buf = p::cpy(m.da.data, buf, (m.da.len >> 1) + (m.da.len % 2));
+				RETURN_NULL_IF(buf + m.da.length() > bend);
+				buf = p::cpy(m.da.data, buf, m.da.length());
 
 				RETURN_NULL_IF(buf
 					+ sizeof(bin::u8_t)		/* pid */
@@ -711,8 +715,8 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse len and type-of-address at once */
 				buf = p::cp_u16(asbuf(m.da), buf);
 
-				RETURN_NULL_IF(buf + (m.da.len >> 1) + (m.da.len % 2) > bend);
-				buf = p::cpy(m.da.data, buf, (m.da.len >> 1) + (m.da.len % 2));
+				RETURN_NULL_IF(buf + m.da.length() > bend);
+				buf = p::cpy(m.da.data, buf, m.da.length());
 
 				/* Parse command data length */
 				RETURN_NULL_IF(buf + 1 > bend);
@@ -748,8 +752,8 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse len and type-of-address at once */
 				buf = p::cp_u16(asbuf(m.ra), buf);
 
-				RETURN_NULL_IF(buf + (m.ra.len >> 1) + (m.ra.len % 2) > bend);
-				buf = p::cpy(m.ra.data, buf, (m.ra.len >> 1) + (m.ra.len % 2));
+				RETURN_NULL_IF(buf + m.ra.length() > bend);
+				buf = p::cpy(m.ra.data, buf, m.ra.length());
 
 				RETURN_NULL_IF(buf + 14 > bend);
 				/* Parse sc timestamp */
@@ -1379,7 +1383,7 @@ namespace mobi { namespace net { namespace sms {
 		/* TODO: print value */
 		out << to_string(r.np) << to_string(r.ton)
 			<< "[val:"
-			<< bin::hex_str_ref(r.data, (r.len >> 1) + (r.len % 2)) << "]";
+			<< bin::hex_str_ref(r.data, r.length()) << "]";
 		return out.str();
 	}
 
