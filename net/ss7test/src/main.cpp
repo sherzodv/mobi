@@ -591,10 +591,23 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 		"\x04\x35\x04\x41\x04\x42";
 
 	class sms_parser: public sms::parser<std::ostream>
+			, sms::writer<std::ostream>
 			, buffer_base {
+
+		typedef sms::writer<std::ostream> wbase;
+		typedef sms::parser<std::ostream> pbase;
+
+		using pbase::L;
+
 		public:
-			sms_parser(std::ostream & out): sms::parser<std::ostream>(out) {}
+			sms_parser(std::ostream & out)
+				: sms::parser<std::ostream>(out)
+				, sms::writer<std::ostream>(out) {}
 			virtual ~sms_parser() {}
+
+			void test_write() {
+				test_sms_deliver();
+			}
 
 		protected:
 			virtual action on_sms_deliver(const sms::deliver_t & r) {
@@ -667,15 +680,50 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				(void)(msg);
 				return stop;
 			}
-	} p(std::cout);
 
-	cur = p.parse_out(raw1 , raw1 + sizeof(raw1) - 1);
+			void test_sms_deliver() {
+
+				const bin::u8_t raw1[] =
+					"\x30\x15\x80\x07\x91\x99\x63\x65\x52\x57\xf8\x81\x01\x01"
+					"\x82\x07\x91\x99\x63\x95\x99\x99\xf1";
+
+				sms::deliver_t r;
+
+				r.mms = true;
+				r.lp = false;
+				r.udhi = false;
+				r.sri = false;
+				r.oa.set_digits("8008", sizeof("8008")-1);
+				r.pid = 0x00;
+				r.dcsd.dcs = sms::dcs_special;
+				r.dcsd.cs = sms::cs_gsm_7bit;
+
+				r.scts.year = 0x31;
+				r.scts.month = 0x40;
+				r.scts.day = 0x03;
+				r.scts.hour = 0x21;
+				r.scts.minute = 0x24;
+				r.scts.second = 0x15;
+				r.scts.zone = 0x02;
+
+				bcur = wbase::write_sms_deliver(buf, bend, r);
+
+				(void)(raw1);
+
+				L << bin::hex_str_ref(buf, bcur - buf) << std::endl;
+				//L << static_cast<bin::sz_t>(r.oa.len) << std::endl;
+			}
+	} m(std::cout);
+
+	cur = m.parse_out(raw1 , raw1 + sizeof(raw1) - 1);
 	BOOST_CHECK(cur != nullptr);
 	BOOST_CHECK(cur == raw1 + sizeof(raw1) - 1);
 
-	cur = p.parse_in(raw2 , raw2 + sizeof(raw2) - 1);
+	cur = m.parse_in(raw2 , raw2 + sizeof(raw2) - 1);
 	BOOST_CHECK(cur != nullptr);
 	BOOST_CHECK(cur == raw2 + sizeof(raw2) - 1);
+
+	m.test_write();
 }
 
 BOOST_AUTO_TEST_CASE(test_ber_writer) {

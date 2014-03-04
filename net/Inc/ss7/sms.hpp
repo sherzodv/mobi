@@ -63,6 +63,49 @@ namespace mobi { namespace net { namespace sms {
 		}
 	}
 
+	template <typename DU8T, typename SU8T>
+	bin::sz_t bcd_encode(DU8T * dst, const SU8T * src
+			, bin::sz_t len) {
+		bin::sz_t rlen = 0;
+		if (len == 0)
+			return rlen;
+		while (len--) {
+			*dst = bcd_encode(*src++);
+			++rlen;
+			if (len) {
+				*dst |= bcd_encode(*src++) << 4;
+				--len;
+			} else {
+				*dst |= 0xF0;
+			}
+			++dst;
+		}
+		return rlen;
+	}
+
+	template <typename DU8T, typename SU8T>
+	bin::sz_t bcd_decode(DU8T * dst, const SU8T * src
+			, bin::sz_t len, bool odd = false) {
+		bin::sz_t rlen = 0;
+		if (len == 0)
+			return rlen;
+		while (len--) {
+			*dst = bcd_decode(*src & 0x0F);
+			if (*dst != 'd') {
+				++dst;
+				++rlen;
+			}
+			if (odd && len == 0)
+				break;
+			*dst = bcd_decode((*src++ & 0xF0) >> 4);
+			if (*dst != 'd') {
+				++dst;
+				++rlen;
+			}
+		}
+		return rlen;
+	}
+
 	enum data_coding_scheme {
 		dcs_general
 		, dcs_auto_deletion
@@ -207,8 +250,14 @@ namespace mobi { namespace net { namespace sms {
 		bin::u8_t		len;
 		bin::u8_t		data[MaxLen];
 
+		/* Calculate number of octets occupied by data */
 		bin::sz_t length() const {
 			return (len >> 1) + (len % 2);
+		}
+
+		void set_digits(const char * addr, bin::sz_t l) {
+			len = l;
+			bcd_encode(data, addr, len);
 		}
 	};
 
@@ -1029,6 +1078,138 @@ namespace mobi { namespace net { namespace sms {
 					case resume: return bend;
 					default: return nullptr;
 				}
+			}
+	};
+
+	template <class LogT>
+	class writer {
+		LogT & L;
+		public:
+			writer(LogT & l): L(l) {}
+			virtual ~writer() {}
+
+			bin::u8_t * write_sms_deliver(bin::u8_t * buf, bin::u8_t * bend
+					, const deliver_t & r) {
+
+				using namespace bin;
+
+				RETURN_NULL_IF(buf
+					+ sizeof(bin::u8_t)		/* mti, mms, lp, rp, udhi, sri */
+					+ sizeof(bin::u16_t)	/* address len and type */
+					> bend);
+
+				/* Write mti, mms, lp, rp, udhi, sri */
+				buf = w::cp_u8(buf, ascbuf(r));
+
+				/* Write len and type-of-address at once */
+				buf = w::cp_u16(buf, ascbuf(r.oa));
+
+				RETURN_NULL_IF(buf + r.oa.length() > bend);
+				buf = w::cpy(buf, r.oa.data, r.oa.length());
+
+				RETURN_NULL_IF(buf
+					+ sizeof(bin::u8_t)	/* Protocol identifier */
+					+ sizeof(bin::u8_t)	/* Code scheme */
+					+ 7					/* SC timestamp */
+					+ sizeof(bin::u8_t)	/* User data length */
+					> bend);
+
+				/* Write protocol identifier */
+				buf = w::cp_u8(buf, ascbuf(r.pid));
+				/* Write data coding scheme */
+				buf = w::cp_u8(buf, ascbuf(r.dcs));
+				/* Parse sc timestamp */
+				buf = w::cpy(buf, ascbuf(r.scts), 7);
+				/* Parse user data length */
+				buf = w::cp_u8(buf, ascbuf(r.udl));
+
+				RETURN_NULL_IF(buf + r.ud.len > bend);
+				return w::cpy(buf, ascbuf(r.ud.data), r.ud.len);
+			}
+
+			bin::u8_t * write_sms_submit(bin::u8_t * buf, bin::u8_t * bend
+					, const submit_t & r) {
+				using namespace bin;
+
+				RETURN_NULL_IF(buf
+					+ sizeof(bin::u8_t)		/* mti, rd, vpf, rp, udhi, srr */
+					+ sizeof(bin::u8_t)		/* mr */
+					+ sizeof(bin::u16_t)	/* address len and type */
+					> bend);
+
+				/* Write mti, rd, vpf, rp, udhi, srr */
+				buf = w::cp_u8(buf, ascbuf(r));
+				/* Write message reference */
+				buf = w::cp_u8(buf, ascbuf(r.mr));
+				/* Write len and type-of-address at once */
+				buf = w::cp_u16(buf, ascbuf(r.da));
+
+				RETURN_NULL_IF(buf + r.da.length() > bend);
+				buf = w::cpy(buf, r.da.data, r.da.length());
+
+				RETURN_NULL_IF(buf
+					+ sizeof(bin::u8_t)		/* pid */
+					+ sizeof(bin::u8_t)		/* dcs */
+					> bend);
+
+				/* Write protocol identifier */
+				buf = w::cp_u8(buf, ascbuf(r.pid));
+				/* Write data coding scheme */
+				buf = w::cp_u8(buf, ascbuf(r.dcs));
+
+				/* Write validity period if present */
+				switch (r.vpf) {
+					case vpf_relative:
+						RETURN_NULL_IF(buf + 1 > bend);
+						buf = w::cpy(buf, ascbuf(r.vp), buf);
+						break;
+					case vpf_enhanced:
+					case vpf_absolute:
+						RETURN_NULL_IF(buf + 7 > bend);
+						buf = w::cpy(buf, ascbuf(r.vp), 7);
+						break;
+					default: break;
+				}
+
+				/* Write user data length */
+				RETURN_NULL_IF(buf + 1 > bend);
+				buf = p::cp_u8(buf, ascbuf(r.udl));
+
+				RETURN_NULL_IF(buf + r.ud.len > bend);
+				buf = p::cpy(buf, ascbuf(r.ud.data), r.ud.len);
+
+				return buf;
+			}
+
+			bin::u8_t * write_sms_command(bin::u8_t * buf, bin::u8_t * bend
+					, const command_t & msg) {
+				return nullptr;
+			}
+
+			bin::u8_t * write_sms_status_report(bin::u8_t * buf
+					, bin::u8_t * bend, const status_report_t & msg) {
+				return nullptr;
+			}
+
+			bin::u8_t * write_sms_deliver_report_neg(bin::u8_t * buf
+					, bin::u8_t * bend
+					, const deliver_report_neg_t & msg) {
+				return nullptr;
+			}
+
+			bin::u8_t * write_sms_deliver_report_pos(bin::u8_t * buf
+					, bin::u8_t * bend, const deliver_report_pos_t & msg) {
+				return nullptr;
+			}
+
+			bin::u8_t * write_sms_submit_report_neg(bin::u8_t * buf
+					, bin::u8_t * bend, const submit_report_neg_t & msg) {
+				return nullptr;
+			}
+
+			bin::u8_t * write_sms_submit_report_pos(bin::u8_t * buf
+					, bin::u8_t * bend, const submit_report_pos_t & msg) {
+				return nullptr;
 			}
 	};
 
