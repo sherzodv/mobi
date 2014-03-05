@@ -620,8 +620,7 @@ namespace mobi { namespace net { namespace sms {
 				return buf;
 			}
 
-			dc_scheme decode_dcs(bin::u8_t dcs) {
-				dc_scheme r;
+			void parse_dcs(bin::u8_t dcs, dc_scheme & r) {
 
 				/* 3GPP TS 23.038 4. SMS Data Coding Scheme */
 
@@ -731,8 +730,6 @@ namespace mobi { namespace net { namespace sms {
 							break;
 					}
 				}
-
-				return r;
 			}
 
 			bin::sz_t octet_count(const dc_scheme &  dcs
@@ -875,7 +872,7 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse user data length */
 				buf = p::cp_u8(asbuf(m.udl), buf);
 
-				m.dcsd = decode_dcs(m.dcs);
+				parse_dcs(m.dcs, m.dcsd);
 				m.ud.len = octet_count(m.dcsd, m.udl);
 
 				RETURN_NULL_IF(buf + m.ud.len > bend);
@@ -939,7 +936,7 @@ namespace mobi { namespace net { namespace sms {
 				RETURN_NULL_IF(buf + 1 > bend);
 				buf = p::cp_u8(asbuf(m.udl), buf);
 
-				m.dcsd = decode_dcs(m.dcs);
+				parse_dcs(m.dcs, m.dcsd);
 				m.ud.len = octet_count(m.dcsd, m.udl);
 
 				RETURN_NULL_IF(buf + m.ud.len > bend);
@@ -1056,7 +1053,7 @@ namespace mobi { namespace net { namespace sms {
 					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
 
-					m.dcsd = decode_dcs(m.dcs);
+					parse_dcs(m.dcs, m.dcsd);
 					m.ud.len = octet_count(m.dcsd, m.udl);
 
 					RETURN_NULL_IF(buf + m.ud.len > bend);
@@ -1111,7 +1108,7 @@ namespace mobi { namespace net { namespace sms {
 					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
 
-					m.dcsd = decode_dcs(m.dcs);
+					parse_dcs(m.dcs, m.dcsd);
 					m.ud.len = octet_count(m.dcsd, m.udl);
 
 					RETURN_NULL_IF(buf + m.ud.len > bend);
@@ -1163,7 +1160,7 @@ namespace mobi { namespace net { namespace sms {
 					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
 
-					m.dcsd = decode_dcs(m.dcs);
+					parse_dcs(m.dcs, m.dcsd);
 					m.ud.len = octet_count(m.dcsd, m.udl);
 
 					RETURN_NULL_IF(buf + m.ud.len > bend);
@@ -1223,7 +1220,7 @@ namespace mobi { namespace net { namespace sms {
 					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
 
-					m.dcsd = decode_dcs(m.dcs);
+					parse_dcs(m.dcs, m.dcsd);
 					m.ud.len = octet_count(m.dcsd, m.udl);
 
 					RETURN_NULL_IF(buf + m.ud.len > bend);
@@ -1280,7 +1277,7 @@ namespace mobi { namespace net { namespace sms {
 					RETURN_NULL_IF(buf + 1 > bend);
 					buf = p::cp_u8(asbuf(m.udl), buf);
 
-					m.dcsd = decode_dcs(m.dcs);
+					parse_dcs(m.dcs, m.dcsd);
 					m.ud.len = octet_count(m.dcsd, m.udl);
 
 					RETURN_NULL_IF(buf + m.ud.len > bend);
