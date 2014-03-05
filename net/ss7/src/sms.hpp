@@ -1178,17 +1178,6 @@ namespace mobi { namespace net { namespace sms {
 				}
 			}
 
-			const bin::u8_t * parse_user_data(const bin::u8_t * buf
-					, const bin::u8_t * bend
-					, bool has_header, const dc_scheme & dcs) {
-				if (has_header) {
-					buf = parse_user_data_header(buf, bend);
-					RETURN_NULL_IF(buf == nullptr);
-				}
-				/* TODO: parse user data */
-				return nullptr;
-			}
-
 			const bin::u8_t * parse_user_data_header(const bin::u8_t * buf
 					, const bin::u8_t * bend) {
 				using namespace bin;
@@ -1201,10 +1190,15 @@ namespace mobi { namespace net { namespace sms {
 				/* Parse user header len */
 				buf = p::cp_u8(asbuf(len), buf);
 
-				while (buf + sizeof(ie::header) < bend) {
+				while (len) {
+					RETURN_NULL_IF(buf + 2 > bend || len < 2);
+					/* Read Information Element tag and length */
 					buf = p::cp_u8(asbuf(hdr.id), buf);
 					buf = p::cp_u8(asbuf(hdr.len), buf);
-					RETURN_NULL_IF(buf + hdr.len > bend);
+					/* See if len is correct and we have enough data to parse
+					 * body of information element */
+					RETURN_NULL_IF(buf + hdr.len > bend || len < hdr.len + 2);
+					len -= hdr.len + 2;
 					switch (hdr.id) {
 						case ie::header::concat: {
 							RETURN_NULL_IF(hdr.len != 3);
@@ -1298,7 +1292,7 @@ namespace mobi { namespace net { namespace sms {
 					}
 				}
 
-				return nullptr;
+				return buf;
 			}
 	};
 
