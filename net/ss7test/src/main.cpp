@@ -10,7 +10,9 @@
 #include <ss7/tcap.hpp>
 #include <ss7/map.hpp>
 #include <ss7/sms.hpp>
+#include <ss7/decod.hpp>
 
+#include <iostream>
 #include <iostream>
 #include <cstring>
 
@@ -761,6 +763,23 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 	BOOST_CHECK(cur == raw2 + sizeof(raw2) - 1);
 
 	//m.test_write();
+}
+
+BOOST_AUTO_TEST_CASE(test_decod) {
+	using namespace mobi::net;
+	using namespace mobi::net::toolbox;
+
+	/* GSM 7 bit encoded text */
+	const bin::u8_t raw1[] =
+		"\xc8\xb7\xbc\x1d\xa6\xb3\xf3\xa0\x76\x7d\x4e\x2e\xcb\xd3\x2c\xd0"
+		"\x3c\xad\x2f\x83\x56\xb9\xdc\xcc\x36\xab\xd1\x68\xb5\x59\x0d\x24"
+		"\x2e\xb3\xcf\x69\x72\xd9\x0d\x8a\x81\xce\x65\x7d\x79\x0d\x9a\xc1"
+		"\x5c\x30\x1a\x28\x26\xd3\xd1\x64\x20\x75\xd8\x0d\x2a\xd3\xc9\x69"
+		"\x76\x59\x0e";
+
+	std::transform(raw1, raw1+sizeof(raw1)-1
+			, std::ostream_iterator<wchar_t, wchar_t>(std::wcout, L" ")
+			, gsm::decode_7bit_char);
 }
 
 BOOST_AUTO_TEST_CASE(test_ber_writer) {

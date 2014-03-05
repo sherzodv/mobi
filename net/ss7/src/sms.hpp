@@ -503,6 +503,123 @@ namespace mobi { namespace net { namespace sms {
 				return parse_sc2ms_message(buf, bend, is_err);
 			}
 
+			const bin::u8_t * parse_user_data_header(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+
+				u8_t len;
+				ie::header hdr;
+
+				RETURN_NULL_IF(buf + 1 > bend);
+
+				/* Parse user header len */
+				buf = p::cp_u8(asbuf(len), buf);
+
+				while (len) {
+					RETURN_NULL_IF(buf + 2 > bend || len < 2);
+					/* Read Information Element tag and length */
+					buf = p::cp_u8(asbuf(hdr.id), buf);
+					buf = p::cp_u8(asbuf(hdr.len), buf);
+					/* See if len is correct and we have enough data to parse
+					 * body of information element */
+					RETURN_NULL_IF(buf + hdr.len > bend || len < hdr.len + 2);
+					len -= hdr.len + 2;
+					switch (hdr.id) {
+						case ie::header::concat: {
+							RETURN_NULL_IF(hdr.len != 3);
+							ie::concat r;
+							buf = p::cp_u8(asbuf(r.refno), buf);
+							buf = p::cp_u8(asbuf(r.maxnum), buf);
+							buf = p::cp_u8(asbuf(r.seqno), buf);
+							switch (on_sms_ie_concat(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::special_ind: {
+							RETURN_NULL_IF(hdr.len != 2);
+							ie::special_ind r;
+							buf = p::cp_u8(asbuf(r.type), buf);
+							buf = p::cp_u8(asbuf(r.msg_count), buf);
+							switch (on_sms_ie_special_ind(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::port_addr_8bit: {
+							RETURN_NULL_IF(hdr.len != 2);
+							ie::port_addr_8bit r;
+							buf = p::cp_u8(asbuf(r.dst_port), buf);
+							buf = p::cp_u8(asbuf(r.src_port), buf);
+							switch (on_sms_ie_port_addr_8bit(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::port_addr_16bit: {
+							RETURN_NULL_IF(hdr.len != 4);
+							ie::port_addr_16bit r;
+							buf = p::cp_u16(asbuf(r.dst_port), buf);
+							buf = p::cp_u16(asbuf(r.src_port), buf);
+							switch (on_sms_ie_port_addr_16bit(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::smsc_control: {
+							RETURN_NULL_IF(hdr.len != 1);
+							ie::smsc_control r;
+							buf = p::cp_u8(asbuf(r.report), buf);
+							switch (on_sms_ie_smsc_control(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::udh_source_ind: {
+							RETURN_NULL_IF(hdr.len != 1);
+							ie::udh_source_ind r;
+							buf = p::cp_u8(asbuf(r.src), buf);
+							switch (on_sms_ie_udh_source_ind(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::concat_enhanced: {
+							RETURN_NULL_IF(hdr.len != 4);
+							ie::concat_enhanced r;
+							buf = p::cp_u16(asbuf(r.refno), buf);
+							buf = p::cp_u8(asbuf(r.maxnum), buf);
+							buf = p::cp_u8(asbuf(r.seqno), buf);
+							switch (on_sms_ie_concat_enhanced(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::wireless_control: {
+							RETURN_NULL_IF(hdr.len < 1);
+							ie::wireless_control r;
+							buf = p::cp_u8(asbuf(r.len), buf);
+							RETURN_NULL_IF(buf + r.len > bend);
+							buf = p::cpy(r.data, buf, r.len);
+							switch (on_sms_ie_wireless_control(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+					}
+				}
+
+				return buf;
+			}
+
 			dc_scheme decode_dcs(bin::u8_t dcs) {
 				dc_scheme r;
 
@@ -1176,123 +1293,6 @@ namespace mobi { namespace net { namespace sms {
 					case resume: return bend;
 					default: return nullptr;
 				}
-			}
-
-			const bin::u8_t * parse_user_data_header(const bin::u8_t * buf
-					, const bin::u8_t * bend) {
-				using namespace bin;
-
-				u8_t len;
-				ie::header hdr;
-
-				RETURN_NULL_IF(buf + 1 > bend);
-
-				/* Parse user header len */
-				buf = p::cp_u8(asbuf(len), buf);
-
-				while (len) {
-					RETURN_NULL_IF(buf + 2 > bend || len < 2);
-					/* Read Information Element tag and length */
-					buf = p::cp_u8(asbuf(hdr.id), buf);
-					buf = p::cp_u8(asbuf(hdr.len), buf);
-					/* See if len is correct and we have enough data to parse
-					 * body of information element */
-					RETURN_NULL_IF(buf + hdr.len > bend || len < hdr.len + 2);
-					len -= hdr.len + 2;
-					switch (hdr.id) {
-						case ie::header::concat: {
-							RETURN_NULL_IF(hdr.len != 3);
-							ie::concat r;
-							buf = p::cp_u8(asbuf(r.refno), buf);
-							buf = p::cp_u8(asbuf(r.maxnum), buf);
-							buf = p::cp_u8(asbuf(r.seqno), buf);
-							switch (on_sms_ie_concat(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::special_ind: {
-							RETURN_NULL_IF(hdr.len != 2);
-							ie::special_ind r;
-							buf = p::cp_u8(asbuf(r.type), buf);
-							buf = p::cp_u8(asbuf(r.msg_count), buf);
-							switch (on_sms_ie_special_ind(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::port_addr_8bit: {
-							RETURN_NULL_IF(hdr.len != 2);
-							ie::port_addr_8bit r;
-							buf = p::cp_u8(asbuf(r.dst_port), buf);
-							buf = p::cp_u8(asbuf(r.src_port), buf);
-							switch (on_sms_ie_port_addr_8bit(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::port_addr_16bit: {
-							RETURN_NULL_IF(hdr.len != 4);
-							ie::port_addr_16bit r;
-							buf = p::cp_u16(asbuf(r.dst_port), buf);
-							buf = p::cp_u16(asbuf(r.src_port), buf);
-							switch (on_sms_ie_port_addr_16bit(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::smsc_control: {
-							RETURN_NULL_IF(hdr.len != 1);
-							ie::smsc_control r;
-							buf = p::cp_u8(asbuf(r.report), buf);
-							switch (on_sms_ie_smsc_control(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::udh_source_ind: {
-							RETURN_NULL_IF(hdr.len != 1);
-							ie::udh_source_ind r;
-							buf = p::cp_u8(asbuf(r.src), buf);
-							switch (on_sms_ie_udh_source_ind(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::concat_enhanced: {
-							RETURN_NULL_IF(hdr.len != 4);
-							ie::concat_enhanced r;
-							buf = p::cp_u16(asbuf(r.refno), buf);
-							buf = p::cp_u8(asbuf(r.maxnum), buf);
-							buf = p::cp_u8(asbuf(r.seqno), buf);
-							switch (on_sms_ie_concat_enhanced(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-						case ie::header::wireless_control: {
-							RETURN_NULL_IF(hdr.len < 1);
-							ie::wireless_control r;
-							buf = p::cp_u8(asbuf(r.len), buf);
-							RETURN_NULL_IF(buf + r.len > bend);
-							buf = p::cpy(r.data, buf, r.len);
-							switch (on_sms_ie_wireless_control(r)) {
-								case resume: continue;
-								case skip: continue;
-								default: return nullptr;
-							}
-						}
-					}
-				}
-
-				return buf;
 			}
 	};
 
