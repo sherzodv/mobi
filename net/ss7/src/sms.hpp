@@ -397,6 +397,94 @@ namespace mobi { namespace net { namespace sms {
 		dc_scheme		dcsd;	/* Decoded data coding scheme */
 	};
 
+	/* User Data Header Information Elements */
+	namespace ie {
+
+		struct header {
+			bin::u8_t id;
+			bin::u8_t len;
+
+			enum {
+				concat				= 0x00
+				, special_ind		= 0x01
+				, port_addr_8bit	= 0x04
+				, port_addr_16bit	= 0x05
+				, smsc_control		= 0x06
+				, udh_source_ind	= 0x07
+				, concat_enhanced	= 0x08
+				, wireless_control	= 0x09
+			} type;
+		};
+
+		/* Concatenated sm-s */
+		struct concat {
+			/* Concatenated sm reference number */
+			bin::u8_t refno;
+			/* Maximum number of short messages in the concatenated sm */
+			bin::u8_t maxnum;
+			/* Sequence number of the current sm */
+			bin::u8_t seqno;
+		};
+
+		/* Special sm message indication */
+		struct special_ind {
+			struct {
+				bool			store		: 1;
+				bin::u8_t		profile_id	: 2;
+				bin::u8_t		extind		: 3;
+				indication_type	ind			: 2;
+			} type;
+			bin::u8_t msg_count;
+		};
+
+		/* Application Port Addressing 8 bit address */
+		struct port_addr_8bit {
+			bin::u8_t dst_port;
+			bin::u8_t src_port;
+		};
+
+		/* Application Port Addressing 16 bit address */
+		struct port_addr_16bit {
+			bin::u16_t dst_port;
+			bin::u16_t src_port;
+		};
+
+		/* SMSC Control Parameters */
+		struct smsc_control {
+			struct {
+				bool		include_udhl: 1;
+				bool		cancel_srr: 1;
+				bool		if_temp_error_more: 1;
+				bool		if_temp_error: 1;
+				bool		if_perm_error: 1;
+				bool		if_completed: 1;
+			} report;
+		};
+
+		/* UDH Source Indicator */
+		struct udh_source_ind {
+			enum: bin::u8_t { sender, receiver, smsc } src;
+		};
+
+		/* (U)SIM Toolkit Security Headers */
+
+		/* Concatenated sm, 16-bit reference number */
+		struct concat_enhanced {
+			/* Concatenated sm reference number */
+			bin::u16_t refno;
+			/* Maximum number of short messages in the concatenated sm */
+			bin::u8_t maxnum;
+			/* Sequence number of the current sm */
+			bin::u8_t seqno;
+		};
+
+		/* Wireless Control Message Protocol */
+		struct wireless_control {
+			bin::u8_t len;
+			bin::u8_t data[254];
+		};
+	}
+
 	template <class LogT>
 	class parser {
 		public:
@@ -557,6 +645,16 @@ namespace mobi { namespace net { namespace sms {
 			virtual action on_sms_deliver_report_pos(const deliver_report_pos_t & msg) = 0;
 			virtual action on_sms_submit_report_neg(const submit_report_neg_t & msg) = 0;
 			virtual action on_sms_submit_report_pos(const submit_report_pos_t & msg) = 0;
+
+			virtual action on_sms_ie_concat(const ie::concat & r) = 0;
+			virtual action on_sms_ie_special_ind(const ie::special_ind & r) = 0;
+			virtual action on_sms_ie_port_addr_8bit(const ie::port_addr_8bit & r) = 0;
+			virtual action on_sms_ie_port_addr_16bit(const ie::port_addr_16bit & r) = 0;
+			virtual action on_sms_ie_smsc_control(const ie::smsc_control & r) = 0;
+			virtual action on_sms_ie_udh_source_ind(const ie::udh_source_ind & r) = 0;
+			virtual action on_sms_ie_sim_security(const ie::header & r) = 0;
+			virtual action on_sms_ie_concat_enhanced(const ie::concat_enhanced & r) = 0;
+			virtual action on_sms_ie_wireless_control(const ie::wireless_control & r) = 0;
 
 		private:
 			const bin::u8_t * parse_ms2sc_message(const bin::u8_t * buf
@@ -1078,6 +1176,129 @@ namespace mobi { namespace net { namespace sms {
 					case resume: return bend;
 					default: return nullptr;
 				}
+			}
+
+			const bin::u8_t * parse_user_data(const bin::u8_t * buf
+					, const bin::u8_t * bend
+					, bool has_header, const dc_scheme & dcs) {
+				if (has_header) {
+					buf = parse_user_data_header(buf, bend);
+					RETURN_NULL_IF(buf == nullptr);
+				}
+				/* TODO: parse user data */
+				return nullptr;
+			}
+
+			const bin::u8_t * parse_user_data_header(const bin::u8_t * buf
+					, const bin::u8_t * bend) {
+				using namespace bin;
+
+				u8_t len;
+				ie::header hdr;
+
+				RETURN_NULL_IF(buf + 1 > bend);
+
+				/* Parse user header len */
+				buf = p::cp_u8(asbuf(len), buf);
+
+				while (buf + sizeof(ie::header) < bend) {
+					buf = p::cp_u8(asbuf(hdr.id), buf);
+					buf = p::cp_u8(asbuf(hdr.len), buf);
+					RETURN_NULL_IF(buf + hdr.len > bend);
+					switch (hdr.id) {
+						case ie::header::concat: {
+							RETURN_NULL_IF(hdr.len != 3);
+							ie::concat r;
+							buf = p::cp_u8(asbuf(r.refno), buf);
+							buf = p::cp_u8(asbuf(r.maxnum), buf);
+							buf = p::cp_u8(asbuf(r.seqno), buf);
+							switch (on_sms_ie_concat(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::special_ind: {
+							RETURN_NULL_IF(hdr.len != 2);
+							ie::special_ind r;
+							buf = p::cp_u8(asbuf(r.type), buf);
+							buf = p::cp_u8(asbuf(r.msg_count), buf);
+							switch (on_sms_ie_special_ind(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::port_addr_8bit: {
+							RETURN_NULL_IF(hdr.len != 2);
+							ie::port_addr_8bit r;
+							buf = p::cp_u8(asbuf(r.dst_port), buf);
+							buf = p::cp_u8(asbuf(r.src_port), buf);
+							switch (on_sms_ie_port_addr_8bit(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::port_addr_16bit: {
+							RETURN_NULL_IF(hdr.len != 4);
+							ie::port_addr_16bit r;
+							buf = p::cp_u16(asbuf(r.dst_port), buf);
+							buf = p::cp_u16(asbuf(r.src_port), buf);
+							switch (on_sms_ie_port_addr_16bit(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::smsc_control: {
+							RETURN_NULL_IF(hdr.len != 1);
+							ie::smsc_control r;
+							buf = p::cp_u8(asbuf(r.report), buf);
+							switch (on_sms_ie_smsc_control(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::udh_source_ind: {
+							RETURN_NULL_IF(hdr.len != 1);
+							ie::udh_source_ind r;
+							buf = p::cp_u8(asbuf(r.src), buf);
+							switch (on_sms_ie_udh_source_ind(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::concat_enhanced: {
+							RETURN_NULL_IF(hdr.len != 4);
+							ie::concat_enhanced r;
+							buf = p::cp_u16(asbuf(r.refno), buf);
+							buf = p::cp_u8(asbuf(r.maxnum), buf);
+							buf = p::cp_u8(asbuf(r.seqno), buf);
+							switch (on_sms_ie_concat_enhanced(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+						case ie::header::wireless_control: {
+							RETURN_NULL_IF(hdr.len < 1);
+							ie::wireless_control r;
+							buf = p::cp_u8(asbuf(r.len), buf);
+							RETURN_NULL_IF(buf + r.len > bend);
+							buf = p::cpy(r.data, buf, r.len);
+							switch (on_sms_ie_wireless_control(r)) {
+								case resume: continue;
+								case skip: continue;
+								default: return nullptr;
+							}
+						}
+					}
+				}
+
+				return nullptr;
 			}
 	};
 

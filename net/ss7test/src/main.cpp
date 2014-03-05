@@ -681,6 +681,43 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				return stop;
 			}
 
+			virtual action on_sms_ie_concat(const sms::ie::concat & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_special_ind(const sms::ie::special_ind & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_port_addr_8bit(const sms::ie::port_addr_8bit & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_port_addr_16bit(const sms::ie::port_addr_16bit & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_smsc_control(const sms::ie::smsc_control & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_udh_source_ind(const sms::ie::udh_source_ind & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_sim_security(const sms::ie::header & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_concat_enhanced(const sms::ie::concat_enhanced & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_wireless_control(const sms::ie::wireless_control & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+
 			void test_sms_deliver() {
 
 				const bin::u8_t raw1[] =
@@ -723,7 +760,7 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 	BOOST_CHECK(cur != nullptr);
 	BOOST_CHECK(cur == raw2 + sizeof(raw2) - 1);
 
-	m.test_write();
+	//m.test_write();
 }
 
 BOOST_AUTO_TEST_CASE(test_ber_writer) {
