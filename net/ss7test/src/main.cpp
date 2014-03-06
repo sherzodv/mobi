@@ -632,7 +632,18 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				BOOST_CHECK(r.scts.second == 0x15);
 				BOOST_CHECK(r.scts.zone == 0x02);
 				BOOST_CHECK(r.udl == 0x4C);
+
 				// L << sms::to_string(r) << std::endl;
+
+				sms::utf16_string_tt<256> text;
+				pbase::parse_gsm7bit_text(r, text);
+				const char *txt = "Hormatly musderi, size +99363544535 belgiden 1 gezek 30.04 12:42 jan etdiler";
+				bool text_is_equal = false;
+				for (std::size_t i = 0; i < text.len; ++i)
+					text_is_equal = text.data[i] == txt[i];
+
+				BOOST_CHECK(text_is_equal == true);
+
 				return resume;
 			}
 
@@ -649,7 +660,9 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 				BOOST_CHECK(r.dcsd.cs == sms::cs_ucs2);
 				BOOST_CHECK(r.dcsd.compressed == false);
 				BOOST_CHECK(r.udl == 0x08);
+
 				// L << sms::to_string(r) << std::endl;
+
 				return resume;
 			}
 

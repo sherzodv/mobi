@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <ostream>
 
+#include <ss7/decod.hpp>
 #include <toolbox/bin.hpp>
 
 namespace mobi { namespace net { namespace sms {
@@ -265,6 +266,12 @@ namespace mobi { namespace net { namespace sms {
 	struct string_tt {
 		bin::sz_t len;
 		bin::u8_t data[MaxLen];
+	};
+
+	template <bin::sz_t MaxLen>
+	struct utf16_string_tt {
+		bin::sz_t len;
+		bin::u16_t data[MaxLen];
 	};
 
 	struct pi_t {
@@ -618,6 +625,63 @@ namespace mobi { namespace net { namespace sms {
 				}
 
 				return buf;
+			}
+
+			template <class MessageT, bin::sz_t MaxLen>
+			const bin::u8_t * parse_gsm7bit_text(const MessageT & msg
+					, utf16_string_tt<MaxLen> & r) {
+
+				using namespace bin;
+
+				bool ext = false;
+				bin::u8_t offs, code;
+				const bin::u8_t * cur = msg.ud.data;
+				const bin::u8_t * end = cur + msg.ud.len;
+
+				RETURN_NULL_IF(cur >= end || msg.ud.len > 256);
+
+				offs = 0;
+				r.len = 0;
+
+				if (msg.udhi) {
+					/* Count the number of fill bits */
+					offs += 7 - (*cur * 8) % 7;
+					if (offs == 7) {
+						offs = 0;
+					}
+					cur += *cur;
+					RETURN_NULL_IF(cur >= end);
+				}
+
+				while (cur + 2 < end) {
+					if (offs == 0) {
+						code = 0x7F & *cur;
+						++offs;
+					} else {
+						code = (~(0xFF >> offs) & *cur) >> (8 - offs);
+						code |= (((0xFF >> (offs + 1)) & *(cur + 1)) << offs);
+						++cur;
+						++offs;
+						if (offs > 7) {
+							offs = 0;
+						}
+					}
+
+					if (ext) {
+						ext = false;
+						r.data[r.len] = gsm::decode_7bit_ext_char(code);
+						++r.len;
+					} else {
+						r.data[r.len] = gsm::decode_7bit_char(code);
+						if (r.data[r.len] == 0xA0) {
+							ext = true;
+						} else {
+							++r.len;
+						}
+					}
+				}
+
+				return cur;
 			}
 
 			void parse_dcs(bin::u8_t dcs, dc_scheme & r) {
