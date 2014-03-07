@@ -141,9 +141,10 @@ BOOST_AUTO_TEST_CASE(test_m3ua) {
 
 	m3ua::parse(msg, m3ua_raw1, m3ua_raw1 + sizeof(m3ua_raw1)-1, std::cout);
 
-	using m3ua::operator<<;
+	//using m3ua::operator<<;
+	using m3ua::to_string;
 
-	std::cout << msg << std::endl;
+	std::cout << to_string(msg) << std::endl;
 	std::cout << bin::hex_str_ref(msg.protocol_data.val.data
 			, msg.protocol_data.val.data_len) << std::endl;
 

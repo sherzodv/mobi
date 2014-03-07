@@ -59,11 +59,11 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 		tag_protocol_data		= 0x0210,
 		tag_reserved6			= 0x0211,
 		tag_reg_status			= 0x0212,
-		tag_dereg_status		= 0x0213,
+		tag_dereg_status		= 0x0213, 
 	};
 
 	enum service_indicator {
-		si_mgmt		= 0x00,
+		 si_mgmt		= 0x00,
 		si_test		= 0x01,
 		si_special	= 0x02,
 		si_sccp		= 0x03,
@@ -140,6 +140,7 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 			mtype::asp_traf		asproute: 8;
 		} type;
 		bin::u32_t len;
+
 	};
 
 	template <typename ValueT>
@@ -147,7 +148,7 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 		parameter_tag tag;
 		bin::u16_t len;
 		ValueT val;
-		tlv(): tag(tag_reserved), len(0) {}
+		tlv():  tag(tag_reserved), len(0) {}
 	};
 
 	namespace message {
@@ -183,7 +184,7 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 		buf = p::cp_u16(asbuf(t.tag), buf);
 		buf = p::cp_u16(asbuf(t.len), buf);
 		buf = p::cp_u8(asbuf(t.val), buf);
-		return buf;
+		return  buf;
 	}
 
 	template <class LogT>
@@ -373,206 +374,215 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 		return buf;
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, service_indicator si) {
-		L << "[si:";
+	std::string to_string(service_indicator si) {
+		std::stringstream out;
+		out << "[si:";
 		switch (si) {
-			case si_mgmt		: L << "mgmt"; break;
-			case si_test		: L << "test"; break;
-			case si_special		: L << "special"; break;
-			case si_sccp		: L << "sccp"; break;
-			case si_tup			: L << "tup"; break;
-			case si_isdnup		: L << "isdnup"; break;
-			case si_dup1		: L << "dup1"; break;
-			case si_dup2		: L << "dup2"; break;
-			case si_broadband	: L << "broadband"; break;
-			case si_sattelite	: L << "sattelite"; break;
-			default: L << "unknown:" << static_cast<unsigned>(si); break;
+			case si_mgmt      : out << "mgmt"; break;
+			case si_test      : out << "test"; break;
+			case si_special   : out << "special"; break;
+			case si_sccp      : out << "sccp"; break;
+			case si_tup       : out << "tup"; break;
+			case si_isdnup    : out << "isdnup"; break;
+			case si_dup1      : out << "dup1"; break;
+			case si_dup2      : out << "dup2"; break;
+			case si_broadband : out << "broadband"; break;
+			case si_sattelite : out << "sattelite"; break;
+			default : out << "unknown:" << static_cast<unsigned>(si); break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, parameter_tag t) {
-		L << "[tag:";
+	std::string to_string(parameter_tag t) {
+		std::stringstream out;
+		out << "[tag:";
 		switch (t) {
-			case tag_info_string			: L << "info_string"; break;
-			case tag_routing_ctxt			: L << "routing_ctxt"; break;
-			case tag_diagnostics			: L << "diagnostics"; break;
-			case tag_heartbeat				: L << "heartbeat"; break;
-			case tag_traf_mode_type			: L << "traf_mode_type"; break;
-			case tag_error_code				: L << "error_code"; break;
-			case tag_status					: L << "status"; break;
-			case tag_asp_id					: L << "asp_id"; break;
-			case tag_aff_point_code			: L << "aff_point_code"; break;
-			case tag_correlation_id			: L << "correlation_id"; break;
-			case tag_network_appearance		: L << "network_appearance"; break;
-			case tag_user_cause				: L << "user_cause"; break;
-			case tag_cong_indications		: L << "cong_indications"; break;
-			case tag_concerned_dst			: L << "concerned_dst"; break;
-			case tag_routing_key			: L << "routing_key"; break;
-			case tag_reg_result				: L << "reg_result"; break;
-			case tag_dereg_result			: L << "dereg_result"; break;
-			case tag_local_routing_key_id	: L << "local_routing_key_id"; break;
-			case tag_dst_point_code			: L << "dst_point_code"; break;
-			case tag_service_indicators		: L << "service_indicators"; break;
-			case tag_orig_point_code_list	: L << "orig_point_code_list"; break;
-			case tag_protocol_data			: L << "protocol_data"; break;
-			case tag_reg_status				: L << "reg_status"; break;
-			case tag_dereg_status			: L << "dereg_status"; break;
-			default: L << "tag:unknown"; break;
+			case tag_info_string			: out << "info_string"; break;
+			case tag_routing_ctxt			: out << "routing_ctxt"; break;
+			case tag_diagnostics			: out << "diagnostics"; break;
+			case tag_heartbeat				: out << "heartbeat"; break;
+			case tag_traf_mode_type			: out << "traf_mode_type"; break;
+			case tag_error_code				: out << "error_code"; break;
+			case tag_status					: out << "status"; break;
+			case tag_asp_id					: out << "asp_id"; break;
+			case tag_aff_point_code			: out << "aff_point_code"; break;
+			case tag_correlation_id			: out << "correlation_id"; break;
+			case tag_network_appearance		: out << "network_appearance"; break;
+			case tag_user_cause				: out << "user_cause"; break;
+			case tag_cong_indications		: out << "cong_indications"; break;
+			case tag_concerned_dst			: out << "concerned_dst"; break;
+			case tag_routing_key			: out << "routing_key"; break;
+			case tag_reg_result				: out << "reg_result"; break;
+			case tag_dereg_result			: out << "dereg_result"; break;
+			case tag_local_routing_key_id	: out << "local_routing_key_id"; break;
+			case tag_dst_point_code			: out << "dst_point_code"; break;
+			case tag_service_indicators		: out << "service_indicators"; break;
+			case tag_orig_point_code_list	: out << "orig_point_code_list"; break;
+			case tag_protocol_data			: out << "protocol_data"; break;
+			case tag_reg_status				: out << "reg_status"; break;
+			case tag_dereg_status			: out << "dereg_status"; break;
+			default: out << "tag:unknown"; break;
 		}
-		L << "]";
-		return L;
-	}
+		out << "]";
+		return out.str();
+	} 
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, message_class mc) {
+	std::string to_string(message_class mc) {
+		std::stringstream out;
 		switch (mc) {
-			case mclass_mgmt: L << "mgmt"; break;
-			case mclass_transfer: L << "transfer"; break;
-			case mclass_ss7_mgmt: L << "ss7mgmt"; break;
-			case mclass_asp_state: L << "aspstate"; break;
-			case mclass_asp_traffic: L << "asptraf"; break;
-			case mclass_route_mgmt: L << "routemgmt"; break;
-			default: L << "unknown"; break;
+ 			case mclass_mgmt: out << "mgmt"; break;
+			case mclass_transfer: out << "transfer"; break;
+			case mclass_ss7_mgmt: out << "ss7mgmt"; break;
+			case mclass_asp_state: out << "aspstate"; break;
+			case mclass_asp_traffic: out << "asptraf"; break;
+			case mclass_route_mgmt: out << "routemgmt"; break;
+			default: out << "unknown"; break;
 		}
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, mtype::mgmt mt) {
+	std::string to_string(mtype::mgmt mt) {
+		std::stringstream out;
 		switch (mt) {
-			case mtype::mgmt_error: L << "mgmt_error"; break;
-			case mtype::mgmt_notify: L << "mgmt_notify"; break;
-			default: L << "mgmt:unknown"; break;
+			case mtype::mgmt_error: out << "mgmt_error"; break;
+			case mtype::mgmt_notify: out << "mgmt_notify"; break;
+			default: out << "mgmt:unknown"; break;
 		}
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, mtype::transfer mt) {
+	std::string to_string(mtype::transfer mt) {
+		std::stringstream out;
+ 		switch (mt) {
+			case mtype::trans_data: out << "trans_data"; break;
+			default: out << "trans:unknown"; break;
+		}
+		return out.str(); 
+	}
+	
+	std::string to_string(mtype::ss7_mgmt mt) {
+		std::stringstream out;
+	 	switch (mt) {
+			case mtype::ss7_mgmt_duna: out << "ss7mgmt_DUNA"; break;
+			case mtype::ss7_mgmt_dava: out << "ss7mgmt_DAVA"; break;
+			case mtype::ss7_mgmt_daud: out << "ss7mgmt_DAUD"; break;
+			case mtype::ss7_mgmt_scon: out << "ss7mgmt_SCON"; break;
+			case mtype::ss7_mgmt_dupu: out << "ss7mgmt_DUPU"; break;
+			case mtype::ss7_mgmt_drst: out << "ss7mgmt_DRST"; break;
+	 		default: out << "ss7mgmt:unknown"; break;
+		}
+		return out.str();
+	}
+
+	std::string to_string(mtype::asp_state mt) {
+		std::stringstream out; 
 		switch (mt) {
-			case mtype::trans_data: L << "trans_data"; break;
-			default: L << "trans:unknown"; break;
+			case mtype::asp_state_up: out << "aspstate_UP"; break;
+			case mtype::asp_state_down: out << "aspstate_DOWN"; break;
+			case mtype::asp_state_hb: out << "aspstate_HB"; break;
+			case mtype::asp_state_up_ack: out << "aspstate_UPACK"; break;
+			case mtype::asp_state_down_ack: out << "aspstate_DOWNACK"; break;
+			case mtype::asp_state_hb_ack: out << "aspstate_HBACK"; break;
+			default: out << "aspstate:unknown"; break;
 		}
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, mtype::ss7_mgmt mt) {
-		switch (mt) {
-			case mtype::ss7_mgmt_duna: L << "ss7mgmt_DUNA"; break;
-			case mtype::ss7_mgmt_dava: L << "ss7mgmt_DAVA"; break;
-			case mtype::ss7_mgmt_daud: L << "ss7mgmt_DAUD"; break;
-			case mtype::ss7_mgmt_scon: L << "ss7mgmt_SCON"; break;
-			case mtype::ss7_mgmt_dupu: L << "ss7mgmt_DUPU"; break;
-			case mtype::ss7_mgmt_drst: L << "ss7mgmt_DRST"; break;
-			default: L << "ss7mgmt:unknown"; break;
+	std::string to_string(mtype::asp_traf mt) {
+		std::stringstream out;
+ 		switch (mt) {
+ 			case mtype::asp_traf_active: out << "asptraf_ACTIVE"; break;
+			case mtype::asp_traf_inactive: out << "asptraf_INACTIVE"; break;
+			case mtype::asp_traf_active_ack: out << "asptraf_ACTIVEACK"; break;
+			case mtype::asp_traf_inactive_ack: out << "asptraf_INACTIVEACK"; break;
+			default: out << "asptraf:unknown"; break;
 		}
-		return L;
+		return out.str(); 
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, mtype::asp_state mt) {
-		switch (mt) {
-			case mtype::asp_state_up: L << "aspstate_UP"; break;
-			case mtype::asp_state_down: L << "aspstate_DOWN"; break;
-			case mtype::asp_state_hb: L << "aspstate_HB"; break;
-			case mtype::asp_state_up_ack: L << "aspstate_UPACK"; break;
-			case mtype::asp_state_down_ack: L << "aspstate_DOWNACK"; break;
-			case mtype::asp_state_hb_ack: L << "aspstate_HBACK"; break;
-			default: L << "aspstate:unknown"; break;
+	std::string to_string(mtype::asp_route mt) {
+		std::stringstream out;
+	 	switch (mt) {
+			case mtype::asp_route_reg_req: out << "asproute_REGREQ"; break;
+			case mtype::asp_route_reg_rsp: out << "asproute_REGRSP"; break;
+			case mtype::asp_route_dereg_req: out << "asproute_DEREGREQ"; break;
+			case mtype::asp_route_dereg_rsp: out << "asproute_DEREGRSP"; break;
+			default: out << "asproute:unknown"; break;
 		}
-		return L;
+		return out.str(); 
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, mtype::asp_traf mt) {
-		switch (mt) {
-			case mtype::asp_traf_active: L << "asptraf_ACTIVE"; break;
-			case mtype::asp_traf_inactive: L << "asptraf_INACTIVE"; break;
-			case mtype::asp_traf_active_ack: L << "asptraf_ACTIVEACK"; break;
-			case mtype::asp_traf_inactive_ack: L << "asptraf_INACTIVEACK"; break;
-			default: L << "asptraf:unknown"; break;
-		}
-		return L;
-	}
-
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, mtype::asp_route mt) {
-		switch (mt) {
-			case mtype::asp_route_reg_req: L << "asproute_REGREQ"; break;
-			case mtype::asp_route_reg_rsp: L << "asproute_REGRSP"; break;
-			case mtype::asp_route_dereg_req: L << "asproute_DEREGREQ"; break;
-			case mtype::asp_route_dereg_rsp: L << "asproute_DEREGRSP"; break;
-			default: L << "asproute:unknown"; break;
-		}
-		return L;
-	}
-
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const pdu & r) {
-		L << "[hdr:"
+	std::string to_string(const pdu & r) {
+		std::stringstream out;
+		out << "[hdr: " 
 			<< "[version:" << static_cast<unsigned>(r.version) << "]"
 			<< "[class:" << r.mclass << "]";
 
-		L << "[type:";
+		out << "[type:";
 		switch (r.mclass) {
-			case mclass_mgmt: L << r.type.mgmt; break;
-			case mclass_transfer: L << r.type.transfer; break;
-			case mclass_ss7_mgmt: L << r.type.ss7mgmt; break;
-			case mclass_asp_state: L << r.type.aspstate; break;
-			case mclass_asp_traffic: L << r.type.asptraf; break;
-			case mclass_route_mgmt: L << r.type.asproute; break;
-			default: L << "unknown"; break;
+			case mclass_mgmt: out << to_string(r.type.mgmt); break;
+			case mclass_transfer: out << to_string(r.type.transfer); break;
+			case mclass_ss7_mgmt: out << to_string(r.type.ss7mgmt); break;
+			case mclass_asp_state: out << to_string(r.type.aspstate); break;
+			case mclass_asp_traffic: out << to_string(r.type.asptraf); break;
+			case mclass_route_mgmt: out << to_string(r.type.asproute); break;
+			default: out <<  "unknown"; break;
 		}
-		L << "]";
+		out << "]";
 
-		L << "[len:" << r.len << "]";
-		L << "]";
-		return L;
+		out << "[len:" << r.len << "]";
+		out << "]";
+		return out.str();  
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const message::mtp3 & r) {
-		L << "[mtp3:"
+	std::string to_string(const message::mtp3 & r) {
+		std::stringstream out;
+		out << "[mtp3:"
 			<< "[opc:" << r.opc << "]"
 			<< "[dpc:" << r.dpc << "]"
-			<< r.si
+			<< to_string(r.si)
 			<< "[ni:" << static_cast<unsigned>(r.ni) << "]"
 			<< "[mp:" << static_cast<unsigned>(r.mp) << "]"
-			<< "[sls:" << static_cast<unsigned>(r.sls) << "]"
+			<< "[s ls:" << static_cast<unsigned>(r.sls) << "]"
 		<< "]";
-		return L;
+		return out.str(); 
 	}
 
-	template< typename CharT, typename TraitsT, typename ValueT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const tlv<ValueT> & t) {
-		L << "[tlv:"
-			<< t.tag
+	template <typename ValueT>
+	std::string to_string(ValueT val) {
+		std::stringstream out;
+		out << val;
+		return out.str();
+	}
+
+	template <typename ValueT>
+	std::string to_string(const tlv<ValueT> & t) {
+		std::stringstream out;
+		out << "[tlv:" 
+			<< to_string(t .tag)
 			<< "[len:" << t.len << "]"
-			<< "[val:" << t.val << "]"
+			<< "[val:" << to_string(t.val) << "]"
 		<< "]";
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const message::data & r) {
-		L << "[M3UA_DATA:"
-			<< r.header;
+	std::string to_string(const message::data & r) {
+		std::stringstream out;
+		out << "[M3UA_DATA:"
+			<< to_string(r.header);
 		if (r.network_appearance.tag != tag_reserved)
-			L << r.network_appearance;
+			out << to_string(r.network_appearance);
 		if (r.routing_ctxt.tag != tag_reserved)
-			L << r.routing_ctxt;
+			out << to_string( r.routing_ctxt);
 		if (r.protocol_data.tag != tag_reserved)
-			L << r.protocol_data;
+			out << to_string(r.protocol_data);
 		if (r.correlation_id.tag != tag_reserved)
-			L << r.correlation_id;
-		L << "]";
-		return L;
+			out << to_string(r.correlation_id);
+		out << "]";
+		return out.str();
 	}
+
 
 } } } }
 
