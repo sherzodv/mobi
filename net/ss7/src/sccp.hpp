@@ -521,135 +521,134 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 		}
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, protocol_class pclass) {
-		L << "[proto class:";
+	std::string to_string(protocol_class pclass) {
+		std::stringstream out;
+		out << "[proto class:";
 		switch (pclass) {
-			case protocol_class::proto_class_0: L << "class 0"; break;
-			case protocol_class::proto_class_1: L << "class 1"; break;
-			case protocol_class::proto_class_2: L << "class 2"; break;
-			case protocol_class::proto_class_3: L << "class 3"; break;
-			default: L << "wrong:" << static_cast<unsigned>(pclass); break;
+			case protocol_class::proto_class_0: out << "class 0"; break;
+			case protocol_class::proto_class_1: out << "class 1"; break;
+			case protocol_class::proto_class_2: out << "class 2"; break;
+			case protocol_class::proto_class_3: out << "class 3"; break;
+			default: out << "wrong:" << static_cast<unsigned>(pclass); break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, subsystem ssn) {
-		L << "[SSN:";
+	std::string to_string(subsystem ssn) {
+		std::stringstream out;
+		out << "[SSN:"; 
 		switch (ssn) {
-			case ssn_unknown: L << "unknown"; break;
-			case ssn_mgmt: L << "mgmt"; break;
-			case ssn_reserveditu: L << "reserveditu"; break;
-			case ssn_isdnup: L << "isdnup"; break;
-			case ssn_omap: L << "omap"; break;
-			case ssn_map: L << "map"; break;
-			case ssn_hlr: L << "hlr"; break;
-			case ssn_vlr: L << "vlr"; break;
-			case ssn_msc: L << "msc"; break;
-			case ssn_eic: L << "eic"; break;
-			case ssn_auc: L << "auc"; break;
-			case ssn_isdnsuppl: L << "isdnsuppl"; break;
-			case ssn_reservedint: L << "reservedint"; break;
-			case ssn_broadband: L << "broadband"; break;
-			case ssn_tctest: L << "tctest"; break;
+			case ssn_unknown: out << "unknown"; break;
+			case ssn_mgmt: out << "mgmt"; break;
+			case ssn_reserveditu: out << "reserveditu"; break;
+			case ssn_isdnup: out << "isdnup"; break;
+			case ssn_omap: out << "omap"; break;
+			case ssn_map: out << "map"; break;
+			case ssn_hlr: out << "hlr"; break;
+			case ssn_vlr: out << "vlr"; break;
+			case ssn_msc: out << "msc"; break;
+			case ssn_eic: out << "eic"; break;
+			case ssn_auc: out << "auc"; break;
+			case ssn_isdnsuppl: out << "isdnsuppl"; break;
+			case ssn_reservedint: out << "reservedint"; break;
+			case ssn_broadband: out << "broadband"; break;
+			case ssn_tctest: out << "tctest"; break;
 			default:
-				L << "private:" << static_cast<unsigned>(ssn);
+				out << "private:"  << static_cast<unsigned>(ssn);
 				break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, nature_of_address nai) {
-		L << "[nai:";
+	std::string to_string(nature_of_address nai) {
+		std::stringstream out;
+		out << "[nai:";
 		switch (nai) {
-			case nai_unknown: L << "unknown"; break;
-			case nai_subscriber_number: L << "subscriber number"; break;
-			case nai_reserved_for_national_use: L << "national use"; break;
-			case nai_national_significant_number: L << "national significant number"; break;
-			case nai_international_number: L << "international number"; break;
-			default: L << "wrong:" << static_cast<unsigned>(nai); break;
+			case nai_unknown: out << "unknown"; break;
+			case nai_subscriber_number: out << "subscriber number"; break;
+			case nai_reserved_for_national_use: out << "national use"; break;
+			case nai_national_significant_number: out << "national significant number"; break;
+			case nai_international_number: out << "international number"; break;
+		 	default: out << "wrong:" << static_cast<unsigned>(nai); break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str(); 
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, encoding_scheme es) {
-		L << "[es:";
+	std::string to_string(encoding_scheme es) {
+		std::stringstream out;
+		out << "[es:";
 		switch (es) {
-			case es_unknown: L << "unknown"; break;
-			case es_bcd_odd: L << "bsd odd"; break;
-			case es_bcd_even: L << "bsd even"; break;
-			case es_national: L << "national"; break;
-			case es_reserved: L << "reserved"; break;
-			default: L << "wrong:" << static_cast<unsigned>(es); break;
+			case es_unknown: out << "unknown"; break;
+			case es_bcd_odd: out << "bsd odd"; break;
+			case es_bcd_even: out << "bsd even"; break;
+			case es_national: out << "national"; break;
+			case es_reserved: out << "reserved"; break;
+			default: out << "wrong:" << static_cast<unsigned>(es); break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, numbering_plan np) {
-		L << "[np:";
+	std::string to_string(numbering_plan np) {
+		std::stringstream out;
+		out << "[np:";
 		switch (np) {
-			case np_unknown: L << "unknown"; break;
-			case np_isdn_telephony: L << "isdn_telephony"; break;
-			case np_generic: L << "generic"; break;
-			case np_telex: L << "telex"; break;
-			case np_maritime: L << "maritime"; break;
-			case np_land_mobile: L << "land_mobile"; break;
-			case np_isdn_mobile: L << "isdn_mobile"; break;
-			case np_private: L << "private"; break;
-			default: L << "wrong:" << static_cast<unsigned>(np); break;
+		 	case np_unknown: out << "unknown"; break;
+			case np_isdn_telephony: out << "isdn_telephony"; break;
+			case np_generic: out << "generic"; break;
+			case np_telex: out << "telex"; break;
+			case np_maritime: out << "maritime"; break;
+			case np_land_mobile: out << "land_mobile"; break;
+			case np_isdn_mobile: out << "isdn_mobile"; break;
+			case np_private: out << "private"; break;
+			default: out << "wrong:" << static_cast<unsigned>(np); break;
 		}
-		L << "]";
-		return L;
+		out << "]";
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const address & r) {
-
-		switch (r.indicator.ri) {
-			case route_on_gt: L << "[route on GT]"; break;
-			case route_on_ssn: L << "[route on SSN]"; break;
+	std::string to_string(const address & r) {
+		std::stringstream out;
+		switch (r.indicator.ri ) {
+ 			case route_on_gt: out << "[route on GT]"; break;
+			case route_on_ssn: out << "[route on SSN]"; break;
 		}
 
 		if (r.indicator.pci) {
-			L << "[point code: " << r.point_code << "]";
+			out << "[point code: " << r.point_code << "]";
 		} else {
-			L << "[no point code]";
+			out << "[no point code]";
 		}
 
 		if (r.indicator.ssni) {
-			L << r.ssn;
+			out << to_string(r.ssn);
 		} else {
-			L << "[no SSN]";
+			out << "[no SSN]";
 		}
 
 		switch (r.indicator.gti) {
 			case gt_has_nothing:
-				L << "[no GT]";
-				break;
+				out << "[no GT]";
+				 break;
 			case gt_has_nai_only:
-				L << "[GT:"
+				out << "[GT:"
 					<< r.gt.x01.nai
-					<< "]";
+				 	<< "]";
 				break;
 			case gt_has_tt_only:
-				L << "[GT:"
+				out << "[GT:" 
 					<< "[tt: " << static_cast<unsigned>(r.gt.x02.tt) << "]"
-					<< "]"
+					<< "]" 
 				;
 				break;
 			case gt_has_tt_np_es: {
 				std::string num
 					= bcd_decode(r.gt.x03.data, r.gt_len - 2
-							, r.gt.x03.es == es_bcd_odd);
-				L << "[GT:"
+					 		, r.gt.x03.es == es_bcd_odd);
+				out << "[GT:"
 					<< "[tt: " << static_cast<unsigned>(r.gt.x03.tt) << "]"
 					<< r.gt.x03.np
 					<< r.gt.x03.es
@@ -661,9 +660,9 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 			case gt_has_tt_np_es_nai: {
 				std::string num
 					= bcd_decode(r.gt.x04.data, r.gt_len - 2
-							, r.gt.x04.es == es_bcd_odd);
-				L << "[GT:"
-					<< r.gt.x04.nai
+					 		, r.gt.x04.es == es_bcd_odd);
+				out << "[GT:"
+				 	<< r.gt.x04.nai
 					<< "[tt:" << static_cast<unsigned>(r.gt.x04.tt) << "]"
 					<< r.gt.x04.np
 					<< r.gt.x04.es
@@ -673,24 +672,24 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 				break;
 			}
 			default:
-				L << "[GT:indicator:"
+				out << "[GT:indicator:"
 					<< std::bitset<4>(r.indicator.gti)
 					<< "]";
 				break;
 		}
 
-		return L;
+		return out.str();
 	}
 
-	template< typename CharT, typename TraitsT >
-	std::basic_ostream< CharT, TraitsT >& operator<<(std::basic_ostream< CharT, TraitsT >& L, const unitdata & r) {
-		L << "[UNITDATA:[proto class: " << r.pclass << "]"
-			<< "[calling party:" << r.dst_addr << "]"
-			<< "[called party:" << r.src_addr << "]"
+	std::string to_string(const unitdata & r) {
+		std::stringstream out;
+		out << "[UNITDATA:[p roto class: " << to_string(r.pclass) << "]"
+			<< "[calling party:" << to_string(r.dst_addr) << "]"
+			<< "[called party:" << to_string(r.src_addr) << "]"
 			<< "]"
-			// << " " << std::string(r.data, r.data_len)
+			// << " " << st d::string(r.data, r.data_len)
 		;
-		return L;
+		return out.str();
 	}
 
 } } } }

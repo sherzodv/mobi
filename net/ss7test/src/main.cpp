@@ -120,13 +120,13 @@ BOOST_AUTO_TEST_CASE(test_map_tbcd_coders) {
 }
 
 BOOST_AUTO_TEST_CASE(test_m3ua) {
-	using namespace mobi::net::ss7;
+	using namespace mobi::net:: ss7;
 	using namespace mobi::net::toolbox;
 
 	bin::u8_t buf[255];
 
 	const bin::u8_t m3ua_raw1[] =
-		"\x01\x00\x01\x01\x00\x00\x00\x68\x00\x06\x00\x08\x00\x00\x00\x01"
+		"\x01\x00\x01\x01\x00\x0 0\x00\x68\x00\x06\x00\x08\x00\x00\x00\x01"
 		"\x02\x10\x00\x57\x00\x00\x0f\x57\x00\x00\x0f\x31\x03\x03\x00\x0b"
 		"\x09\x01\x03\x0e\x19\x0b\x12\x06\x00\x11\x04\x99\x63\x93\x68\x11"
 		"\x06\x0b\x12\xee\x00\x11\x04\x99\x63\x95\x99\x99\x01\x29\x62\x27"
@@ -211,16 +211,16 @@ BOOST_AUTO_TEST_CASE(test_sccp) {
 	sccp::unitdata msg;
 
 	sccp::parse(msg, bin::ascbuf(sccp_raw1), std::cout);
-	std::cout << msg << std::endl;
+	std::cout << to_string(msg) << std::endl;
 
 	sccp::parse(msg, bin::ascbuf(sccp_raw2), std::cout);
-	std::cout << msg << std::endl;
+	std::cout << to_string(msg) << std::endl;
 
 	sccp::parse(msg, bin::ascbuf(sccp_raw3), std::cout);
-	std::cout << msg << std::endl;
+	std::cout << to_string(msg) << std::endl;
 
 	sccp::parse(msg, bin::ascbuf(sccp_raw4), std::cout);
-	std::cout << msg << std::endl;
+	std::cout << to_string(msg) << std::endl;
 
 	std::memset(buf, 0, sizeof(buf));
 	sccp::write(buf, msg, std::cout);
