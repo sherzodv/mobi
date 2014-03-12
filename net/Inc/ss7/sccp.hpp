@@ -120,53 +120,53 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 	/* ITU-T REC Q.713, 2.1, Table 1 */
 	/* SCCP message types */
 	enum message_type {
-		msg_connection_request	= 0x01,
-		msg_connection_confirm	= 0x02,
-		msg_connection_refused	= 0x03,
-		msg_released			= 0x04,
-		msg_release_complete	= 0x05,
-		msg_data_form_1			= 0x06,
-		msg_data_form_2			= 0x07,
-		msg_data_ack			= 0x08,
-		msg_unit_data			= 0x09,
-		msg_unit_data_service	= 0x0A,
-		msg_expedited_data		= 0x0B,
-		msg_expedited_data_ack	= 0x0C,
-		msg_reset_request		= 0x0D,
-		msg_reset_confirmation	= 0x0E,
-		msg_proto_data_unit_err	= 0x0F,
-		msg_inactivity_test		= 0x10,
-		msg_x_unit_data			= 0x11,
-		msg_x_unit_data_service	= 0x12,
-		msg_l_unit_data			= 0x13,
-		msg_l_unit_data_service	= 0x14,
-		msg_reserved			= 0xFF
+		msg_connection_request  = 0x01,
+		msg_connection_confirm  = 0x02,
+		msg_connection_refused  = 0x03,
+		msg_released            = 0x04,
+		msg_release_complete    = 0x05,
+		msg_data_form_1         = 0x06,
+		msg_data_form_2         = 0x07,
+		msg_data_ack            = 0x08,
+		msg_unit_data           = 0x09,
+		msg_unit_data_service   = 0x0A,
+		msg_expedited_data      = 0x0B,
+		msg_expedited_data_ack  = 0x0C,
+		msg_reset_request       = 0x0D,
+		msg_reset_confirmation  = 0x0E,
+		msg_proto_data_unit_err = 0x0F,
+		msg_inactivity_test     = 0x10,
+		msg_x_unit_data         = 0x11,
+		msg_x_unit_data_service = 0x12,
+		msg_l_unit_data         = 0x13,
+		msg_l_unit_data_service = 0x14,
+		msg_reserved            = 0xFF
 	};
 
 	/* ITU-T REC Q.713, 3, Table 2 */
 	/* SCCP parameter name codes */
 	enum param_name_code {
-		param_name_code_end				= 0x00,
-		param_name_code_dest_local_ref	= 0x01,
-		param_name_code_src_local_ref	= 0x02,
-		param_name_code_src_address		= 0x03,
-		param_name_code_dst_address		= 0x04,
-		param_name_code_proto_class		= 0x05,
-		param_name_code_segm_reassemble	= 0x06,
-		param_name_code_recv_seq_no		= 0x07,
-		param_name_code_seq_segmenting	= 0x08,
-		param_name_code_credit			= 0x09,
-		param_name_code_release_cause	= 0x0A,
-		param_name_code_return_cause	= 0x0B,
-		param_name_code_reset_cause		= 0x0C,
-		param_name_code_error_cause		= 0x0D,
-		param_name_code_refusal_cause	= 0x0E,
-		param_name_code_data			= 0x0F,
-		param_name_code_segmentation	= 0x10,
-		param_name_code_hop_counter		= 0x11,
-		param_name_code_importance		= 0x12,
-		param_name_code_long_data		= 0x13,
-		param_name_code_reserved		= 0xFF
+		param_name_code_end             = 0x00,
+		param_name_code_dest_local_ref  = 0x01,
+		param_name_code_src_local_ref   = 0x02,
+		param_name_code_src_address     = 0x03,
+		param_name_code_dst_address     = 0x04,
+		param_name_code_proto_class     = 0x05,
+		param_name_code_segm_reassemble = 0x06,
+		param_name_code_recv_seq_no     = 0x07,
+		param_name_code_seq_segmenting  = 0x08,
+		param_name_code_credit          = 0x09,
+		param_name_code_release_cause   = 0x0A,
+		param_name_code_return_cause    = 0x0B,
+		param_name_code_reset_cause     = 0x0C,
+		param_name_code_error_cause     = 0x0D,
+		param_name_code_refusal_cause   = 0x0E,
+		param_name_code_data            = 0x0F,
+		param_name_code_segmentation    = 0x10,
+		param_name_code_hop_counter     = 0x11,
+		param_name_code_importance      = 0x12,
+		param_name_code_long_data       = 0x13,
+		param_name_code_reserved        = 0xFF
 	};
 
 	/* ITU-T REC Q.713, 3.6 */
@@ -181,65 +181,65 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 	/* GT indicator part of the address indicator */
 	enum gt_indicator {
 		/* No GT included */
-		gt_has_nothing		= 0x00,
+		gt_has_nothing           = 0x00,
 		/* GT includes nature of address indicator only */
-		gt_has_nai_only		= 0x01, /* 0b0001 */
+		gt_has_nai_only          = 0x01, /* 0b0001 */
 		/* GT includes translation type only */
-		gt_has_tt_only		= 0x02, /* 0b0010 */
+		gt_has_tt_only           = 0x02, /* 0b0010 */
 		/* GT includes translation type, numbering plan, encoding scheme */
-		gt_has_tt_np_es		= 0x03, /* 0b0011 */
+		gt_has_tt_np_es          = 0x03, /* 0b0011 */
 		/* GT includes translation type, numbering plan, encoding scheme,
 		 * nature of address indicator */
-		gt_has_tt_np_es_nai	= 0x04, /* 0b0010 */
+		gt_has_tt_np_es_nai     = 0x04, /* 0b0010 */
 	};
 
 	/* Route indicator part of the address indicator */
 	enum routing_indicator {
-		route_on_gt		= 0x00,
-		route_on_ssn	= 0x01,
+		route_on_gt     = 0x00,
+		route_on_ssn    = 0x01,
 	};
 
 	/* 3.4.2.2: The subsystem number (SSN) identifies an SCCP user function
 	 * and, when provided, consists of 1 octed */
 	enum subsystem: bin::u8_t {
-		ssn_unknown		= 0x00,
-		ssn_mgmt		= 0x01,
-		ssn_reserveditu	= 0x02,
-		ssn_isdnup		= 0x03,
-		ssn_omap		= 0x04,
-		ssn_map			= 0x05,
-		ssn_hlr			= 0x06,
-		ssn_vlr			= 0x07,
-		ssn_msc			= 0x08,
-		ssn_eic			= 0x09,
-		ssn_auc			= 0x10,
-		ssn_isdnsuppl	= 0x11,
-		ssn_reservedint	= 0x12,
-		ssn_broadband	= 0x13,
-		ssn_tctest		= 0x14,
+		ssn_unknown     = 0x00,
+		ssn_mgmt        = 0x01,
+		ssn_reserveditu = 0x02,
+		ssn_isdnup      = 0x03,
+		ssn_omap        = 0x04,
+		ssn_map         = 0x05,
+		ssn_hlr         = 0x06,
+		ssn_vlr         = 0x07,
+		ssn_msc         = 0x08,
+		ssn_eic         = 0x09,
+		ssn_auc         = 0x10,
+		ssn_isdnsuppl   = 0x11,
+		ssn_reservedint = 0x12,
+		ssn_broadband   = 0x13,
+		ssn_tctest      = 0x14,
 	};
 
 	/* Values of a nature of address indicator: nai: 7 bits */
 	enum nature_of_address {
-		nai_unknown						= 0x00,
-		nai_subscriber_number			= 0x01,
-		nai_reserved_for_national_use	= 0x02,
-		nai_national_significant_number	= 0x03,
-		nai_international_number		= 0x04,
+		nai_unknown                     = 0x00,
+		nai_subscriber_number           = 0x01,
+		nai_reserved_for_national_use   = 0x02,
+		nai_national_significant_number = 0x03,
+		nai_international_number        = 0x04,
 	};
 
 	/* Values of a numbering plan field: np: 4 bits */
 	enum numbering_plan {
-		np_unknown			= 0x00,
-		np_isdn_telephony	= 0x01,
-		np_generic			= 0x02,
-		np_data				= 0x03,
-		np_telex			= 0x04,
-		np_maritime			= 0x05,
-		np_land_mobile		= 0x06,
-		np_isdn_mobile		= 0x07,
-		np_private			= 0x0E,
-		np_reserved			= 0x0F,
+		np_unknown          = 0x00,
+		np_isdn_telephony   = 0x01,
+		np_generic          = 0x02,
+		np_data             = 0x03,
+		np_telex            = 0x04,
+		np_maritime         = 0x05,
+		np_land_mobile      = 0x06,
+		np_isdn_mobile      = 0x07,
+		np_private          = 0x0E,
+		np_reserved         = 0x0F,
 	};
 
 	/* Values of an encoding scheme field: es: 4 bits */
@@ -256,11 +256,11 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 
 	/* ITU-T REC Q.713, 3.4.1: Address indicator */
 	struct address_indicator {
-		bool pci				: 1;	/* Point code indicator */
-		bool ssni				: 1;	/* Subsystem number indicator */
-		gt_indicator gti		: 4;	/* Global title indicator */
-		routing_indicator ri	: 1;	/* Routing indicator */
-		bin::u8_t reserved	: 1;
+		bool pci                : 1;	/* Point code indicator */
+		bool ssni               : 1;	/* Subsystem number indicator */
+		gt_indicator gti        : 4;	/* Global title indicator */
+		routing_indicator ri    : 1;	/* Routing indicator */
+		bin::u8_t reserved      : 1;
 	};
 
 	/* The various elements when provided, occur in the order: point code
