@@ -388,7 +388,7 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 			case si_dup2      : out << "dup2"; break;
 			case si_broadband : out << "broadband"; break;
 			case si_sattelite : out << "sattelite"; break;
-			default : out << "unknown:" << static_cast<unsigned>(si); break;
+			default			  : out << "unknown:" << static_cast<unsigned>(si); break;
 		}
 		out << "]";
 		return out.str();
@@ -422,41 +422,41 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 			case tag_protocol_data			: out << "protocol_data"; break;
 			case tag_reg_status				: out << "reg_status"; break;
 			case tag_dereg_status			: out << "dereg_status"; break;
-			default: out << "tag:unknown"; break;
+			default							: out << "tag:unknown"; break;
 		}
 		out << "]";
-		return out.str();
+		return out.str(); 
 	} 
 
 	std::string to_string(message_class mc) {
 		std::stringstream out;
 		switch (mc) {
- 			case mclass_mgmt: out << "mgmt"; break;
-			case mclass_transfer: out << "transfer"; break;
-			case mclass_ss7_mgmt: out << "ss7mgmt"; break;
-			case mclass_asp_state: out << "aspstate"; break;
-			case mclass_asp_traffic: out << "asptraf"; break;
-			case mclass_route_mgmt: out << "routemgmt"; break;
-			default: out << "unknown"; break;
+ 			case mclass_mgmt        : out << "mgmt"; break;
+			case mclass_transfer    : out << "transfer"; break;
+			case mclass_ss7_mgmt    : out << "ss7mgmt"; break;
+			case mclass_asp_state   : out << "aspstate"; break;
+			case mclass_asp_traffic : out << "asptraf"; break;
+			case mclass_route_mgmt  : out << "routemgmt"; break;
+			default					: out << "unknown"; break;
 		}
-		return out.str();
+		return out.str(); 
 	}
 
 	std::string to_string(mtype::mgmt mt) {
 		std::stringstream out;
 		switch (mt) {
-			case mtype::mgmt_error: out << "mgmt_error"; break;
-			case mtype::mgmt_notify: out << "mgmt_notify"; break;
-			default: out << "mgmt:unknown"; break;
+			case mtype::mgmt_error  : out << "mgmt_error"; break;
+			case mtype::mgmt_notify : out << "mgmt_notify"; break;
+			default                 : out << "mgmt:unknown"; break;
 		}
-		return out.str();
+		return out.str(); 
 	}
 
 	std::string to_string(mtype::transfer mt) {
-		std::stringstream out;
+		std::stringstream out; 
  		switch (mt) {
-			case mtype::trans_data: out << "trans_data"; break;
-			default: out << "trans:unknown"; break;
+			case mtype::trans_data : out << "trans_data"; break;
+			default                : out << "tr ans:unknown"; break;
 		}
 		return out.str(); 
 	}
@@ -470,21 +470,21 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 			case mtype::ss7_mgmt_scon: out << "ss7mgmt_SCON"; break;
 			case mtype::ss7_mgmt_dupu: out << "ss7mgmt_DUPU"; break;
 			case mtype::ss7_mgmt_drst: out << "ss7mgmt_DRST"; break;
-	 		default: out << "ss7mgmt:unknown"; break;
+	 		default                  : out << "ss7mgmt:unknown"; break;
 		}
-		return out.str();
+		return out.str(); 
 	}
 
 	std::string to_string(mtype::asp_state mt) {
-		std::stringstream out; 
+		std::stringstream out;  
 		switch (mt) {
-			case mtype::asp_state_up: out << "aspstate_UP"; break;
-			case mtype::asp_state_down: out << "aspstate_DOWN"; break;
-			case mtype::asp_state_hb: out << "aspstate_HB"; break;
-			case mtype::asp_state_up_ack: out << "aspstate_UPACK"; break;
-			case mtype::asp_state_down_ack: out << "aspstate_DOWNACK"; break;
-			case mtype::asp_state_hb_ack: out << "aspstate_HBACK"; break;
-			default: out << "aspstate:unknown"; break;
+			case mtype::asp_state_up        : out << "aspstate_UP"; break;
+			case mtype::asp_state_down      : out << "aspstate_DOWN"; break;
+			case mtype::asp_state_hb        : out << "aspstate_HB"; break;
+			case mtype::asp_state_up_ack    : out << "aspstate_UPACK"; break;
+			case mtype::asp_state_down_ack  : out << "aspstate_DOWNACK"; break;
+			case mtype::asp_state_hb_ack    : out << "aspstate_HBACK"; break;
+			default                         : out << "asp state:unknown"; break;
 		}
 		return out.str();
 	}
@@ -492,48 +492,48 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 	std::string to_string(mtype::asp_traf mt) {
 		std::stringstream out;
  		switch (mt) {
- 			case mtype::asp_traf_active: out << "asptraf_ACTIVE"; break;
-			case mtype::asp_traf_inactive: out << "asptraf_INACTIVE"; break;
-			case mtype::asp_traf_active_ack: out << "asptraf_ACTIVEACK"; break;
-			case mtype::asp_traf_inactive_ack: out << "asptraf_INACTIVEACK"; break;
-			default: out << "asptraf:unknown"; break;
-		}
-		return out.str(); 
+ 			case mtype::asp_traf_active       : out << "asptraf_ACTIVE"; break;
+			case mtype::asp_traf_inactive     : out << "asptraf_INACTIVE"; break;
+			case mtype::asp_traf_active_ack   : out << "asptraf_ACTIVEACK"; break;
+			case mtype::asp_traf_inactive_ack : out << "asptraf_INACTIVEACK"; break;
+		 	default                           : out << "asptraf:unknown"; break;
+		} 
+		return out.str();  
 	}
 
 	std::string to_string(mtype::asp_route mt) {
 		std::stringstream out;
 	 	switch (mt) {
-			case mtype::asp_route_reg_req: out << "asproute_REGREQ"; break;
-			case mtype::asp_route_reg_rsp: out << "asproute_REGRSP"; break;
-			case mtype::asp_route_dereg_req: out << "asproute_DEREGREQ"; break;
-			case mtype::asp_route_dereg_rsp: out << "asproute_DEREGRSP"; break;
-			default: out << "asproute:unknown"; break;
-		}
-		return out.str(); 
+			case mtype::asp_route_reg_req    : out << "asproute_REGREQ"; break;
+			case mtype::asp_route_reg_rsp    : out << "asproute_REGRSP"; break;
+			case mtype::asp_route_dereg_req  : out << "asproute_DEREGREQ"; break;
+			case mtype::asp_route_dereg_rsp  : out << "asproute_DEREGRSP"; break;
+		 	default                          : out << "asproute:unknown"; break;
+		} 
+		return out.str();  
 	}
 
 	std::string to_string(const pdu & r) {
 		std::stringstream out;
 		out << "[hdr: " 
 			<< "[version:" << static_cast<unsigned>(r.version) << "]"
-			<< "[class:" << r.mclass << "]";
+			<< "[class:" <<  r.mclass << "]";
 
 		out << "[type:";
 		switch (r.mclass) {
-			case mclass_mgmt: out << to_string(r.type.mgmt); break;
-			case mclass_transfer: out << to_string(r.type.transfer); break;
-			case mclass_ss7_mgmt: out << to_string(r.type.ss7mgmt); break;
-			case mclass_asp_state: out << to_string(r.type.aspstate); break;
-			case mclass_asp_traffic: out << to_string(r.type.asptraf); break;
-			case mclass_route_mgmt: out << to_string(r.type.asproute); break;
-			default: out <<  "unknown"; break;
+			case mclass_mgmt        : out << to_string(r.type.mgmt); break;
+			case mclass_transfer    : out << to_string(r.type.transfer); break;
+			case mclass_ss7_mgmt    : out << to_string(r.type.ss7mgmt); break;
+			case mclass_asp_state   : out << to_string(r.type.aspstate); break;
+			case mclass_asp_traffic : out << to_string(r.type.asptraf); break;
+			case mclass_route_mgmt  : out << to_string(r.type.asproute); break;
+			default                 : out <<  "unknown"; break;
 		}
 		out << "]";
 
 		out << "[len:" << r.len << "]";
 		out << "]";
-		return out.str();  
+		return out.str();   
 	}
 
 	std::string to_string(const message::mtp3 & r) {
@@ -544,9 +544,9 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 			<< to_string(r.si)
 			<< "[ni:" << static_cast<unsigned>(r.ni) << "]"
 			<< "[mp:" << static_cast<unsigned>(r.mp) << "]"
-			<< "[s ls:" << static_cast<unsigned>(r.sls) << "]"
-		<< "]";
-		return out.str(); 
+			<< "[s ls:" <<  static_cast<unsigned>(r.sls) << "]"
+		    << "]";
+		return out.str();  
 	}
 
 	template <typename ValueT>
@@ -558,12 +558,12 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 
 	template <typename ValueT>
 	std::string to_string(const tlv<ValueT> & t) {
-		std::stringstream out;
+		std:: stringstream out;
 		out << "[tlv:" 
 			<< to_string(t .tag)
 			<< "[len:" << t.len << "]"
-			<< "[val:" << to_string(t.val) << "]"
-		<< "]";
+			<<  "[val:" << to_string(t.val) << "]"
+		    << "]";
 		return out.str();
 	}
 

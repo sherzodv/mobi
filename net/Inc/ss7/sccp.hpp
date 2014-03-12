@@ -525,38 +525,36 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 		std::stringstream out;
 		out << "[proto class:";
 		switch (pclass) {
-			case protocol_class::proto_class_0: out << "class 0"; break;
-			case protocol_class::proto_class_1: out << "class 1"; break;
-			case protocol_class::proto_class_2: out << "class 2"; break;
-			case protocol_class::proto_class_3: out << "class 3"; break;
-			default: out << "wrong:" << static_cast<unsigned>(pclass); break;
+			case protocol_class::proto_class_0 : out << "class 0"; break;
+			case protocol_class::proto_class_1 : out << "class 1"; break;
+			case protocol_class::proto_class_2 : out << "class 2"; break;
+			case protocol_class::proto_class_3 : out << "class 3"; break;
+			default                            : out << "wrong:" << static_cast<unsigned>(pclass); break;
 		}
 		out << "]";
 		return out.str();
 	}
 
 	std::string to_string(subsystem ssn) {
-		std::stringstream out;
+		std::stringstream out; 
 		out << "[SSN:"; 
 		switch (ssn) {
-			case ssn_unknown: out << "unknown"; break;
-			case ssn_mgmt: out << "mgmt"; break;
-			case ssn_reserveditu: out << "reserveditu"; break;
-			case ssn_isdnup: out << "isdnup"; break;
-			case ssn_omap: out << "omap"; break;
-			case ssn_map: out << "map"; break;
-			case ssn_hlr: out << "hlr"; break;
-			case ssn_vlr: out << "vlr"; break;
-			case ssn_msc: out << "msc"; break;
-			case ssn_eic: out << "eic"; break;
-			case ssn_auc: out << "auc"; break;
-			case ssn_isdnsuppl: out << "isdnsuppl"; break;
-			case ssn_reservedint: out << "reservedint"; break;
-			case ssn_broadband: out << "broadband"; break;
-			case ssn_tctest: out << "tctest"; break;
-			default:
-				out << "private:"  << static_cast<unsigned>(ssn);
-				break;
+			case ssn_unknown     : out << "unknown"; break;
+			case ssn_mgmt        : out << "mgmt"; break;
+			case ssn_reserveditu : out << "reserveditu"; break;
+			case ssn_isdnup      : out << "isdnup"; break;
+			case ssn_omap        : out << "omap"; break;
+			case ssn_map         : out << "map"; break;
+			case ssn_hlr         : out << "hlr"; break;
+			case ssn_vlr         : out << "vlr"; break;
+			case ssn_msc         : out << "msc"; break;
+			case ssn_eic         : out << "eic"; break;
+			case ssn_auc         : out << "auc"; break;
+			case ssn_isdnsuppl   : out << "isdnsuppl"; break;
+			case ssn_reservedint : out << "reservedint"; break;
+			case ssn_broadband   : out << "broadband"; break;
+			case ssn_tctest      : out << "tctest"; break;
+			default              : out << "private:"  << static_cast<unsigned>(ssn); break; 
 		}
 		out << "]";
 		return out.str();
@@ -566,48 +564,48 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 		std::stringstream out;
 		out << "[nai:";
 		switch (nai) {
-			case nai_unknown: out << "unknown"; break;
-			case nai_subscriber_number: out << "subscriber number"; break;
-			case nai_reserved_for_national_use: out << "national use"; break;
-			case nai_national_significant_number: out << "national significant number"; break;
-			case nai_international_number: out << "international number"; break;
-		 	default: out << "wrong:" << static_cast<unsigned>(nai); break;
+			case nai_unknown                     : out << "unknown"; break;
+			case nai_subscriber_number           : out << "subscriber number"; break;
+			case nai_reserved_for_national_use   : out << "national use"; break;
+			case nai_national_significant_number : out << "national significant number"; break;
+			case nai_international_number        : out << "international number"; break;
+	 	 	default                              : out << "wrong:" << static_cast<unsigned>(nai); break;
 		}
 		out << "]";
-		return out.str(); 
+	 	return out.str(); 
 	}
 
 	std::string to_string(encoding_scheme es) {
 		std::stringstream out;
 		out << "[es:";
 		switch (es) {
-			case es_unknown: out << "unknown"; break;
-			case es_bcd_odd: out << "bsd odd"; break;
-			case es_bcd_even: out << "bsd even"; break;
-			case es_national: out << "national"; break;
-			case es_reserved: out << "reserved"; break;
-			default: out << "wrong:" << static_cast<unsigned>(es); break;
+			case es_unknown  : out << "unknown"; break;
+			case es_bcd_odd  : out << "bsd odd"; break;
+			case es_bcd_even : out << "bsd even"; break;
+			case es_national : out << "national"; break;
+			case es_reserved : out << "reserved"; break;
+			default          : out << "wrong:" << static_cast<unsigned>(es); break;
 		}
 		out << "]";
-		return out.str();
+		return out.str(); 
 	}
 
 	std::string to_string(numbering_plan np) {
 		std::stringstream out;
 		out << "[np:";
 		switch (np) {
-		 	case np_unknown: out << "unknown"; break;
-			case np_isdn_telephony: out << "isdn_telephony"; break;
-			case np_generic: out << "generic"; break;
-			case np_telex: out << "telex"; break;
-			case np_maritime: out << "maritime"; break;
-			case np_land_mobile: out << "land_mobile"; break;
-			case np_isdn_mobile: out << "isdn_mobile"; break;
-			case np_private: out << "private"; break;
-			default: out << "wrong:" << static_cast<unsigned>(np); break;
+		 	case np_unknown        : out << "unknown"; break;
+			case np_isdn_telephony : out << "isdn_telephony"; break;
+			case np_generic        : out << "generic"; break;
+			case np_telex          : out << "telex"; break;
+			case np_maritime       : out << "maritime"; break;
+			case np_land_mobile    : out << "land_mobile"; break;
+			case np_isdn_mobile    : out << "isdn_mobile"; break;
+			case np_private        : out << "private"; break;
+			default                : out << "wrong:" << static_cast<unsigned>(np); break;
 		}
 		out << "]";
-		return out.str();
+		return out.str(); 
 	}
 
 	std::string to_string(const address & r) {
@@ -631,17 +629,17 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 
 		switch (r.indicator.gti) {
 			case gt_has_nothing:
-				out << "[no GT]";
+				out <<  "[no GT]";
 				 break;
 			case gt_has_nai_only:
-				out << "[GT:"
+				out << " [GT:"
 					<< r.gt.x01.nai
-				 	<< "]";
+				 	<< "] ";
 				break;
 			case gt_has_tt_only:
-				out << "[GT:" 
+				out << "[G T:" 
 					<< "[tt: " << static_cast<unsigned>(r.gt.x02.tt) << "]"
-					<< "]" 
+					<< "]"  
 				;
 				break;
 			case gt_has_tt_np_es: {
@@ -649,36 +647,36 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 					= bcd_decode(r.gt.x03.data, r.gt_len - 2
 					 		, r.gt.x03.es == es_bcd_odd);
 				out << "[GT:"
-					<< "[tt: " << static_cast<unsigned>(r.gt.x03.tt) << "]"
+					<< " [tt: " << static_cast<unsigned>(r.gt.x03.tt) << "]"
 					<< r.gt.x03.np
 					<< r.gt.x03.es
 					<< "[data:" << num << "]"
 					<< "]"
 				;
-				break;
+				break; 
 			}
 			case gt_has_tt_np_es_nai: {
 				std::string num
 					= bcd_decode(r.gt.x04.data, r.gt_len - 2
-					 		, r.gt.x04.es == es_bcd_odd);
+					  		, r.gt.x04.es == es_bcd_odd);
 				out << "[GT:"
-				 	<< r.gt.x04.nai
+				 	<<  r.gt.x04.nai
 					<< "[tt:" << static_cast<unsigned>(r.gt.x04.tt) << "]"
 					<< r.gt.x04.np
 					<< r.gt.x04.es
 					<< "[data:" << num << "]"
 					<< "]"
 				;
-				break;
+				break; 
 			}
 			default:
 				out << "[GT:indicator:"
-					<< std::bitset<4>(r.indicator.gti)
+					<<  std::bitset<4>(r.indicator.gti)
 					<< "]";
-				break;
+				break; 
 		}
 
-		return out.str();
+		return out.str(); 
 	}
 
 	std::string to_string(const unitdata & r) {
@@ -687,9 +685,9 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 			<< "[calling party:" << to_string(r.dst_addr) << "]"
 			<< "[called party:" << to_string(r.src_addr) << "]"
 			<< "]"
-			// << " " << st d::string(r.data, r.data_len)
+			// << " " <<  st d::string(r.data, r.data_len)
 		;
-		return out.str();
+		return out.str() ;
 	}
 
 } } } }
