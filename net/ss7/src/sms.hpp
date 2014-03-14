@@ -629,7 +629,7 @@ namespace mobi { namespace net { namespace sms {
 			}
 
 			template <class MessageT, bin::sz_t MaxLen>
-			const bin::u8_t * parse_gsm7bit_text(string_tt<MaxLen> & r
+			const bin::u8_t * parse_text(string_tt<MaxLen> & r
 					, const MessageT & msg) {
 
 				using namespace bin;
@@ -644,16 +644,79 @@ namespace mobi { namespace net { namespace sms {
 				r.len = 0;
 
 				if (msg.udhi) {
-					/* Count the number of fill bits */
-					offs += 7 - (*cur * 8) % 7;
-					if (offs == 7) {
-						offs = 0;
-					}
+					/* Skip header */
 					cur += *cur;
 					RETURN_NULL_IF(cur >= cend);
+					if (msg.dcsd.cs == cs_gsm_7bit) {
+						/* Count the number of fill bits */
+						offs += 7 - (*cur * 8) % 7;
+						if (offs == 7) {
+							offs = 0;
+						}
+					}
 				}
 
-				return gsm::sept_to_oct(r, cur, cend, offs);
+				switch (msg.dcsd.cs) {
+					case cs_gsm_7bit:
+						return gsm::sept_to_oct(r, cur, cend, offs);
+					case cs_8bit:
+						std::memcpy(r.data, cur, cend - cur);
+						r.len = cend - cur;
+						return cend;
+					default:
+						return nullptr;
+				}
+			}
+
+			template <class MessageT, bin::sz_t MaxLen>
+			const bin::u8_t * parse_text(utf16_string_tt<MaxLen> & r
+					, const MessageT & msg) {
+
+				using namespace bin;
+
+				bin::u8_t offs;
+				const bin::u8_t * cur = msg.ud.data;
+				const bin::u8_t * cend = cur + msg.ud.len;
+
+				RETURN_NULL_IF(cur >= cend || msg.ud.len > 256);
+
+				offs = 0;
+				r.len = 0;
+
+				if (msg.udhi) {
+					/* Skip header */
+					cur += *cur;
+					RETURN_NULL_IF(cur >= cend);
+					if (msg.dcsd.cs == cs_gsm_7bit) {
+						/* Count the number of fill bits */
+						offs += 7 - (*cur * 8) % 7;
+						if (offs == 7) {
+							offs = 0;
+						}
+					}
+				}
+
+				string_tt<MaxLen> temp;
+
+				switch (msg.dcsd.cs) {
+					case cs_gsm_7bit:
+						gsm::sept_to_oct(temp, cur, cend, offs);
+						break;
+					case cs_8bit:
+						std::memcpy(temp.data, cur, cend - cur);
+						break;
+					case cs_ucs2:
+						std::memcpy(r.data, cur, cend - cur);
+						break;
+					default:
+						return nullptr;
+				}
+
+				if (gsm::sbit_to_utf16(r, temp) == temp.len) {
+					return cend;
+				} else {
+					return nullptr;
+				}
 			}
 
 			void parse_dcs(bin::u8_t dcs, dc_scheme & r) {

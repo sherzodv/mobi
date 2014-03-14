@@ -639,19 +639,15 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 
 				// L << sms::to_string(r) << std::endl;
 
-				sms::string_tt<256> temp_text;
 				sms::utf16_string_tt<256> text;
 
-				pbase::parse_gsm7bit_text(temp_text, r);
-				BOOST_CHECK(gsm::sbit_to_utf16(text, temp_text)
-						== temp_text.len);
+				BOOST_CHECK(pbase::parse_text(text, r) != nullptr);
 
 				const char *txt = "Hormatly musderi, size +99363544535 belgiden 1 gezek 30.04 12:42 jan etdiler";
 
 				bool text_is_equal = false;
 				for (std::size_t i = 0; i < text.len; ++i) {
-					text_is_equal = (text.data[i] == txt[i]);
-					if (!text_is_equal) {
+					if (!(text_is_equal = (text.data[i] == txt[i]))) {
 						break;
 					}
 				}
