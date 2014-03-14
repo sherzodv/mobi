@@ -241,6 +241,8 @@ namespace gsm {
 			offs = 8;
 		}
 
+		r.data[0] = 0;
+
 		while (cur < cend && buf < bend) {
 			switch (part) {
 				case tail:
@@ -256,6 +258,9 @@ namespace gsm {
 					if (offs == 1) {
 						offs = 8;
 						++cur;
+						if (cur < cend) {
+							*cur = 0;
+						}
 					}
 					continue;
 			}

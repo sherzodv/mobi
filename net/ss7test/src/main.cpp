@@ -654,14 +654,12 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 					if (!text_is_equal) {
 						break;
 					}
-					L << (char )text.data[i];
 				}
 
 				BOOST_CHECK(text_is_equal == true);
 
 				return resume;
 			}
-
 			virtual action on_sms_submit(const sms::submit_t & r) {
 				BOOST_CHECK(r.rd == false);
 				BOOST_CHECK(r.vpf == sms::vpf_relative);
@@ -680,37 +678,30 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 
 				return resume;
 			}
-
 			virtual action on_sms_command(const sms::command_t & msg) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_status_report(const sms::status_report_t & msg) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_deliver_report_neg(const sms::deliver_report_neg_t & msg) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_deliver_report_pos(const sms::deliver_report_pos_t & msg) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_submit_report_neg(const sms::submit_report_neg_t & msg) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_submit_report_pos(const sms::submit_report_pos_t & msg) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_ie_concat(const sms::ie::concat & r) {
 				(void)(r);
 				return pbase::resume;
@@ -954,7 +945,7 @@ BOOST_AUTO_TEST_CASE(print_ucs2_gsm_table) {
 	std::cout << std::endl;
 }
 
-BOOST_AUTO_TEST_CASE(test_gsm7bit_write) {
+BOOST_AUTO_TEST_CASE(workshop) {
 	using namespace mobi::net;
 	using namespace mobi::net::asn;
 	using namespace mobi::net::ss7;
@@ -1008,7 +999,6 @@ BOOST_AUTO_TEST_CASE(test_gsm7bit_write) {
 				(void)(msg);
 				return stop;
 			}
-
 			virtual action on_sms_ie_concat(const sms::ie::concat & r) {
 				(void)(r);
 				return pbase::resume;
