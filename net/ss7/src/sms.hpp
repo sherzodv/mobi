@@ -621,6 +621,7 @@ namespace mobi { namespace net { namespace sms {
 								default: return nullptr;
 							}
 						}
+						// TODO: parse EMS headers
 					}
 				}
 
@@ -628,17 +629,16 @@ namespace mobi { namespace net { namespace sms {
 			}
 
 			template <class MessageT, bin::sz_t MaxLen>
-			const bin::u8_t * parse_gsm7bit_text(const MessageT & msg
-					, utf16_string_tt<MaxLen> & r) {
+			const bin::u8_t * parse_gsm7bit_text(string_tt<MaxLen> & r
+					, const MessageT & msg) {
 
 				using namespace bin;
 
-				bool ext = false;
-				bin::u8_t offs, code;
+				bin::u8_t offs;
 				const bin::u8_t * cur = msg.ud.data;
-				const bin::u8_t * end = cur + msg.ud.len;
+				const bin::u8_t * cend = cur + msg.ud.len;
 
-				RETURN_NULL_IF(cur >= end || msg.ud.len > 256);
+				RETURN_NULL_IF(cur >= cend || msg.ud.len > 256);
 
 				offs = 0;
 				r.len = 0;
@@ -650,38 +650,10 @@ namespace mobi { namespace net { namespace sms {
 						offs = 0;
 					}
 					cur += *cur;
-					RETURN_NULL_IF(cur >= end);
+					RETURN_NULL_IF(cur >= cend);
 				}
 
-				while (cur + 2 < end) {
-					if (offs == 0) {
-						code = 0x7F & *cur;
-						++offs;
-					} else {
-						code = (~(0xFF >> offs) & *cur) >> (8 - offs);
-						code |= (((0xFF >> (offs + 1)) & *(cur + 1)) << offs);
-						++cur;
-						++offs;
-						if (offs > 7) {
-							offs = 0;
-						}
-					}
-
-					if (ext) {
-						ext = false;
-						r.data[r.len] = gsm::decode_7bit_ext_char(code);
-						++r.len;
-					} else {
-						r.data[r.len] = gsm::decode_7bit_char(code);
-						if (r.data[r.len] == 0xA0) {
-							ext = true;
-						} else {
-							++r.len;
-						}
-					}
-				}
-
-				return cur;
+				return gsm::sept_to_oct(r, cur, cend, offs);
 			}
 
 			void parse_dcs(bin::u8_t dcs, dc_scheme & r) {
@@ -1359,7 +1331,8 @@ namespace mobi { namespace net { namespace sms {
 
 	template <class LogT>
 	class writer {
-		LogT & L;
+		protected:
+			LogT & L;
 		public:
 			writer(LogT & l): L(l) {}
 			virtual ~writer() {}
@@ -1486,6 +1459,96 @@ namespace mobi { namespace net { namespace sms {
 			bin::u8_t * write_sms_submit_report_pos(bin::u8_t * buf
 					, bin::u8_t * bend, const submit_report_pos_t & msg) {
 				return nullptr;
+			}
+
+			bin::u8_t * write_sms_ie_concat(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::concat & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 5 > bend);
+				*buf++ = ie::header::concat;
+				*buf++ = 0x03;
+				*buf++ = r.refno;
+				*buf++ = r.maxnum;
+				*buf++ = r.seqno;
+				return buf;
+			}
+
+			bin::u8_t * write_sms_ie_special_ind(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::special_ind & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 > bend);
+				*buf++ = ie::header::special_ind;
+				*buf++ = 0x02;
+				buf = w::cp_u8(buf, ascbuf(r.type));
+				return w::cp_u8(buf, ascbuf(r.msg_count));
+			}
+
+			bin::u8_t * write_sms_ie_port_addr_8bit(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::port_addr_8bit & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 4 > bend);
+				*buf++ = ie::header::port_addr_8bit;
+				*buf++ = 0x02;
+				*buf++ = r.dst_port;
+				*buf++ = r.src_port;
+				return buf;
+			}
+
+			bin::u8_t * write_sms_ie_port_addr_16bit(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::port_addr_16bit & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 6 > bend);
+				*buf++ = ie::header::port_addr_16bit;
+				*buf++ = 0x04;
+				buf = w::cp_u16(buf, ascbuf(r.dst_port));
+				return w::cp_u16(buf, ascbuf(r.src_port));
+			}
+
+			bin::u8_t * write_sms_ie_smsc_control(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::smsc_control & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 3 > bend);
+				*buf++ = ie::header::smsc_control;
+				*buf++ = 0x01;
+				return w::cp_u8(buf, ascbuf(r.report));
+			}
+
+			bin::u8_t * write_sms_ie_udh_source_ind(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::udh_source_ind & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 3 > bend);
+				*buf++ = ie::header::udh_source_ind;
+				return w::cp_u8(buf, ascbuf(r.src));
+			}
+
+			bin::u8_t * write_sms_ie_sim_security(bin::u8_t * buf
+					, bin::u8_t * bend, bin::u8_t value) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 3 > bend);
+				*buf++ = value;
+				*buf++ = 0;
+				return buf;
+			}
+
+			bin::u8_t * write_sms_ie_concat_enhanced(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::concat_enhanced & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 6 > bend);
+				*buf++ = ie::header::concat_enhanced;
+				*buf++ = 0x04;
+				buf = w::cp_u16(buf, ascbuf(r.refno));
+				*buf++ = r.maxnum;
+				*buf++ = r.seqno;
+				return buf;
+			}
+
+			bin::u8_t * write_sms_ie_wireless_control(bin::u8_t * buf
+					, bin::u8_t * bend, const ie::wireless_control & r) {
+				using namespace bin;
+				RETURN_NULL_IF(buf + 2 + r.len > bend);
+				*buf++ = ie::header::wireless_control;
+				*buf++ = r.len;
+				return w::cpy(buf, r.data, r.len);
 			}
 	};
 

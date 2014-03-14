@@ -1,6 +1,8 @@
 
 #define BOOST_TEST_MODULE mobi_net_ss7
 #include <boost/test/unit_test.hpp>
+#include <boost/range.hpp>
+#include <boost/range/irange.hpp>
 
 #include <toolbox/bin.hpp>
 #include <asn/ber.hpp>
@@ -15,6 +17,8 @@
 #include <iostream>
 #include <iostream>
 #include <cstring>
+#include <map>
+#include <cctype>
 
 class buffer_base {
 	protected:
@@ -635,12 +639,23 @@ BOOST_AUTO_TEST_CASE(test_sms) {
 
 				// L << sms::to_string(r) << std::endl;
 
+				sms::string_tt<256> temp_text;
 				sms::utf16_string_tt<256> text;
-				pbase::parse_gsm7bit_text(r, text);
+
+				pbase::parse_gsm7bit_text(temp_text, r);
+				BOOST_CHECK(gsm::sbit_to_utf16(text, temp_text)
+						== temp_text.len);
+
 				const char *txt = "Hormatly musderi, size +99363544535 belgiden 1 gezek 30.04 12:42 jan etdiler";
+
 				bool text_is_equal = false;
-				for (std::size_t i = 0; i < text.len; ++i)
-					text_is_equal = text.data[i] == txt[i];
+				for (std::size_t i = 0; i < text.len; ++i) {
+					text_is_equal = (text.data[i] == txt[i]);
+					if (!text_is_equal) {
+						break;
+					}
+					L << (char )text.data[i];
+				}
 
 				BOOST_CHECK(text_is_equal == true);
 
@@ -882,4 +897,180 @@ BOOST_AUTO_TEST_CASE(test_ber_writer) {
 	} m(std::cout);
 
 	m.test();
+}
+
+BOOST_AUTO_TEST_CASE(print_ucs2_gsm_table) {
+	using namespace mobi::net;
+	using namespace mobi::net::toolbox;
+
+	typedef std::map<bin::u8_t, bin::u8_t> map_t;
+	typedef std::map<bin::u16_t, bin::u8_t> map16_t;
+	map_t map;
+	map16_t map16;
+
+	for (auto i: boost::irange(0, 0xFF + 1)) {
+		bin::u16_t ch = gsm::decode_7bit_char(i);
+		if (ch == 0x00) {
+		} else if (ch <= 0xFF) {
+			map[static_cast<bin::u8_t>(ch)] = i;
+		} else {
+			map16[ch] = i;
+		}
+
+		ch = gsm::decode_7bit_ext_char(i);
+		if (ch == 0x00) {
+		} else if (ch <= 0xFF) {
+			map[static_cast<bin::u8_t>(ch)] = 0x80 | i;
+		} else {
+			map16[ch] = 0x80 | i;
+		}
+	}
+
+	for (auto i: boost::irange(0, 0xFF + 1)) {
+		map_t::const_iterator p = map.find(static_cast<bin::u8_t>(i));
+		if (p != map.end()) {
+			std::cout
+				<< bin::hex_str_ref(bin::ascbuf(p->first), 1)
+				<< "\t"
+				<< bin::hex_str_ref(bin::ascbuf(p->second), 1)
+				<< std::endl;
+		} else {
+			std::cout
+				<< bin::hex_str_ref(bin::ascbuf(i), 1)
+				<< "\t"
+				<< "0x80"
+				<< std::endl;
+		}
+	}
+
+	for (auto p: map16) {
+		std::cout << std::hex
+			<< p.first
+			<< "\t"
+			<< bin::hex_str_ref(bin::ascbuf(p.second), 1)
+			<< std::endl;
+	}
+
+	std::cout << std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(test_gsm7bit_write) {
+	using namespace mobi::net;
+	using namespace mobi::net::asn;
+	using namespace mobi::net::ss7;
+	using namespace mobi::net::toolbox;
+
+	class mock: public sms::parser<std::ostream>
+			, public sms::writer<std::ostream>
+			, buffer_base {
+
+		typedef sms::writer<std::ostream> wbase;
+		typedef sms::parser<std::ostream> pbase;
+
+		using pbase::L;
+
+		public:
+			mock(std::ostream & out)
+				: sms::parser<std::ostream>(out)
+				, sms::writer<std::ostream>(out) {}
+			virtual ~mock() {}
+
+		protected:
+			virtual action on_sms_deliver(const sms::deliver_t & r) {
+				(void)(r);
+				return resume;
+			}
+			virtual action on_sms_submit(const sms::submit_t & r) {
+				(void)(r);
+				return resume;
+			}
+			virtual action on_sms_command(const sms::command_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+			virtual action on_sms_status_report(const sms::status_report_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+			virtual action on_sms_deliver_report_neg(const sms::deliver_report_neg_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+			virtual action on_sms_deliver_report_pos(const sms::deliver_report_pos_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+			virtual action on_sms_submit_report_neg(const sms::submit_report_neg_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+			virtual action on_sms_submit_report_pos(const sms::submit_report_pos_t & msg) {
+				(void)(msg);
+				return stop;
+			}
+
+			virtual action on_sms_ie_concat(const sms::ie::concat & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_special_ind(const sms::ie::special_ind & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_port_addr_8bit(const sms::ie::port_addr_8bit & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_port_addr_16bit(const sms::ie::port_addr_16bit & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_smsc_control(const sms::ie::smsc_control & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_udh_source_ind(const sms::ie::udh_source_ind & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_sim_security(const sms::ie::header & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_concat_enhanced(const sms::ie::concat_enhanced & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+			virtual action on_sms_ie_wireless_control(const sms::ie::wireless_control & r) {
+				(void)(r);
+				return pbase::resume;
+			}
+
+		public:
+			void test_write() {
+				(void)(wbase::L);
+				const char str[] =
+					"\x7F\x3F\x1F\x0F\x07\x03\x01\x7F\x3F\x1F\x0F\x07\x03\x01"
+					"\x7F\x3F\x1F\x0F\x07\x03\x01\x7F\x1F\x0F\x07\x03\x01"
+				;
+
+				int offs = 1;
+
+				sms::string_tt<255> r;
+				r.len = sizeof(str) - 1;
+				std::memcpy(r.data, str, r.len);
+				std::memset(buf, 0, bend - buf);
+
+				L << bin::bin_str_ref(str, sizeof(str)-1).delimit(" ").prefix("") << std::endl;
+
+				bcur = gsm::oct_to_sept(buf, bend, offs, r);
+				L << bin::bin_str_ref(buf, bcur - buf).delimit(" ").prefix("") << std::endl;
+				L << bin::bin_str_ref(buf, bcur - buf).delimit("").prefix("").natural() << std::endl;
+
+				gsm::sept_to_oct(r, buf, bcur, offs);
+				L << bin::bin_str_ref(r.data, r.len).delimit(" ").prefix("") << std::endl;
+			}
+	} m(std::cout);
+
+	m.test_write();
 }

@@ -457,6 +457,7 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 		sz_t m_len;
 		const char * m_delimiter;
 		const char * m_prefix;
+		bool m_reversed;
 
 		public:
 			bin_str_ref(const u8_t * buf, sz_t len)
@@ -464,6 +465,7 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 				, m_len(len)
 				, m_delimiter("")
 				, m_prefix("0b")
+				, m_reversed(false)
 			{}
 
 			bin_str_ref(const char * buf, sz_t len)
@@ -471,6 +473,7 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 				, m_len(len)
 				, m_delimiter("")
 				, m_prefix("0b")
+				, m_reversed(false)
 			{}
 
 			bin_str_ref & delimit(const char * delimiter) {
@@ -483,16 +486,28 @@ namespace mobi { namespace net { namespace toolbox { namespace bin {
 				return *this;
 			}
 
+			bin_str_ref & natural() {
+				m_reversed = true;
+				return *this;
+			}
+
 			template<typename CharT, typename TraitsT> friend
 			std::basic_ostream<CharT, TraitsT> &
 			operator<<(std::basic_ostream<CharT, TraitsT> & out, const bin_str_ref & str) {
+				bin::u8_t val;
 				const u8_t * buf = str.m_buf;
 				sz_t len = str.m_len;
 				if (str.m_prefix != nullptr) {
 					out << str.m_prefix;
 				}
 				while (len) {
-					out << std::bitset<8>(*buf);
+					val = *buf;
+					if (str.m_reversed) {
+						val = (val & 0x55) << 1 | (val & 0xAA) >> 1;
+						val = (val & 0x33) << 2 | (val & 0xCC) >> 2;
+						val = (val & 0x0F) << 4 | (val & 0xF0) >> 4;
+					}
+					out << std::bitset<8>(val);
 					if (len != 1 && str.m_delimiter != nullptr) {
 						out << str.m_delimiter;
 					}
