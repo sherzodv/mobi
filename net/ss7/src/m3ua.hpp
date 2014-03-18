@@ -664,13 +664,13 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 
 		out << "[type:";
 		switch (r.mclass) {
-			case mclass_mgmt: out << r.type.mgmt; break;
-			case mclass_transfer: out << r.type.transfer; break;
-			case mclass_ss7_mgmt: out << r.type.ss7mgmt; break;
-			case mclass_asp_state: out << r.type.aspstate; break;
-			case mclass_asp_traffic: out << r.type.asptraf; break;
-			case mclass_route_mgmt: out << r.type.asproute; break;
-			default: out << "unknown"; break;
+			case mclass_mgmt:			out << to_string(r.type.mgmt);		break;
+			case mclass_transfer:		out << to_string(r.type.transfer);	break;
+			case mclass_ss7_mgmt:		out << to_string(r.type.ss7mgmt);	break;
+			case mclass_asp_state:		out << to_string(r.type.aspstate);	break;
+			case mclass_asp_traffic:	out << to_string(r.type.asptraf);	break;
+			case mclass_route_mgmt:		out << to_string(r.type.asproute);	break;
+			default:					out << "unknown";					break;
 		}
 		out << "]";
 
@@ -684,7 +684,7 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 		out << "[mtp3:"
 			<< "[opc:" << r.opc << "]"
 			<< "[dpc:" << r.dpc << "]"
-			<< r.si
+			<< to_string(r.si)
 			<< "[ni:" << static_cast<unsigned>(r.ni) << "]"
 			<< "[mp:" << static_cast<unsigned>(r.mp) << "]"
 			<< "[sls:" << static_cast<unsigned>(r.sls) << "]"
@@ -693,16 +693,18 @@ namespace mobi { namespace net { namespace ss7 { namespace m3ua {
 	}
 
 	template <typename ValueT>
+	std::string to_string(ValueT v) {
+		return to_string(v);
+	}
+
+	template <typename ValueT>
 	std::string to_string(const tlv<ValueT> & t) {
 		std::stringstream out;
 		out << "[tlv:"
-			<< t.tag;
-
-		/* TODO:
+			<< t.tag
 			<< "[len:" << t.len << "]"
-			<< "[val:" << t.val << "]"
+			<< "[val:" << to_string(t.val) << "]"
 		<< "]";
-		*/
 		return out.str();
 	}
 

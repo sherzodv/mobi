@@ -675,7 +675,7 @@ namespace mobi { namespace net { namespace ss7 { namespace sccp {
 		}
 
 		if (r.indicator.ssni) {
-			out << r.ssn;
+			out << to_string(r.ssn);
 		} else {
 			out << "[no SSN]";
 		}
